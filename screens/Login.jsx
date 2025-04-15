@@ -12,7 +12,7 @@ export default function Login() {
 
                         <div className="space-y-4">
                             <div className="space-y-2">
-                            <label className="text-sm font-bold text-black">Username</label>
+                            <label className="text-sm font-bold text-black">Usernamdcce</label>
                                 <input
                                     id="username"
                                     type="text"
