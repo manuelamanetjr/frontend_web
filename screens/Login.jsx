@@ -1,10 +1,11 @@
 export default function Login() {
     return (
-        <div className="min-h-screen flex items-center justify-center bg-purple-700">
-            <div className="w-full max-w-4xl bg-white rounded-lg overflow-hidden shadow-xl flex">
+        <div className="min-h-screen flex items-center justify-center bg-purple-700 p-4">
+            <div className="w-full max-w-[1200px] bg-white rounded-lg overflow-hidden shadow-xl flex flex-col-reverse md:flex-row min-h-[700px]">
+                
                 {/* Left side - Login form */}
-                <div className="w-1/2 p-10">
-                    <div className="space-y-6">
+                <div className="w-full md:w-2/5 p-8 sm:p-10 flex items-center justify-center">
+                    <div className="w-full space-y-6 max-w-md">
                         <div className="space-y-2">
                             <h1 className="text-2xl font-bold">Welcome back</h1>
                             <p className="text-gray-500 text-sm">Please enter your details</p>
@@ -12,7 +13,7 @@ export default function Login() {
 
                         <div className="space-y-4">
                             <div className="space-y-2">
-                            <label className="text-sm font-bold text-black">Usernamdcce</label>
+                                <label className="text-sm font-medium text-black">Username</label>
                                 <input
                                     id="username"
                                     type="text"
@@ -30,7 +31,7 @@ export default function Login() {
                                     className="w-full border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 />
                                 <div className="text-right">
-                                    <a href="#" className="text-sm text-gray-500 hover:text-purple-700">
+                                    <a href="#" className="text-sm text-purple-700 hover:underline">
                                         Forgot password
                                     </a>
                                 </div>
@@ -46,14 +47,18 @@ export default function Login() {
                     </div>
                 </div>
 
-                {/* Right side - Logo */}
-                <div className="w-1/2 bg-gray-50 flex items-center justify-center p-10">
-                    <div className="flex items-center">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-600 to-purple-400 mr-4"></div>
-                        <span className="text-5xl font-bold text-purple-700">servana</span>
+                {/* Right side - Logo (appears on top on mobile) */}
+                <div className="w-full md:w-3/5 bg-gray-50 flex items-center justify-center p-10 sm:p-20">
+                    <div className="flex flex-col items-center md:flex-row">
+                        <img 
+                            src="src/assets/images/icon.png" 
+                            alt="Servana Logo" 
+                            className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 mb-4 md:mb-0 md:mr-4"
+                        />
+                        <span className="text-4xl sm:text-5xl font-bold text-purple-700 font-baloo text-center md:text-left">servana</span>
                     </div>
                 </div>
             </div>
         </div>
-    )
+    );
 }
