@@ -23,9 +23,13 @@ export default {
         600: "#7c3aed",
         700: "#6237A0",
         800: "#5b21b6",
-        900: "#4c1d95",
-        950: "#2e1065",
+        900: "#5D2CA1",
       },
+      black:{
+        50: "#5F666C",
+        100: "#1C2B33",
+      },
+
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
