@@ -54,7 +54,7 @@ export default function DashboardLayout() {
             alt="Servana Logo"
             className="h-10 w-10 rounded-full"
           />
-          <span className="text-xl font-semibold text-purple-700">Servana</span>
+          <span className="text-xl font-semibold text-purple-700">servana</span>
 
           {!mobileSidebarOpen && (
             <button
