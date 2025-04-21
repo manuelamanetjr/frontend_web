@@ -2,9 +2,7 @@ import React, { useState } from "react";
 import {
   Layers,
   User,
-  Settings,
   Menu,
-  X,
   MessageSquare,
   Grid,
   Users,
@@ -29,7 +27,7 @@ export default function DashboardLayout() {
       href={href}
       className={`flex items-center gap-3 px-3 py-2 rounded-lg relative ${
         isActive
-          ? "bg-purple-700 text-white"
+          ? "bg-purple-900 text-white"
           : "text-black hover:text-gray-700"
       }`}
     >
@@ -47,41 +45,35 @@ export default function DashboardLayout() {
   return (
     <div className="flex flex-col h-screen relative">
       {/* Top Navbar */}
-      <header className="h-16 bg-white shadow flex items-center px-6 z-50">
+      <header className="h-16 bg-white shadow flex items-center z-50 pl-16 relative">
+        {/* Toggle Button (Burger) */}
+        <button
+          className="md:hidden absolute left-4 text-gray-700 hover:text-gray-900 focus:outline-none"
+          onClick={() => setMobileSidebarOpen((prev) => !prev)}
+        >
+          <Menu size={24} strokeWidth={1} />
+        </button>
+
+        {/* Logo + Name */}
         <div className="flex items-center gap-3">
           <img
             src="src/assets/images/icon.png"
             alt="Servana Logo"
-            className="h-10 w-10 rounded-full"
+            className="h-10 w-10"
           />
-<<<<<<< Updated upstream
-          <span className="text-xl font-semibold text-purple-700">servana</span>
-=======
-          <span className="text-xl font-semibold text-purple-700">Servana</span>
->>>>>>> Stashed changes
-
-          {!mobileSidebarOpen && (
-            <button
-              className="md:hidden text-gray-700 hover:text-gray-900 focus:outline-none"
-              onClick={() => setMobileSidebarOpen(true)}
-            >
-              <Menu size={24} strokeWidth={1} />
-            </button>
-          )}
+          <span
+            className="text-xl font-semibold text-purple-800 relative"
+            style={{ top: "-1px" }}
+          >
+            servana
+          </span>
         </div>
       </header>
 
       {/* Mobile Sidebar */}
       {mobileSidebarOpen && (
         <aside className="absolute top-16 left-0 w-64 bg-white text-black flex flex-col p-6 z-40 md:hidden h-[calc(100vh-4rem)] shadow-md">
-          <button
-            className="absolute top-4 right-4 text-gray-600 hover:text-black"
-            onClick={() => setMobileSidebarOpen(false)}
-          >
-            <X size={24} strokeWidth={1} />
-          </button>
-
-          <nav className="flex flex-col gap-6 mt-10">
+          <nav className="flex flex-col gap-6 mt-4">
             {navItem("#", Layers, "Queues", true)}
             {navItem("#", MessageSquare, "Chats")}
             {navItem("#", Grid, "Department")}
@@ -95,7 +87,11 @@ export default function DashboardLayout() {
               >
                 <Users size={20} strokeWidth={1} />
                 <span className="w-full text-center">Users</span>
-                {openDropdown === "users" ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                {openDropdown === "users" ? (
+                  <ChevronUp size={16} />
+                ) : (
+                  <ChevronDown size={16} />
+                )}
               </button>
               {openDropdown === "users" &&
                 dropdownBox(
@@ -120,7 +116,11 @@ export default function DashboardLayout() {
               >
                 <List size={20} strokeWidth={1} />
                 <span className="w-full text-center">Macros</span>
-                {openDropdown === "macros" ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                {openDropdown === "macros" ? (
+                  <ChevronUp size={16} />
+                ) : (
+                  <ChevronDown size={16} />
+                )}
               </button>
               {openDropdown === "macros" &&
                 dropdownBox(
@@ -159,7 +159,11 @@ export default function DashboardLayout() {
               >
                 <Users size={20} strokeWidth={1} />
                 <span className="w-full text-center">Users</span>
-                {openDropdown === "users" ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                {openDropdown === "users" ? (
+                  <ChevronUp size={16} />
+                ) : (
+                  <ChevronDown size={16} />
+                )}
               </button>
               {openDropdown === "users" &&
                 dropdownBox(
@@ -184,7 +188,11 @@ export default function DashboardLayout() {
               >
                 <List size={20} strokeWidth={1} />
                 <span className="w-full text-center">Macros</span>
-                {openDropdown === "macros" ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                {openDropdown === "macros" ? (
+                  <ChevronUp size={16} />
+                ) : (
+                  <ChevronDown size={16} />
+                )}
               </button>
               {openDropdown === "macros" &&
                 dropdownBox(
