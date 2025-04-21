@@ -1,4 +1,13 @@
+import React from "react";
+import { useNavigate } from "react-router-dom";
+
 export default function Login() {
+    const navigate = useNavigate();
+
+    const handleLogin = () => {
+        navigate('/queues');
+    };
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-purple-900 p-4">
             <div className="w-full max-w-[1200px] bg-white rounded-lg overflow-hidden shadow-xl flex flex-col-reverse md:flex-row min-h-[700px]">
@@ -38,8 +47,8 @@ export default function Login() {
                             </div>
 
                             <button
-                                className="w-full bg-purple-900 hover:bg-purple-800 text-white font-semibold py-2 px-4 rounded-md transition"
-                                onClick={() => alert('Login clicked')}  
+                                className="w-full bg-purple-700 hover:bg-purple-800 text-white font-semibold py-2 px-4 rounded-md transition"
+                                onClick={handleLogin}
                             >
                                 Login
                             </button>
