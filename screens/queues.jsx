@@ -26,7 +26,9 @@ export default function DashboardLayout() {
     <a
       href={href}
       className={`flex items-center gap-3 px-3 py-2 rounded-lg relative ${
-        isActive ? "bg-purple-900 text-white" : "text-black hover:text-gray-700"
+        isActive
+          ? "bg-purple-900 text-white"
+          : "text-black hover:text-gray-700"
       }`}
     >
       <Icon size={20} strokeWidth={1} />
@@ -35,7 +37,7 @@ export default function DashboardLayout() {
   );
 
   const dropdownBox = (children) => (
-    <div className="absolute left-0 mt-2 w-full bg-white shadow-lg border border-gray-100 rounded-lg z-50 text-sm text-gray-700">
+    <div className="absolute left-full top-0 ml-2 w-48 bg-white shadow-lg border border-gray-100 rounded-lg z-50 text-sm text-gray-700">
       {children}
     </div>
   );
@@ -43,10 +45,10 @@ export default function DashboardLayout() {
   return (
     <div className="flex flex-col h-screen overflow-hidden relative">
       {/* Top Navbar */}
-      <header className="h-16 bg-white shadow flex items-center justify-between z-50 px-4 md:pl-16 relative">
+      <header className="h-16 bg-white shadow flex items-center z-50 pl-16 relative justify-between pr-6">
         {/* Toggle Button (Burger) */}
         <button
-          className="md:hidden text-gray-700 hover:text-gray-900 focus:outline-none"
+          className="md:hidden absolute left-4 text-gray-700 hover:text-gray-900 focus:outline-none"
           onClick={() => setMobileSidebarOpen((prev) => !prev)}
         >
           <Menu size={24} strokeWidth={1} />
@@ -72,11 +74,9 @@ export default function DashboardLayout() {
           <img
             src="https://randomuser.me/api/portraits/women/44.jpg"
             alt="Maria Dela Cruz"
-            className="h-9 w-9 rounded-full object-cover"
+            className="h-8 w-8 rounded-full object-cover"
           />
-          <span className="text-sm font-medium text-gray-800">
-            Maria Dela Cruz
-          </span>
+          <span className="text-sm font-medium text-gray-700">Maria Dela Cruz</span>
         </div>
       </header>
 
