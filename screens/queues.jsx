@@ -37,16 +37,16 @@ export default function DashboardLayout() {
   );
 
   const dropdownBox = (children) => (
-    <div className="absolute left-full top-0 ml-2 w-48 bg-white shadow-lg border border-gray-100 rounded-lg z-50 text-sm text-gray-700">
+    <div className="mt-1 ml-6 text-sm text-gray-700">
       {children}
     </div>
   );
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden relative">
+    <div className="flex flex-col h-screen relative">
       {/* Top Navbar */}
-      <header className="h-16 bg-white shadow flex items-center z-50 pl-16 relative justify-between pr-6">
-        {/* Toggle Button (Burger) */}
+      <header className="h-16 bg-white shadow flex items-center z-50 pl-16 pr-4 relative justify-between">
+        {/* Toggle Button */}
         <button
           className="md:hidden absolute left-4 text-gray-700 hover:text-gray-900 focus:outline-none"
           onClick={() => setMobileSidebarOpen((prev) => !prev)}
@@ -72,25 +72,27 @@ export default function DashboardLayout() {
         {/* Profile */}
         <div className="flex items-center gap-3">
           <img
-            src="https://randomuser.me/api/portraits/women/44.jpg"
+            src="https://i.pravatar.cc/40?img=47"
             alt="Maria Dela Cruz"
-            className="h-8 w-8 rounded-full object-cover"
+            className="h-10 w-10 rounded-full object-cover"
           />
-          <span className="text-sm font-medium text-gray-700">Maria Dela Cruz</span>
+          <span className="hidden sm:inline text-sm font-medium text-gray-800">
+            Maria Dela Cruz
+          </span>
         </div>
       </header>
 
       {/* Mobile Sidebar */}
       {mobileSidebarOpen && (
-        <aside className="absolute top-16 left-0 w-64 bg-white text-black flex flex-col p-6 z-40 md:hidden h-[calc(100vh-4rem)] shadow-md overflow-y-auto">
-          <nav className="flex flex-col gap-6 mt-4 relative">
+        <aside className="fixed top-16 left-0 w-64 bg-white text-black flex flex-col p-6 z-40 md:hidden h-[calc(100vh-4rem)] shadow-md overflow-y-auto">
+          <nav className="flex flex-col gap-4 mt-4">
             {navItem("#", Layers, "Queues", true)}
             {navItem("#", MessageSquare, "Chats")}
             {navItem("#", Grid, "Department")}
             {navItem("#", User, "Profile")}
 
             {/* Users Dropdown */}
-            <div className="relative">
+            <div>
               <button
                 onClick={() => toggleDropdown("users")}
                 className="flex items-center gap-3 text-black hover:text-gray-700 px-3 py-2 w-full"
@@ -106,12 +108,8 @@ export default function DashboardLayout() {
               {openDropdown === "users" &&
                 dropdownBox(
                   <>
-                    <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                      Manage Agents
-                    </a>
-                    <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                      Change Roles
-                    </a>
+                    <a href="#" className="block px-4 py-2 hover:bg-gray-100">Manage Agents</a>
+                    <a href="#" className="block px-4 py-2 hover:bg-gray-100">Change Roles</a>
                   </>
                 )}
             </div>
@@ -119,7 +117,7 @@ export default function DashboardLayout() {
             {navItem("#", Repeat, "Auto-Replies")}
 
             {/* Macros Dropdown */}
-            <div className="relative">
+            <div>
               <button
                 onClick={() => toggleDropdown("macros")}
                 className="flex items-center gap-3 text-black hover:text-gray-700 px-3 py-2 w-full"
@@ -135,12 +133,8 @@ export default function DashboardLayout() {
               {openDropdown === "macros" &&
                 dropdownBox(
                   <>
-                    <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                      Agents
-                    </a>
-                    <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                      Clients
-                    </a>
+                    <a href="#" className="block px-4 py-2 hover:bg-gray-100">Agents</a>
+                    <a href="#" className="block px-4 py-2 hover:bg-gray-100">Clients</a>
                   </>
                 )}
             </div>
@@ -155,14 +149,14 @@ export default function DashboardLayout() {
       <div className="flex flex-1 overflow-hidden">
         {/* Desktop Sidebar */}
         <aside className="hidden md:flex w-64 bg-white text-black flex-col p-6 shadow-md overflow-y-auto">
-          <nav className="flex flex-col gap-6 relative">
+          <nav className="flex flex-col gap-4">
             {navItem("#", Layers, "Queues", true)}
             {navItem("#", MessageSquare, "Chats")}
             {navItem("#", Grid, "Department")}
             {navItem("#", User, "Profile")}
 
             {/* Users Dropdown */}
-            <div className="relative">
+            <div>
               <button
                 onClick={() => toggleDropdown("users")}
                 className="flex items-center gap-3 text-black hover:text-gray-700 px-3 py-2 w-full"
@@ -178,12 +172,8 @@ export default function DashboardLayout() {
               {openDropdown === "users" &&
                 dropdownBox(
                   <>
-                    <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                      Manage Agents
-                    </a>
-                    <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                      Change Roles
-                    </a>
+                    <a href="#" className="block px-4 py-2 hover:bg-gray-100">Manage Agents</a>
+                    <a href="#" className="block px-4 py-2 hover:bg-gray-100">Change Roles</a>
                   </>
                 )}
             </div>
@@ -191,7 +181,7 @@ export default function DashboardLayout() {
             {navItem("#", Repeat, "Auto-Replies")}
 
             {/* Macros Dropdown */}
-            <div className="relative">
+            <div>
               <button
                 onClick={() => toggleDropdown("macros")}
                 className="flex items-center gap-3 text-black hover:text-gray-700 px-3 py-2 w-full"
@@ -207,12 +197,8 @@ export default function DashboardLayout() {
               {openDropdown === "macros" &&
                 dropdownBox(
                   <>
-                    <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                      Agents
-                    </a>
-                    <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                      Clients
-                    </a>
+                    <a href="#" className="block px-4 py-2 hover:bg-gray-100">Agents</a>
+                    <a href="#" className="block px-4 py-2 hover:bg-gray-100">Clients</a>
                   </>
                 )}
             </div>
