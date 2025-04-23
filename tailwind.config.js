@@ -15,18 +15,6 @@ export default {
 
       // ✅ CORRECT: define colors here
       colors: {
-        purple: {
-          50: "#f5f3ff",
-          100: "#ede9fe",
-          200: "#ddd6fe",
-          300: "#c4b5fd",
-          400: "#a78bfa",
-          500: "#8b5cf6",
-          600: "#7c3aed",
-          700: "#6237A0",
-          800: "#5b21b6",
-          900: "#5D2CA1",
-        },
         black: {
           50: "#5F666C",
           100: "#1C2B33",
