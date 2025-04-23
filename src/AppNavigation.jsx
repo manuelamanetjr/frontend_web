@@ -21,7 +21,7 @@ function AppNavigation() {
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/queues" element={<Queues />} />
+        <Route path="/Queues" element={<Queues />} />
         <Route path="/chats" element={<Chats />} />
         <Route path="/department" element={<Department />} />
         <Route path="/profile" element={<Profile />} />
