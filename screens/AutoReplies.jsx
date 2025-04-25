@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
-import { Edit } from "react-feather";
+import { Edit3, Search, X } from "react-feather";
 
 export default function AutoReplies() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
-
-  const toggleSidebar = () => setMobileSidebarOpen((prev) => !prev);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentEditIndex, setCurrentEditIndex] = useState(null);
+  const [editText, setEditText] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [replies, setReplies] = useState([
     { text: "How can I assist you today?", active: true, department: "Billing" },
@@ -18,23 +20,59 @@ export default function AutoReplies() {
 
   const departments = ["Billing", "Customer Support", "Sales", "All"];
 
+  const toggleSidebar = () => setMobileSidebarOpen((prev) => !prev);
+
+  const filteredReplies = replies.filter((reply) =>
+    reply.text.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="flex flex-col h-screen overflow-hidden">
       <TopNavbar toggleSidebar={toggleSidebar} />
 
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar isMobile={true} isOpen={mobileSidebarOpen} toggleDropdown={setOpenDropdown} openDropdown={openDropdown} />
-        <Sidebar isMobile={false} toggleDropdown={setOpenDropdown} openDropdown={openDropdown} />
+        <Sidebar
+          isMobile={true}
+          isOpen={mobileSidebarOpen}
+          toggleDropdown={setOpenDropdown}
+          openDropdown={openDropdown}
+        />
+        <Sidebar
+          isMobile={false}
+          toggleDropdown={setOpenDropdown}
+          openDropdown={openDropdown}
+        />
 
-        <main className="flex-1 bg-gray-100 p-15 overflow-auto">
-          <div className="bg-white p-4 rounded-lg shadow-md">
+        <main className="flex-1 bg-gray-100 p-15 overflow-y-auto transition-colors duration-300">
+          <div className="bg-white p-4 rounded-lg min-h-[80vh] transition-all duration-300">
             <div className="flex justify-between items-center mb-4">
-              <input
-                type="text"
-                placeholder="Search..."
-                className="border rounded-md px-3 py-1 w-1/3 text-sm"
-              />
-              <button className="bg-purple-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-800">
+              {/* Search bar with clear (X) icon */}
+              <div className="flex items-center bg-gray-100 px-3 py-2 rounded-md w-1/3 relative">
+                <Search size={18} className="text-gray-500 mr-2 flex-shrink-0" />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="bg-transparent focus:outline-none text-sm w-full pr-6"
+                />
+                {searchQuery && (
+                  <X
+                    size={16}
+                    className="text-gray-500 cursor-pointer absolute right-3 hover:text-gray-700"
+                    onClick={() => setSearchQuery("")}
+                  />
+                )}
+              </div>
+
+              <button
+                onClick={() => {
+                  setEditText("");
+                  setCurrentEditIndex(null);
+                  setIsModalOpen(true);
+                }}
+                className="bg-purple-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-800 transition-colors duration-300"
+              >
                 Add Message
               </button>
             </div>
@@ -43,19 +81,30 @@ export default function AutoReplies() {
               <table className="w-full text-sm text-left">
                 <thead className="text-gray-500 border-b">
                   <tr>
-                    <th className="py-2 px-3">Replies</th>
-                    <th className="py-2 px-3">Active</th>
-                    <th className="py-2 px-3">Department</th>
+                    <th className="py-2 px-3 pl-3">Replies</th>
+                    <th className="py-2 px-3 text-center">Active</th>
+                    <th className="py-2 px-3 text-center">Department</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {replies.map((reply, idx) => (
-                    <tr key={idx} className="hover:bg-gray-50">
+                  {filteredReplies.map((reply, idx) => (
+                    <tr
+                      key={idx}
+                      className="hover:bg-gray-50 transition-colors duration-200"
+                    >
                       <td className="py-2 px-3 flex items-center gap-2">
                         {reply.text}
-                        <Edit size={18} className="text-gray-500 cursor-pointer" />
+                        <Edit3
+                          size={18}
+                          className="text-gray-500 cursor-pointer w-[18px] h-[18px] flex-shrink-0 transition-colors duration-200 hover:text-purple-700"
+                          onClick={() => {
+                            setCurrentEditIndex(idx);
+                            setEditText(reply.text);
+                            setIsModalOpen(true);
+                          }}
+                        />
                       </td>
-                      <td className="py-2 px-3">
+                      <td className="py-2 px-3 text-center">
                         <label className="inline-flex relative items-center cursor-pointer">
                           <input
                             type="checkbox"
@@ -69,17 +118,19 @@ export default function AutoReplies() {
                               )
                             }
                           />
-                          <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:bg-purple-600 transition-all after:content-[''] after:absolute after:left-[2px] after:top-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4" />
+                          <div className="w-9 h-5 bg-gray-200 rounded-full peer peer-checked:bg-purple-600 transition-colors duration-300 relative after:content-[''] after:absolute after:left-[2px] after:top-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-transform after:duration-300 peer-checked:after:translate-x-4" />
                         </label>
                       </td>
-                      <td className="py-2 px-3">
+                      <td className="py-2 px-3 text-center">
                         <select
-                          className="border rounded-md px-2 py-1 text-sm"
+                          className="border rounded-md px-2 py-1 text-sm bg-white text-gray-800 focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-200"
                           value={reply.department}
                           onChange={(e) =>
                             setReplies((prev) =>
                               prev.map((r, i) =>
-                                i === idx ? { ...r, department: e.target.value } : r
+                                i === idx
+                                  ? { ...r, department: e.target.value }
+                                  : r
                               )
                             )
                           }
@@ -97,6 +148,51 @@ export default function AutoReplies() {
               </table>
             </div>
           </div>
+
+          {/* Modal for Edit/Add */}
+          {isModalOpen && (
+            <div className="fixed inset-0 bg-gray-400/50 flex justify-center items-center z-50 transition-opacity duration-300">
+              <div className="bg-white rounded-lg shadow-xl p-6 w-96 transform scale-95 animate-fadeIn transition-transform duration-300 ease-out">
+                <h2 className="text-md font-semibold mb-2">
+                  {currentEditIndex !== null ? "Edit Message" : "Add Message"}
+                </h2>
+                <label className="text-sm text-gray-700 mb-1 block">Message</label>
+                <textarea
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                  className="w-full border rounded-md p-2 text-sm mb-4 h-24 focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all duration-300"
+                />
+                <div className="flex justify-end gap-2">
+                  <button
+                    onClick={() => setIsModalOpen(false)}
+                    className="bg-gray-300 text-gray-800 px-4 py-1 rounded-lg text-sm hover:bg-gray-400 transition-colors duration-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (currentEditIndex !== null) {
+                        setReplies((prev) =>
+                          prev.map((r, i) =>
+                            i === currentEditIndex ? { ...r, text: editText } : r
+                          )
+                        );
+                      } else {
+                        setReplies((prev) => [
+                          ...prev,
+                          { text: editText, active: true, department: "All" },
+                        ]);
+                      }
+                      setIsModalOpen(false);
+                    }}
+                    className="bg-purple-700 text-white px-4 py-1 rounded-lg text-sm hover:bg-purple-800 transition-colors duration-300"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>
