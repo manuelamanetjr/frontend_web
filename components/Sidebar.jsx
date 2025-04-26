@@ -39,7 +39,7 @@ const Sidebar = ({ isMobile, isOpen, toggleDropdown, openDropdown }) => {
         {isActive && (
           <motion.div
             layoutId="activeHighlight"
-            className="absolute inset-0 rounded-lg bg-purple-900 z-0"
+            className="absolute inset-0 rounded-lg bg-[#6237A0] z-0"
             transition={{ type: "spring", stiffness: 500, damping: 30 }}
           />
         )}
@@ -65,7 +65,7 @@ const Sidebar = ({ isMobile, isOpen, toggleDropdown, openDropdown }) => {
         {isActive && (
           <motion.div
             layoutId="activeHighlight"
-            className="absolute inset-0 rounded-lg bg-purple-900 z-0"
+            className="absolute inset-0 rounded-lg bg-[#6237A0] z-0"
             transition={{ type: "spring", stiffness: 500, damping: 30 }}
           />
         )}
