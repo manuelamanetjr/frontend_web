@@ -24,7 +24,7 @@ export default function TopNavbar({ toggleSidebar }) {
 
       <div className="flex items-center gap-3">
         <img
-          src="https://randomuser.me/api/portraits/women/44.jpg"
+          src="../src/assets/profile/av3.jpg"
           alt="Maria Dela Cruz"
           className="h-8 w-8 rounded-full object-cover"
         />
