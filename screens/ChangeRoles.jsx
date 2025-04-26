@@ -13,11 +13,6 @@ export default function ChangeRoles() {
     { name: "Eve Torres", active: true, role: "agent" },
   ]);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentEditIndex, setCurrentEditIndex] = useState(null);
-  const [editName, setEditName] = useState("");
-  const [editRole, setEditRole] = useState("agent");
-
   const roles = ["admin", "agent"];
 
   const toggleSidebar = () => setMobileSidebarOpen((prev) => !prev);
@@ -63,18 +58,6 @@ export default function ChangeRoles() {
                   />
                 )}
               </div>
-
-              <button
-                onClick={() => {
-                  setEditName("");
-                  setEditRole("agent");
-                  setCurrentEditIndex(null);
-                  setIsModalOpen(true);
-                }}
-                className="bg-purple-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-800 transition-colors duration-300"
-              >
-                Add Account
-              </button>
             </div>
 
             <div className="overflow-x-auto">
@@ -94,16 +77,6 @@ export default function ChangeRoles() {
                     >
                       <td className="py-2 px-3 flex items-center gap-2">
                         {user.name}
-                        <Edit3
-                          size={18}
-                          className="text-gray-500 cursor-pointer w-[18px] h-[18px] flex-shrink-0 transition-colors duration-200 hover:text-purple-700"
-                          onClick={() => {
-                            setCurrentEditIndex(idx);
-                            setEditName(user.name);
-                            setEditRole(user.role);
-                            setIsModalOpen(true);
-                          }}
-                        />
                       </td>
                       <td className="py-2 px-3 text-center">
                         <label className="inline-flex relative items-center cursor-pointer">
@@ -149,66 +122,6 @@ export default function ChangeRoles() {
               </table>
             </div>
           </div>
-
-          {/* Modal for Add/Edit */}
-          {isModalOpen && (
-            <div className="fixed inset-0 bg-gray-400/50 flex justify-center items-center z-50 transition-opacity duration-300">
-              <div className="bg-white rounded-lg shadow-xl p-6 w-96 transform scale-95 animate-fadeIn transition-transform duration-300 ease-out">
-                <h2 className="text-md font-semibold mb-2">
-                  {currentEditIndex !== null ? "Edit User" : "Add User"}
-                </h2>
-                <label className="text-sm text-gray-700 mb-1 block">Name</label>
-                <input
-                  type="text"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  className="w-full border rounded-md p-2 text-sm mb-3 focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all duration-300"
-                />
-                <label className="text-sm text-gray-700 mb-1 block">Role</label>
-                <select
-                  value={editRole}
-                  onChange={(e) => setEditRole(e.target.value)}
-                  className="w-full border rounded-md p-2 text-sm mb-4 focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300"
-                >
-                  {roles.map((role, i) => (
-                    <option key={i} value={role}>
-                      {role}
-                    </option>
-                  ))}
-                </select>
-                <div className="flex justify-end gap-2">
-                  <button
-                    onClick={() => setIsModalOpen(false)}
-                    className="bg-gray-300 text-gray-800 px-4 py-1 rounded-lg text-sm hover:bg-gray-400 transition-colors duration-200"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (currentEditIndex !== null) {
-                        setUsers((prev) =>
-                          prev.map((u, i) =>
-                            i === currentEditIndex
-                              ? { ...u, name: editName, role: editRole }
-                              : u
-                          )
-                        );
-                      } else {
-                        setUsers((prev) => [
-                          ...prev,
-                          { name: editName, active: true, role: editRole },
-                        ]);
-                      }
-                      setIsModalOpen(false);
-                    }}
-                    className="bg-purple-700 text-white px-4 py-1 rounded-lg text-sm hover:bg-purple-800 transition-colors duration-300"
-                  >
-                    Save
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </main>
       </div>
     </div>
