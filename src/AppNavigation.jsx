@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Login from "../screens/Login.jsx";
-import Queues from "../screens/queues.jsx";
+import Queues from "../screens/Queues.jsx";
 import Chats from "../screens/Chats.jsx";
 import Department from "../screens/Department.jsx";
 import Profile from "../screens/Profile.jsx";
