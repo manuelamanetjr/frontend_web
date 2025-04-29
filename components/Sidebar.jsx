@@ -35,7 +35,7 @@ const Sidebar = ({ isMobile, isOpen, toggleDropdown, openDropdown }) => {
     const isActive = isActivePath(to, extraPaths);
 
     return (
-      <div className="relative">
+      <div className="relative" key={to}>
         {isActive && (
           <motion.div
             layoutId="activeHighlight"
@@ -56,9 +56,10 @@ const Sidebar = ({ isMobile, isOpen, toggleDropdown, openDropdown }) => {
     );
   };
 
-  const DropdownItem = ({ label, icon: Icon, paths, children, id }) => {
-    const isActive = paths.includes(location.pathname);
+  const DropdownItem = ({ icon: Icon, items, id }) => {
     const isOpenDropdown = openDropdown === id;
+    const activeItem = items.find((item) => location.pathname === item.to);
+    const isActive = !!activeItem;
 
     return (
       <div className="relative">
@@ -76,7 +77,9 @@ const Sidebar = ({ isMobile, isOpen, toggleDropdown, openDropdown }) => {
           }`}
         >
           <Icon size={18} strokeWidth={1} />
-          <span className="w-full text-center">{label}</span>
+          <span className="w-full text-center">
+            {activeItem ? activeItem.label : id.charAt(0).toUpperCase() + id.slice(1)}
+          </span>
           {isOpenDropdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </button>
 
@@ -90,7 +93,15 @@ const Sidebar = ({ isMobile, isOpen, toggleDropdown, openDropdown }) => {
               transition={{ duration: 0.2 }}
               className="absolute left-0 top-full mt-1 w-48 bg-white shadow-lg border border-gray-100 rounded-lg z-50 text-sm text-gray-700"
             >
-              {children}
+              {items.map(({ to, label }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  className="block px-4 py-2 hover:bg-gray-100"
+                >
+                  {label}
+                </Link>
+              ))}
             </motion.div>
           )}
         </AnimatePresence>
@@ -114,32 +125,22 @@ const Sidebar = ({ isMobile, isOpen, toggleDropdown, openDropdown }) => {
         )}
 
         <DropdownItem
-          label="Users"
           icon={Users}
-          paths={["/manage-agents", "/change-role"]}
           id="users"
-        >
-          <Link to="/manage-agents" className="block px-4 py-2 hover:bg-gray-100">
-            Manage Agents
-          </Link>
-          <Link to="/change-role" className="block px-4 py-2 hover:bg-gray-100">
-            Change Roles
-          </Link>
-        </DropdownItem>
+          items={[
+            { to: "/manage-agents", label: "Manage Agents" },
+            { to: "/change-role", label: "Change Roles" },
+          ]}
+        />
 
         <DropdownItem
-          label="Macros"
           icon={List}
-          paths={["/macros-agents", "/macros-clients"]}
           id="macros"
-        >
-          <Link to="/macros-agents" className="block px-4 py-2 hover:bg-gray-100">
-            Agents
-          </Link>
-          <Link to="/macros-clients" className="block px-4 py-2 hover:bg-gray-100">
-            Clients
-          </Link>
-        </DropdownItem>
+          items={[
+            { to: "/macros-agents", label: "Agents" },
+            { to: "/macros-clients", label: "Clients" },
+          ]}
+        />
       </nav>
     </aside>
   );
