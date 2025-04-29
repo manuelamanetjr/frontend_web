@@ -2,14 +2,26 @@ import React, { useState } from "react";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 import { FiLogOut } from "react-icons/fi";
-import { Upload } from 'react-feather';  // Import Feather icon
+import { Upload } from "react-feather";
 
 export default function Profile() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
-  const [fileName, setFileName] = useState('Upload Image');  // State to track file name
-  const [profilePicture, setProfilePicture] = useState("https://randomuser.me/api/portraits/women/44.jpg");  // Default profile picture
-  const [imageUploaded, setImageUploaded] = useState(false);  // State to track if an image is uploaded
+  const [fileName, setFileName] = useState("Upload Image");
+  const [profilePicture, setProfilePicture] = useState(
+    "https://randomuser.me/api/portraits/women/44.jpg"
+  );
+  const [imageUploaded, setImageUploaded] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const [profileData, setProfileData] = useState({
+    firstName: "Maria",
+    middleName: "",
+    lastName: "Dela Cruz",
+    email: "",
+    address: "",
+    dateOfBirth: "",
+  });
 
   const toggleDropdown = (name) => {
     setOpenDropdown((prev) => (prev === name ? null : name));
@@ -22,32 +34,30 @@ export default function Profile() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFileName(file.name);  // Update file name state
+      setFileName(file.name);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProfilePicture(reader.result);  // Set the profile picture to the uploaded image
-        setImageUploaded(true);  // Set imageUploaded to true once an image is uploaded
+        setProfilePicture(reader.result);
+        setImageUploaded(true);
       };
-      reader.readAsDataURL(file);  // Read the image file as a data URL
+      reader.readAsDataURL(file);
     } else {
-      setFileName('Upload Image');  // Reset to default text if no file
-      setProfilePicture("https://randomuser.me/api/portraits/women/44.jpg");  // Reset profile picture
-      setImageUploaded(false);  // Reset imageUploaded state
+      setFileName("Upload Image");
+      setProfilePicture("https://randomuser.me/api/portraits/women/44.jpg");
+      setImageUploaded(false);
     }
   };
 
   const handleSave = () => {
-    // Logic to save the image (e.g., upload to server)
-    console.log("Image saved:", profilePicture);  // Just log for now
+    console.log("Profile Data Saved:", profileData);
+    setIsEditModalOpen(false);
   };
 
   return (
     <div className="flex flex-col h-screen overflow-hidden relative">
-      {/* Top Navbar */}
       <TopNavbar toggleSidebar={toggleSidebar} />
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebars */}
         <Sidebar
           isMobile={true}
           isOpen={mobileSidebarOpen}
@@ -60,21 +70,17 @@ export default function Profile() {
           openDropdown={openDropdown}
         />
 
-        {/* Main Content */}
         <main className="flex-1 bg-[#f6f7fb] p-6 min-h-[calc(100vh-64px)] flex flex-col justify-center items-center">
           <h1 className="text-2xl font-semibold mb-6">Profile</h1>
 
-          {/* Profile Card */}
           <div className="bg-white rounded-2xl shadow-md p-10 w-full max-w-4xl flex flex-col items-center sm:flex-row sm:items-center sm:space-x-10">
-            {/* Profile Avatar */}
             <div className="flex flex-col items-center">
               <img
-                src={profilePicture}  // Dynamically set the profile picture
+                src={profilePicture}
                 alt="Profile Avatar"
                 className="w-64 h-64 rounded-full object-cover mb-4"
               />
-              
-              {/* Transparent Textbox with file input */}
+
               <div className="relative w-full max-w-xs">
                 <input
                   id="file-upload"
@@ -86,12 +92,13 @@ export default function Profile() {
                   htmlFor="file-upload"
                   className="w-full p-2 bg-transparent border border-gray-300 rounded-md cursor-pointer flex items-center justify-center"
                 >
-                  <span className="text-gray-700 text-xs flex-1 text-center">{fileName}</span> {/* Centered text */}
-                  <Upload className="w-3 h-3 ml-2" strokeWidth={1} /> {/* Feather upload icon with 1 stroke, on the right */}
+                  <span className="text-gray-700 text-xs flex-1 text-center">
+                    {fileName}
+                  </span>
+                  <Upload className="w-3 h-3 ml-2" strokeWidth={1} />
                 </label>
               </div>
 
-              {/* Conditionally render the Save button */}
               {imageUploaded && (
                 <div className="mt-4">
                   <button
@@ -104,30 +111,39 @@ export default function Profile() {
               )}
             </div>
 
-            {/* Profile Info */}
             <div className="flex-1 mt-8 sm:mt-0 flex flex-col items-center">
               <div className="grid grid-cols-1 gap-y-4 text-sm text-gray-700">
                 <div>
                   <p className="font-medium text-gray-500">Name</p>
-                  <p className="text-base font-regular text-gray-800">Maria Dela Cruz</p>
+                  <p className="text-base font-regular text-gray-800">
+                    {profileData.firstName} {profileData.middleName} {profileData.lastName}
+                  </p>
                 </div>
                 <div>
                   <p className="font-medium text-gray-500">Date of Birth</p>
-                  <p className="text-base text-gray-800">_____________________________________</p>
+                  <p className="text-base text-gray-800">
+                    {profileData.dateOfBirth || "_____________________________________"}
+                  </p>
                 </div>
                 <div>
                   <p className="font-medium text-gray-500">Email</p>
-                  <p className="text-base text-gray-800">_____________________________________</p>
+                  <p className="text-base text-gray-800">
+                    {profileData.email || "_____________________________________"}
+                  </p>
                 </div>
                 <div>
                   <p className="font-medium text-gray-500">Address</p>
-                  <p className="text-base text-gray-800">_____________________________________</p>
+                  <p className="text-base text-gray-800">
+                    {profileData.address || "_____________________________________"}
+                  </p>
                 </div>
               </div>
 
-              {/* Edit Button */}
               <div className="mt-6">
-                <button className="flex items-center px-4 py-2 border border-purple-500 text-purple-600 rounded-md hover:bg-purple-50 transition">
+                <button
+                  onClick={() => setIsEditModalOpen(true)}
+                  className="flex items-center px-4 py-2 border border-purple-500 text-purple-600 rounded-md hover:bg-purple-50 transition"
+                >
                   <svg
                     className="w-4 h-4 mr-2"
                     fill="none"
@@ -147,7 +163,6 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Logout link */}
           <div className="mt-10">
             <button className="text-purple-600 hover:underline flex items-center text-sm">
               <FiLogOut className="w-4 h-4 mr-1" />
@@ -156,6 +171,109 @@ export default function Profile() {
           </div>
         </main>
       </div>
+
+      {/* Edit Profile Modal */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h2 className="text-lg font-semibold mb-4">Edit Profile</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  First Name
+                </label>
+                <input
+                  type="text"
+                  className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                  value={profileData.firstName}
+                  onChange={(e) =>
+                    setProfileData({ ...profileData, firstName: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Middle Name
+                </label>
+                <input
+                  type="text"
+                  className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                  value={profileData.middleName}
+                  onChange={(e) =>
+                    setProfileData({ ...profileData, middleName: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Last Name
+                </label>
+                <input
+                  type="text"
+                  className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                  value={profileData.lastName}
+                  onChange={(e) =>
+                    setProfileData({ ...profileData, lastName: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                  value={profileData.email}
+                  onChange={(e) =>
+                    setProfileData({ ...profileData, email: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Address
+                </label>
+                <input
+                  type="text"
+                  className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                  value={profileData.address}
+                  onChange={(e) =>
+                    setProfileData({ ...profileData, address: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Date of Birth
+                </label>
+                <input
+                  type="date"
+                  className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                  value={profileData.dateOfBirth}
+                  onChange={(e) =>
+                    setProfileData({ ...profileData, dateOfBirth: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="px-4 py-2 text-sm bg-gray-200 rounded-md hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="px-4 py-2 text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
