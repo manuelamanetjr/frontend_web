@@ -47,7 +47,7 @@ export default function ManageAgents() {
           <div className="bg-white p-4 rounded-lg min-h-[80vh] transition-all duration-300">
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center bg-gray-100 px-3 py-2 rounded-md w-1/3 relative">
-                <Search size={18} className="text-gray-500 mr-2 flex-shrink-0" />
+                <Search size={18} strokeWidth={1} className="text-gray-500 mr-2 flex-shrink-0" />
                 <input
                   type="text"
                   placeholder="Search agents..."
@@ -58,6 +58,7 @@ export default function ManageAgents() {
                 {searchQuery && (
                   <X
                     size={16}
+                    strokeWidth={1}
                     className="text-gray-500 cursor-pointer absolute right-3 hover:text-gray-700"
                     onClick={() => setSearchQuery("")}
                   />
@@ -96,6 +97,7 @@ export default function ManageAgents() {
                         {agent.name}
                         <Edit3
                           size={18}
+                          strokeWidth={1}
                           className="text-gray-500 cursor-pointer w-[18px] h-[18px] flex-shrink-0 transition-colors duration-200 hover:text-purple-700"
                           onClick={() => {
                             setCurrentEditIndex(idx);
@@ -124,7 +126,7 @@ export default function ManageAgents() {
                       </td>
                       <td className="py-2 px-3 text-center">
                         <select
-                          className="border rounded-md px-2 py-1 text-sm bg-white text-gray-800 focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-200"
+                          className="rounded-md px-2 py-1 text-sm bg-white text-gray-800 outline-none"
                           value={agent.department}
                           onChange={(e) =>
                             setAgents((prev) =>
@@ -168,7 +170,7 @@ export default function ManageAgents() {
                 <select
                   value={editDept}
                   onChange={(e) => setEditDept(e.target.value)}
-                  className="w-full border rounded-md p-2 text-sm mb-4 focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300"
+                  className="w-full rounded-md p-2 text-sm mb-4 bg-white text-gray-800 outline-none"
                 >
                   {departments.map((dept, i) => (
                     <option key={i} value={dept}>
