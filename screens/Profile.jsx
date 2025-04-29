@@ -7,7 +7,9 @@ import { Upload } from 'react-feather';  // Import Feather icon
 export default function Profile() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
-  const [fileName, setFileName] = useState('upload Image');  // State to track file name
+  const [fileName, setFileName] = useState('Upload Image');  // State to track file name
+  const [profilePicture, setProfilePicture] = useState("https://randomuser.me/api/portraits/women/44.jpg");  // Default profile picture
+  const [imageUploaded, setImageUploaded] = useState(false);  // State to track if an image is uploaded
 
   const toggleDropdown = (name) => {
     setOpenDropdown((prev) => (prev === name ? null : name));
@@ -21,9 +23,22 @@ export default function Profile() {
     const file = e.target.files[0];
     if (file) {
       setFileName(file.name);  // Update file name state
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfilePicture(reader.result);  // Set the profile picture to the uploaded image
+        setImageUploaded(true);  // Set imageUploaded to true once an image is uploaded
+      };
+      reader.readAsDataURL(file);  // Read the image file as a data URL
     } else {
       setFileName('Upload Image');  // Reset to default text if no file
+      setProfilePicture("https://randomuser.me/api/portraits/women/44.jpg");  // Reset profile picture
+      setImageUploaded(false);  // Reset imageUploaded state
     }
+  };
+
+  const handleSave = () => {
+    // Logic to save the image (e.g., upload to server)
+    console.log("Image saved:", profilePicture);  // Just log for now
   };
 
   return (
@@ -54,8 +69,8 @@ export default function Profile() {
             {/* Profile Avatar */}
             <div className="flex flex-col items-center">
               <img
-                src="https://randomuser.me/api/portraits/women/44.jpg"
-                alt="Maria Dela Cruz"
+                src={profilePicture}  // Dynamically set the profile picture
+                alt="Profile Avatar"
                 className="w-64 h-64 rounded-full object-cover mb-4"
               />
               
@@ -75,6 +90,18 @@ export default function Profile() {
                   <Upload className="w-3 h-3 ml-2" strokeWidth={1} /> {/* Feather upload icon with 1 stroke, on the right */}
                 </label>
               </div>
+
+              {/* Conditionally render the Save button */}
+              {imageUploaded && (
+                <div className="mt-4">
+                  <button
+                    onClick={handleSave}
+                    className="text-purple-600 hover:underline"
+                  >
+                    Save
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Profile Info */}
