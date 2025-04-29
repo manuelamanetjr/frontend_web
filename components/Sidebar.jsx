@@ -49,7 +49,7 @@ const Sidebar = ({ isMobile, isOpen, toggleDropdown, openDropdown }) => {
             isActive ? "text-white" : "text-black hover:text-gray-700"
           }`}
         >
-          <Icon size={20} strokeWidth={1} />
+          <Icon size={18} strokeWidth={1} />
           <span className="w-full text-center">{label}</span>
         </Link>
       </div>
@@ -75,7 +75,7 @@ const Sidebar = ({ isMobile, isOpen, toggleDropdown, openDropdown }) => {
             isActive ? "text-white" : "text-black hover:text-gray-700"
           }`}
         >
-          <Icon size={20} strokeWidth={1} />
+          <Icon size={18} strokeWidth={1} />
           <span className="w-full text-center">{label}</span>
           {isOpenDropdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </button>
