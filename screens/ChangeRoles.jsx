@@ -1,16 +1,16 @@
 import React, { useState } from "react";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
-import { Edit3, Search, X } from "react-feather";
+import {Search, X } from "react-feather";
 
 export default function ChangeRoles() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [users, setUsers] = useState([
-    { name: "Alice Johnson", active: true, role: "admin" },
-    { name: "Bob Martin", active: false, role: "agent" },
-    { name: "Eve Torres", active: true, role: "agent" },
+    { name: "alicejohnson", active: true, role: "admin" },
+    { name: "bobmartin", active: false, role: "agent" },
+    { name: "evetorres", active: true, role: "agent" },
   ]);
 
   const roles = ["admin", "agent"];
@@ -42,7 +42,10 @@ export default function ChangeRoles() {
           <div className="bg-white p-4 rounded-lg min-h-[80vh] transition-all duration-300">
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center bg-gray-100 px-3 py-2 rounded-md w-1/3 relative">
-                <Search size={18} className="text-gray-500 mr-2 flex-shrink-0" />
+                <Search
+                  size={18}
+                  className="text-gray-500 mr-2 flex-shrink-0"
+                />
                 <input
                   type="text"
                   placeholder="Search users..."
@@ -64,7 +67,7 @@ export default function ChangeRoles() {
               <table className="w-full text-sm text-left">
                 <thead className="text-gray-500 border-b">
                   <tr>
-                    <th className="py-2 px-3 pl-3">Account</th>
+                    <th className="py-2 px-3 pl-3">Username</th>
                     <th className="py-2 px-3 text-center">Active</th>
                     <th className="py-2 px-3 text-center">Role</th>
                   </tr>
@@ -92,25 +95,28 @@ export default function ChangeRoles() {
                               )
                             }
                           />
-                          <div className="w-9 h-5 bg-gray-200 rounded-full peer peer-checked:bg-purple-600 transition-colors duration-300 relative after:content-[''] after:absolute after:left-[2px] after:top-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-transform after:duration-300 peer-checked:after:translate-x-4" />
+                          <div className="w-7 h-4 bg-gray-200 rounded-full peer peer-checked:bg-purple-600 transition-colors duration-300 relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-transform after:duration-300 peer-checked:after:translate-x-3" />
                         </label>
                       </td>
                       <td className="py-2 px-3 text-center">
                         <select
-                          className="border rounded-md px-2 py-1 text-sm bg-white text-gray-800 focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-200"
+                          className="px-2 py-1 text-sm bg-white text-gray-800 rounded-md border border-transparent focus:outline-none focus:ring-0 hover:cursor-pointer"
                           value={user.role}
                           onChange={(e) =>
                             setUsers((prev) =>
                               prev.map((u, i) =>
-                                i === idx
-                                  ? { ...u, role: e.target.value }
-                                  : u
+                                i === idx ? { ...u, role: e.target.value } : u
                               )
                             )
                           }
                         >
                           {roles.map((role, i) => (
-                            <option key={i} value={role}>
+                            <option
+                              key={i}
+                              value={role}
+                              className="bg-[#f3f4f6] text-[#1f2937] hover:bg-gray-100"
+                              
+                            >
                               {role}
                             </option>
                           ))}

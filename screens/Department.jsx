@@ -45,7 +45,10 @@ export default function Departments() {
             <div className="flex justify-between items-center mb-4">
               {/* Search bar */}
               <div className="flex items-center bg-gray-100 px-3 py-2 rounded-md w-1/3 relative">
-                <Search size={18} className="text-gray-500 mr-2 flex-shrink-0" />
+                <Search
+                  size={18}
+                  className="text-gray-500 mr-2 flex-shrink-0"
+                />
                 <input
                   type="text"
                   placeholder="Search..."
@@ -129,14 +132,20 @@ export default function Departments() {
             <div className="fixed inset-0 bg-gray-400/50 flex justify-center items-center z-50 transition-opacity duration-300">
               <div className="bg-white rounded-lg shadow-xl p-6 w-96 transform scale-95 animate-fadeIn transition-transform duration-300 ease-out">
                 <h2 className="text-md font-semibold mb-2">
-                  {currentEditIndex !== null ? "Edit Department" : "Add Department"}
+                  {currentEditIndex !== null
+                    ? "Edit Department"
+                    : "Add Department"}
                 </h2>
-                <label className="text-sm text-gray-700 mb-1 block">Department Name</label>
-                <textarea
+                <label className="text-sm text-gray-700 mb-1 block">
+                  Department Name
+                </label>
+                <input
+                  type="text"
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
-                  className="w-full border rounded-md p-2 text-sm mb-4 h-24 focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all duration-300"
+                  className="w-full border rounded-md p-2 text-sm mb-4 focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all duration-300"
                 />
+
                 <div className="flex justify-end gap-2">
                   <button
                     onClick={() => setIsModalOpen(false)}
@@ -149,7 +158,9 @@ export default function Departments() {
                       if (currentEditIndex !== null) {
                         setDepartments((prev) =>
                           prev.map((d, i) =>
-                            i === currentEditIndex ? { ...d, name: editText } : d
+                            i === currentEditIndex
+                              ? { ...d, name: editText }
+                              : d
                           )
                         );
                       } else {
