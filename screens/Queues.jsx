@@ -11,6 +11,7 @@ export default function Queues() {
   const [openDropdown, setOpenDropdown] = useState(null);
   const dropdownRef = useRef(null);
   const bottomRef = useRef(null);
+  const textareaRef = useRef(null);
 
   const [selectedCustomer, setSelectedCustomer] = useState(null);
 
@@ -22,11 +23,14 @@ export default function Queues() {
     setOpenDropdown((prev) => (prev === name ? null : name));
   };
   const sendMessage = () => {
-    if (inputMessage.trim() === "") return; // Ignore empty messages
+    //Remove last empty lines from the message
+    const trimmedMessage = inputMessage.replace(/\n+$/, ""); 
 
+    if (trimmedMessage.trim() === "") return; // prevent sending only newlines 
+   
     const newMessage = {
       sender: "user",
-      content: inputMessage,
+      content: trimmedMessage, //use cleaned message
       timestamp: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
@@ -83,6 +87,13 @@ export default function Queues() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto"; //reset height
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+      }
+    }, [inputMessage]);
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
@@ -270,7 +281,7 @@ export default function Queues() {
                           alt="agent"
                           className="w-8 h-8 rounded-full"
                         />
-                        <div className="relative bg-[#f5f5f5] px-3 py-2 rounded-bl-xl rounded-tl-xl rounded-br-xl text-sm max-w-[300px] mr-7">
+                        <div className="relative bg-[#f5f5f5] px-3 py-2 rounded-bl-xl rounded-tl-xl rounded-br-xl text-sm max-w-[300px] mr-7 break-words whitespace-pre-wrap">
                           Hi, I’m Maria. How may I help you?
                           <div className="text-[10px] text-right text-gray-400 mt-1">
                             1:20 PM
@@ -283,7 +294,7 @@ export default function Queues() {
                           key={index}
                           className="flex items-end justify-end gap-2"
                         >
-                          <div className="bg-[#f5f5f5] text-gray-800 px-4 py-2 rounded-xl max-w-[320px] text-sm">
+                          <div className="bg-[#f5f5f5] text-gray-800 px-4 py-2 rounded-xl max-w-[320px] text-sm break-words whitespace-pre-wrap">
                             {msg.content}
                             <div className="text-[10px] text-right text-gray-400 mt-1">
                               {msg.timestamp}
@@ -302,23 +313,25 @@ export default function Queues() {
                     <button className="p-2 text-[#5C2E90]">
                       <Menu size={20} />
                     </button>
-                    <input
-                      type="text"
+                    <textarea
+                    ref={textareaRef}
+                      rows={1}
                       placeholder="Message"
                       value={inputMessage}
                       onChange={(e) => setInputMessage(e.target.value)}
                       onKeyDown={(e) => {
-                        if (e.key === "Enter") {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();  //Only send message when Enter key is pressed without Shift key
                           sendMessage();
                         }
                       }}
-                      className="flex-1 bg-gray-100 rounded-full px-4 py-2 focus:outline-none text-black"
+                      className="flex-1 bg-gray-100 rounded-xl px-4 pt-2 pb-2 leading-tight focus:outline-none text-black resize-none overflow-hidden"
                     />
                     <button
                       className="p-2 text-[#5C2E90]"
                       onClick={sendMessage}
                     >
-                      <Send size={20} />
+                      <Send size={20} className="transform rotate-45" />
                     </button>
                   </div>
                 </div>
