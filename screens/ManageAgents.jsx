@@ -7,29 +7,28 @@ export default function ManageAgents() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+
   const [agents, setAgents] = useState([
-    { name: "John Doe", active: true, department: "CSR" },
-    { name: "Jane Smith", active: false, department: "Billing" },
-    { name: "Tom Johnson", active: true, department: "Sales" },
+    { username: "johndoe", password: "pass123", active: true, department: "CSR" },
+    { username: "janesmith", password: "secret", active: false, department: "Billing" },
+    { username: "tomjohnson", password: "123456", active: true, department: "Sales" },
   ]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentEditIndex, setCurrentEditIndex] = useState(null);
-  const [editName, setEditName] = useState("");
-  const [editDept, setEditDept] = useState("CSR");
+  const [editUsername, setEditUsername] = useState("");
+  const [editPassword, setEditPassword] = useState("");
 
   const departments = ["CSR", "Billing", "Sales"];
-
   const toggleSidebar = () => setMobileSidebarOpen((prev) => !prev);
 
   const filteredAgents = agents.filter((agent) =>
-    agent.name.toLowerCase().includes(searchQuery.toLowerCase())
+    agent.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
       <TopNavbar toggleSidebar={toggleSidebar} />
-
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
           isMobile={true}
@@ -50,7 +49,7 @@ export default function ManageAgents() {
                 <Search size={18} strokeWidth={1} className="text-gray-500 mr-2 flex-shrink-0" />
                 <input
                   type="text"
-                  placeholder="Search agents..."
+                  placeholder="Search usernames..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="bg-transparent focus:outline-none text-sm w-full pr-6"
@@ -67,8 +66,8 @@ export default function ManageAgents() {
 
               <button
                 onClick={() => {
-                  setEditName("");
-                  setEditDept("CSR");
+                  setEditUsername("");
+                  setEditPassword("");
                   setCurrentEditIndex(null);
                   setIsModalOpen(true);
                 }}
@@ -82,7 +81,7 @@ export default function ManageAgents() {
               <table className="w-full text-sm text-left">
                 <thead className="text-gray-500 border-b">
                   <tr>
-                    <th className="py-2 px-3 pl-3">Account</th>
+                    <th className="py-2 px-3 pl-3">Username</th>
                     <th className="py-2 px-3 text-center">Active</th>
                     <th className="py-2 px-3 text-center">Department</th>
                   </tr>
@@ -94,15 +93,15 @@ export default function ManageAgents() {
                       className="hover:bg-gray-50 transition-colors duration-200"
                     >
                       <td className="py-2 px-3 flex items-center gap-2">
-                        {agent.name}
+                        {agent.username}
                         <Edit3
                           size={18}
                           strokeWidth={1}
                           className="text-gray-500 cursor-pointer w-[18px] h-[18px] flex-shrink-0 transition-colors duration-200 hover:text-purple-700"
                           onClick={() => {
                             setCurrentEditIndex(idx);
-                            setEditName(agent.name);
-                            setEditDept(agent.department);
+                            setEditUsername(agent.username);
+                            setEditPassword(agent.password);
                             setIsModalOpen(true);
                           }}
                         />
@@ -121,7 +120,7 @@ export default function ManageAgents() {
                               )
                             }
                           />
-                          <div className="w-9 h-5 bg-gray-200 rounded-full peer peer-checked:bg-purple-600 transition-colors duration-300 relative after:content-[''] after:absolute after:left-[2px] after:top-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-transform after:duration-300 peer-checked:after:translate-x-4" />
+                          <div className="w-7 h-4 bg-gray-200 rounded-full peer peer-checked:bg-purple-600 transition-colors duration-300 relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-transform after:duration-300 peer-checked:after:translate-x-3" />
                         </label>
                       </td>
                       <td className="py-2 px-3 text-center">
@@ -156,28 +155,26 @@ export default function ManageAgents() {
           {isModalOpen && (
             <div className="fixed inset-0 bg-gray-400/50 flex justify-center items-center z-50 transition-opacity duration-300">
               <div className="bg-white rounded-lg shadow-xl p-6 w-96 transform scale-95 animate-fadeIn transition-transform duration-300 ease-out">
-                <h2 className="text-md font-semibold mb-2">
+                <h2 className="text-md font-semibold mb-4">
                   {currentEditIndex !== null ? "Edit Agent" : "Add Agent"}
                 </h2>
-                <label className="text-sm text-gray-700 mb-1 block">Name</label>
+
+                <label className="text-sm text-gray-700 mb-1 block">Username</label>
                 <input
                   type="text"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
+                  value={editUsername}
+                  onChange={(e) => setEditUsername(e.target.value)}
                   className="w-full border rounded-md p-2 text-sm mb-3 focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all duration-300"
                 />
-                <label className="text-sm text-gray-700 mb-1 block">Department</label>
-                <select
-                  value={editDept}
-                  onChange={(e) => setEditDept(e.target.value)}
-                  className="w-full rounded-md p-2 text-sm mb-4 bg-white text-gray-800 outline-none"
-                >
-                  {departments.map((dept, i) => (
-                    <option key={i} value={dept}>
-                      {dept}
-                    </option>
-                  ))}
-                </select>
+
+                <label className="text-sm text-gray-700 mb-1 block">Password</label>
+                <input
+                  type="password"
+                  value={editPassword}
+                  onChange={(e) => setEditPassword(e.target.value)}
+                  className="w-full border rounded-md p-2 text-sm mb-4 focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all duration-300"
+                />
+
                 <div className="flex justify-end gap-2">
                   <button
                     onClick={() => setIsModalOpen(false)}
@@ -191,14 +188,23 @@ export default function ManageAgents() {
                         setAgents((prev) =>
                           prev.map((a, i) =>
                             i === currentEditIndex
-                              ? { ...a, name: editName, department: editDept }
+                              ? {
+                                  ...a,
+                                  username: editUsername,
+                                  password: editPassword,
+                                }
                               : a
                           )
                         );
                       } else {
                         setAgents((prev) => [
                           ...prev,
-                          { name: editName, active: true, department: editDept },
+                          {
+                            username: editUsername,
+                            password: editPassword,
+                            active: true,
+                            department: "CSR", // default department
+                          },
                         ]);
                       }
                       setIsModalOpen(false);
