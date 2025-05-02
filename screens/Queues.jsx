@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Filter } from "react-feather";
-import { Send } from "react-feather";
-import { Menu } from "react-feather";
-import { MoreVertical } from "react-feather";
+import { Filter, Send, Menu, MoreVertical } from "react-feather";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 
@@ -12,25 +9,31 @@ export default function Queues() {
   const dropdownRef = useRef(null);
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
-
+  const [showCannedMessages, setShowCannedMessages] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
-
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
+  // const [isTyping, setIsTyping] = useState(false);
+
+  const cannedMessages = [
+    "Can you describe the issue in detail?",
+    "Please provide your account number.",
+    "Let me check that for you.",
+    "Thank you for your patience.",
+    "I will escalate this issue to our support team.",
+  ];
 
   const toggleDropdown = (name) => {
     setOpenDropdown((prev) => (prev === name ? null : name));
   };
-  const sendMessage = () => {
-    //Remove last empty lines from the message
-    const trimmedMessage = inputMessage.replace(/\n+$/, ""); 
 
-    if (trimmedMessage.trim() === "") return; // prevent sending only newlines 
-   
+  const sendMessage = () => {
+    const trimmedMessage = inputMessage.replace(/\n+$/, "");
+    if (trimmedMessage.trim() === "") return;
+
     const newMessage = {
       sender: "user",
-      content: trimmedMessage, //use cleaned message
+      content: trimmedMessage,
       timestamp: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
@@ -38,7 +41,7 @@ export default function Queues() {
     };
 
     setMessages((prev) => [...prev, newMessage]);
-    setInputMessage(""); // Clear input
+    setInputMessage("");
   };
 
   const toggleSidebar = () => {
@@ -69,19 +72,26 @@ export default function Queues() {
     },
   ];
 
-  //Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        // Check if the click is outside the dropdown
         setOpenDropdown(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (!e.target.closest(".canned-dropdown")) {
+        setShowCannedMessages(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -90,10 +100,10 @@ export default function Queues() {
 
   useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = "auto"; //reset height
+      textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-      }
-    }, [inputMessage]);
+    }
+  }, [inputMessage]);
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
@@ -116,9 +126,8 @@ export default function Queues() {
         <main className="flex-1 bg-white">
           <div className="flex flex-col md:flex-row h-full">
             {/* Queues list */}
-
             <div className="w-full md:w-[320px] bg-[#F5F5F5] overflow-y-auto">
-              <div className="p-4  flex text-center justify-between rounded-xl py-2 px-4 items-center m-4 shadow-sm bg-[#E6DCF7]">
+              <div className="p-4 flex text-center justify-between rounded-xl py-2 px-4 items-center m-4 shadow-sm bg-[#E6DCF7]">
                 <span className="text-sm text-[#6237A0] w-full">Billing</span>
                 <button className="text-[#6237A0] hover:text-purple-800 transition">
                   <Filter size={16} />
@@ -164,14 +173,10 @@ export default function Queues() {
                       </div>
                     </div>
 
-                    {/* Right section: Billing and Time */}
                     <div className="flex flex-col justify-between items-end h-full">
-                      {/* Billing Label */}
                       <span className="text-[10px] font-semibold text-purple-600 bg-purple-100 px-2 py-[2px] rounded-full mb-4">
                         Billing
                       </span>
-
-                      {/* Time */}
                       <span className="text-[10px] text-gray-400">
                         {customer.time}
                       </span>
@@ -180,10 +185,12 @@ export default function Queues() {
                 ))}
               </div>
             </div>
+
+            {/* Chat area */}
             <div className="flex-1 bg-white hidden md:flex flex-col justify-end p-4 overflow-hidden">
               {selectedCustomer ? (
-                <div className="flex flex-col h-full justify-between">
-                  {/* User Profile Header - Added this section */}
+                <>
+                  {/* User Profile Header */}
                   <div className="border-b pb-2 text-[#CECECE]">
                     <div className="flex items-center gap-4">
                       <img
@@ -203,7 +210,6 @@ export default function Queues() {
                         >
                           <MoreVertical size={22} />
                         </button>
-                        {/* Dropdown menu */}
                         {openDropdown === "customerMenu" && (
                           <div
                             ref={dropdownRef}
@@ -233,24 +239,22 @@ export default function Queues() {
                       </div>
                     </div>
                   </div>
+
                   {/* Chat messages */}
                   <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 pb-2 auto-hide-scrollbar">
                     <div className="flex flex-col justify-end min-h-full gap-4 pt-4">
-                      
-                        <div className="flex items-end justify-end gap-2">
-                          <div className="text-sm text-gray-800 px-4 py-2 rounded-xl self-start max-w-[320px]">
-                            To connect you with the right support team, please
-                            select one of the following options:
-                          </div>
+                      <div className="flex items-end justify-end gap-2">
+                        <div className="text-sm text-gray-800 px-4 py-2 rounded-xl self-start max-w-[320px]">
+                          To connect you with the right support team, please
+                          select one of the following options:
                         </div>
-                  
+                      </div>
 
-                      {/* Billing label bubble (left) */}
                       <div className="flex flex-col items-start gap-1">
                         <img
                           src={selectedCustomer.profile}
                           alt="avatar"
-                          className="w-8 h-8 rounded-full"
+                          className="w-8 h-8 rounded-full object-cover"
                         />
                         <div className="relative bg-[#6237A0] text-white px-4 py-2 ml-7 rounded-br-xl rounded-tr-xl rounded-bl-xl text-sm max-w-[300px]">
                           Billing
@@ -260,21 +264,18 @@ export default function Queues() {
                         </div>
                       </div>
 
-                      {/* System follow-up */}
                       <div className="flex items-end justify-end gap-2">
                         <div className="text-sm text-gray-800 px-4 py-2 rounded-xl self-start max-w-[320px]">
                           We will be with you in a moment!
                         </div>
                       </div>
 
-                      {/* Divider */}
                       <div className="text-[10px] text-gray-400 text-center flex items-center gap-2 my-2">
                         <div className="flex-grow h-px bg-gray-200" />
                         You are now chatting with Billing agent
                         <div className="flex-grow h-px bg-gray-200" />
                       </div>
 
-                      {/* Agent reply */}
                       <div className="flex flex-col items-end gap-1 self-end">
                         <img
                           src="../src/assets/profile/av3.jpg"
@@ -282,13 +283,13 @@ export default function Queues() {
                           className="w-8 h-8 rounded-full"
                         />
                         <div className="relative bg-[#f5f5f5] px-3 py-2 rounded-bl-xl rounded-tl-xl rounded-br-xl text-sm max-w-[300px] mr-7 break-words whitespace-pre-wrap">
-                          Hi, I’m Maria. How may I help you?
+                          Hi, I'm Maria. How may I help you?
                           <div className="text-[10px] text-right text-gray-400 mt-1">
                             1:20 PM
                           </div>
                         </div>
                       </div>
-                      {/* Dynamic chat messages */}
+
                       {messages.map((msg, index) => (
                         <div
                           key={index}
@@ -303,38 +304,87 @@ export default function Queues() {
                         </div>
                       ))}
 
-                      {/* Auto scroll anchor */}
                       <div ref={bottomRef} />
                     </div>
                   </div>
 
-                  {/* Message input area*/}
-                  <div className="mt-4 flex items-center gap-2 border-t pt-4 text-[#CECECE]">
-                    <button className="p-2 text-[#5C2E90]">
-                      <Menu size={20} />
-                    </button>
-                    <textarea
-                    ref={textareaRef}
-                      rows={1}
-                      placeholder="Message"
-                      value={inputMessage}
-                      onChange={(e) => setInputMessage(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault();  //Only send message when Enter key is pressed without Shift key
-                          sendMessage();
-                        }
-                      }}
-                      className="flex-1 bg-gray-100 rounded-xl px-4 pt-2 pb-2 leading-tight focus:outline-none text-black resize-none overflow-hidden"
-                    />
-                    <button
-                      className="p-2 text-[#5C2E90]"
-                      onClick={sendMessage}
-                    >
-                      <Send size={20} className="transform rotate-45" />
-                    </button>
-                  </div>
-                </div>
+                  {/* Message input area */}
+                  {showCannedMessages ? (
+  <div className="border-t border-gray-200 pt-4 bg-white canned-dropdown">
+    {/* Message input box inside canned messages container */}
+    <div className="flex items-center gap-2 px-4 pb-3">
+    
+      <textarea
+        ref={textareaRef}
+        rows={1}
+        placeholder="Message"
+        value={inputMessage}
+        onChange={(e) => setInputMessage(e.target.value)}
+        onClick={() => setShowCannedMessages(false)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+          }
+        }}
+        className="flex-1 bg-[#F2F0F0] rounded-xl px-4 py-2 leading-tight focus:outline-none text-gray-800 resize-none overflow-hidden"
+      />
+      
+    </div>
+
+    {/* Suggested replies section */}
+    <div className=" px-4 pt-3">
+      
+     
+      <div className="grid grid-cols-1 gap-2 pb-3 max-h-[200px] overflow-y-auto">
+        {cannedMessages.map((msg, index,) => (
+          <button
+            key={index}
+            onClick={() => {
+              
+              setInputMessage(msg);
+              setShowCannedMessages(false);
+             
+            }}
+            className="text-sm text-left px-4 py-3 bg-[#F5F5F5] rounded-xl hover:bg-[#EFEAFE] transition text-gray-800"
+          >
+            {msg}
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+) : (
+  <div className="mt-4 flex items-center gap-2 border-t border-gray-200 pt-4 px-4">
+    <button
+      className="p-2 text-[#5C2E90] hover:bg-gray-100 rounded-full"
+      onClick={() => setShowCannedMessages(true)}
+    >
+      <Menu size={20} />
+    </button>
+    <textarea
+      ref={textareaRef}
+      rows={1}
+      placeholder="Message"
+      value={inputMessage}
+      onChange={(e) => setInputMessage(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      }}
+      className="flex-1 bg-[#F2F0F0] rounded-xl px-4 py-2 leading-tight focus:outline-none text-gray-800 resize-none overflow-hidden"
+    />
+    <button 
+      className="p-2 text-[#5C2E90] hover:bg-gray-100 rounded-full" 
+      onClick={sendMessage}
+    >
+      <Send size={20} className="transform rotate-45" />
+    </button>
+  </div>
+)}
+                </>
               ) : (
                 <div className="border-t text-[#CECECE] py-110">
                   <div className="text-gray-400 text-center">
