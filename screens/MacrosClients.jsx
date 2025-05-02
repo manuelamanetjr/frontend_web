@@ -12,10 +12,10 @@ export default function MacrosClients() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [replies, setReplies] = useState([
-    { text: "Welcome! How can I help you today?", active: true, department: "General" },
-    { text: "Please provide more details about your request.", active: true, department: "Support" },
-    { text: "What product or service are you referring to?", active: false, department: "Sales" },
-    { text: "Can I get your client ID or registered email?", active: true, department: "All" },
+    { text: "What’s my account balance?", active: true, department: "General" },
+    { text: "What are your business hours?", active: true, department: "Support" },
+    { text: "How long will it take to receive my order?", active: false, department: "Sales" },
+    { text: "Why was my account suspended?", active: true, department: "All" },
   ]);
 
   const departments = ["General", "Support", "Sales", "All"];
@@ -50,8 +50,7 @@ export default function MacrosClients() {
           openDropdown={openDropdown}
         />
 
-        <main className="flex-1 bg-gray-100 p-6 overflow-auto">
-          <h1 className="text-3xl font-bold mb-4">Macros Clients</h1>
+        <main className="flex-1 bg-gray-100 p-15 overflow-y-auto transition-colors duration-300">
           <div className="bg-white p-4 rounded-lg min-h-[80vh] transition-all duration-300">
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center bg-gray-100 px-3 py-2 rounded-md w-1/3 relative">

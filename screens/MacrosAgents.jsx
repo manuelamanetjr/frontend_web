@@ -49,8 +49,7 @@ export default function MacrosAgents() {
           openDropdown={openDropdown}
         />
 
-        <main className="flex-1 bg-gray-100 p-6 overflow-auto">
-          <h1 className="text-3xl font-bold mb-4">Macros Agents</h1>
+        <main className="flex-1 bg-gray-100 p-15 overflow-y-auto transition-colors duration-300">
           <div className="bg-white p-4 rounded-lg min-h-[80vh] transition-all duration-300">
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center bg-gray-100 px-3 py-2 rounded-md w-1/3 relative">
