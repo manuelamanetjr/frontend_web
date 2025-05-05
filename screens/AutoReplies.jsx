@@ -90,7 +90,7 @@ export default function AutoReplies() {
                   setCurrentEditIndex(null);
                   setIsModalOpen(true);
                 }}
-                className="bg-purple-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-800 transition-colors duration-300"
+                className="bg-[#6237A0] text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-800 transition-colors duration-300"
               >
                 Add Replies
               </button>
@@ -141,7 +141,7 @@ export default function AutoReplies() {
                               )
                             }
                           />
-                          <div className="w-7 h-4 bg-gray-200 rounded-full peer peer-checked:bg-purple-600 transition-colors duration-300 relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-transform after:duration-300 peer-checked:after:translate-x-3" />
+                          <div className="w-7 h-4 bg-gray-200 rounded-full peer peer-checked:bg-[#6237A0] transition-colors duration-300 relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-transform after:duration-300 peer-checked:after:translate-x-3" />
                         </label>
                       </td>
                       <td className="py-2 px-3 text-center">
