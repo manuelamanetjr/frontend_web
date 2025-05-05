@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    .table-container {
+      max-height: 500px;
+      overflow: auto;
+      border: 1px solid #ccc;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 800px;
+    }
+
+    thead th,
+    tfoot td {
+      position: sticky;
+      background: #f9f9f9;
+      z-index: 2;
+    }
+
+    thead th {
+      top: 0;
+    }
+
+    tfoot td {
+      bottom: 0;
+    }
+
+    th,
+    td {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      white-space: nowrap;
+    }
+
+    thead th:first-child,
+    tbody th {
+      position: sticky;
+      left: 0;
+      background: #fff;
+      z-index: 3; /* Ensure it's above other headers */
+    }
+  </style>
+</head>
+<body>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Fixed Col</th>
+        <th>Header 2</th>
+        <th>Header 3</th>
+        <th>Header 4</th>
+        <th>Header 5</th>
+        <th>Header 6</th>
+        <th>Header 7</th>
+        <th>Header 8</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th>Row 1</th>
+        <td>Data 2</td>
+        <td>Data 3</td>
+        <td>Data 4</td>
+        <td>Data 5</td>
+        <td>Data 6</td>
+        <td>Data 7</td>
+        <td>Data 8</td>
+      </tr>
+      <tr>
+        <th>Row 2</th>
+        <td>Data 2</td>
+        <td>Data 3</td>
+        <td>Data 4</td>
+        <td>Data 5</td>
+        <td>Data 6</td>
+        <td>Data 7</td>
+        <td>Data 8</td>
+      </tr>
+    </tbody>    
+  </table>
+</div>
+</body>
+</html>
