@@ -76,7 +76,7 @@ export default function ChangeRoles() {
                   {filteredUsers.map((user, idx) => (
                     <tr
                       key={idx}
-                      className="hover:bg-gray-50 transition-colors duration-200"
+                      className=" transition-colors duration-200"
                     >
                       <td className="py-2 px-3 flex items-center gap-2">
                         {user.name}

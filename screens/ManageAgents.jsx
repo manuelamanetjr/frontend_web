@@ -286,7 +286,7 @@ function AgentRow({
   onToggleDepartment,
 }) {
   return (
-    <tr className="hover:bg-gray-50 transition-colors duration-200 group">
+    <tr className=" transition-colors duration-200 group">
       <td className="py-2 px-3 sticky left-0 z-10 w-36 flex items-center gap-2 bg-white">
         {agent.username}
         <Edit3

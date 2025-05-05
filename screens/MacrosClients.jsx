@@ -94,7 +94,7 @@ export default function MacrosClients() {
                 </thead>
                 <tbody>
                   {filteredReplies.map((reply, idx) => (
-                    <tr key={idx} className="hover:bg-gray-50 transition-colors duration-200">
+                    <tr key={idx} className=" transition-colors duration-200">
                       <td className="py-2 px-3 align-top">
                         <div className="max-w-xs break-words text-gray-800 relative pr-6">
                           <span>{reply.text}</span>
