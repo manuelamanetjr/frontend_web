@@ -6,6 +6,8 @@ import Sidebar from "../components/Sidebar";
 export default function Queues() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [showEndChatModal, setShowEndChatModal] = useState(false);
+  const [chatEnded, setChatEnded] = useState(false);
   const dropdownRef = useRef(null);
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
@@ -13,7 +15,7 @@ export default function Queues() {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
-  // const [isTyping, setIsTyping] = useState(false);
+  const [endedChats, setEndedChats] = useState([]);
 
   const cannedMessages = [
     "Can you describe the issue in detail?",
@@ -27,14 +29,78 @@ export default function Queues() {
     setOpenDropdown((prev) => (prev === name ? null : name));
   };
 
+  const handleEndChat = () => {
+    setOpenDropdown(null);
+    setShowEndChatModal(true);
+  };
+
+  const confirmEndChat = () => {
+    setShowEndChatModal(false);
+    setChatEnded(true);
+
+    const now = new Date();
+    const endMessage = {
+      id: messages.length + 1,
+      sender: "system",
+      content: "Thank you for your patience. Your chat has ended.",
+      timestamp: now.toISOString(),
+      displayTime: now.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }), 
+    };
+
+    setMessages((prev) => [...prev, endMessage]);
+    
+    // Move the chat to ended chats
+    if (selectedCustomer) {
+      setEndedChats(prev => [...prev, {
+        ...selectedCustomer,
+        messages: [...messages, endMessage],
+        endedAt: now.toISOString()
+      }]);
+      
+      // Clear current chat
+      setSelectedCustomer(null);
+      setMessages([]);
+    }
+  };
+
+  const cancelEndChat = () => {
+    setShowEndChatModal(false);
+  };
+
+  const formatMessageDate = (timestamp) => {
+    const messageDate = new Date(timestamp);
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    if (messageDate.toDateString() === today.toDateString()) {
+      return "Today";
+    }
+    else if (messageDate.toDateString() === yesterday.toDateString()) {
+      return "Yesterday";
+    }
+    else {
+      return messageDate.toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: messageDate.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+      });
+    }
+  };
+
   const sendMessage = () => {
     const trimmedMessage = inputMessage.replace(/\n+$/, "");
     if (trimmedMessage.trim() === "") return;
 
+    const now = new Date();
     const newMessage = {
       sender: "user",
       content: trimmedMessage,
-      timestamp: new Date().toLocaleTimeString([], {
+      timestamp: now.toISOString(),
+      displayTime: now.toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
       }),
@@ -105,9 +171,59 @@ export default function Queues() {
     }
   }, [inputMessage]);
 
+  const groupMessagesByDate = () => {
+    const groupedMessages = [];
+    let currentDate = null;
+    
+    messages.forEach((message) => {
+      const messageDate = formatMessageDate(message.timestamp);
+      
+      if (messageDate !== currentDate) {
+        currentDate = messageDate;
+        groupedMessages.push({
+          type: 'date',
+          content: messageDate
+        });
+      }
+      
+      groupedMessages.push({
+        type: 'message',
+        ...message
+      });
+    });
+    
+    return groupedMessages;
+  };
+
+  const groupedMessages = groupMessagesByDate();
+
   return (
     <div className="flex flex-col h-screen overflow-hidden">
       <TopNavbar toggleSidebar={toggleSidebar} />
+
+      {/* End Chat Modal */}
+      {showEndChatModal && (
+<div className="fixed inset-0 bg-gray-400/50 bg-opacity-10 flex items-center justify-center z-50">
+    <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl border border-gray-200">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">End Chat</h3>
+      <p className="text-gray-600 mb-6">Are you sure you want to end this chat session?</p>
+      <div className="flex justify-center gap-20">
+        <button
+          onClick={cancelEndChat}
+          className="px-5 py-2 border  rounded-lg text-white bg-[#BCBCBC] hover:bg-gray-500          transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={confirmEndChat}
+          className="px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+        >
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
@@ -138,10 +254,17 @@ export default function Queues() {
                 {customers.map((customer) => (
                   <div
                     key={customer.id}
-                    onClick={() => setSelectedCustomer(customer)}
+                    onClick={() => {
+                      if (!endedChats.some(chat => chat.id === customer.id)) {
+                        setSelectedCustomer(customer);
+                        setChatEnded(false);
+                      }
+                    }}
                     className={`flex items-center justify-between px-4 py-3 border-2 ${
                       selectedCustomer?.id === customer.id
                         ? "bg-[#E6DCF7]"
+                        : endedChats.some(chat => chat.id === customer.id)
+                        ? "bg-gray-100 opacity-70"
                         : "bg-[#f5f5f5]"
                     } border-[#E6DCF7] rounded-xl hover:bg-[#E6DCF7] cursor-pointer transition m-2 min-h-[100px]`}
                   >
@@ -156,6 +279,8 @@ export default function Queues() {
                           className={`text-sm font-medium ${
                             selectedCustomer?.id === customer.id
                               ? "text-[#6237A0]"
+                              : endedChats.some(chat => chat.id === customer.id)
+                              ? "text-gray-500"
                               : "text-gray-800"
                           }`}
                         >
@@ -165,6 +290,8 @@ export default function Queues() {
                           className={`text-xs ${
                             selectedCustomer?.id === customer.id
                               ? "text-[#6237A0]"
+                              : endedChats.some(chat => chat.id === customer.id)
+                              ? "text-gray-400"
                               : "text-gray-500"
                           }`}
                         >
@@ -204,12 +331,14 @@ export default function Queues() {
                         </h3>
                       </div>
                       <div className="relative ml-auto">
-                        <button
-                          className="p-2 text-black hover:text-[#6237A0] transition rounded-full"
-                          onClick={() => toggleDropdown("customerMenu")}
-                        >
-                          <MoreVertical size={22} />
-                        </button>
+                        {!chatEnded && (
+                          <button
+                            className="p-2 text-black hover:text-[#6237A0] transition rounded-full"
+                            onClick={() => toggleDropdown("customerMenu")}
+                          >
+                            <MoreVertical size={22} />
+                          </button>
+                        )}
                         {openDropdown === "customerMenu" && (
                           <div
                             ref={dropdownRef}
@@ -217,10 +346,7 @@ export default function Queues() {
                           >
                             <button
                               className="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100"
-                              onClick={() => {
-                                console.log("End Chat clicked");
-                                setOpenDropdown(null);
-                              }}
+                              onClick={handleEndChat}
                             >
                               End Chat
                             </button>
@@ -243,152 +369,212 @@ export default function Queues() {
                   {/* Chat messages */}
                   <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 pb-2 auto-hide-scrollbar">
                     <div className="flex flex-col justify-end min-h-full gap-4 pt-4">
-                      <div className="flex items-end justify-end gap-2">
-                        <div className="text-sm text-gray-800 px-4 py-2 rounded-xl self-start max-w-[320px]">
-                          To connect you with the right support team, please
-                          select one of the following options:
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col items-start gap-1">
-                        <img
-                          src={selectedCustomer.profile}
-                          alt="avatar"
-                          className="w-8 h-8 rounded-full object-cover"
-                        />
-                        <div className="relative bg-[#6237A0] text-white px-4 py-2 ml-7 rounded-br-xl rounded-tr-xl rounded-bl-xl text-sm max-w-[300px]">
-                          Billing
-                          <div className="text-[10px] text-light text-gray-300 text-right mt-1 ml-2">
-                            1:20 PM
+                      {/* Initial messages */}
+                      {/* {messages.length === 0 && ( */}
+                        <>
+                          <div className="text-[10px] text-gray-400 text-center flex items-center gap-2 my-2">
+                            <div className="flex-grow h-px bg-gray-200" />
+                            Today
+                            <div className="flex-grow h-px bg-gray-200" />
                           </div>
-                        </div>
-                      </div>
 
-                      <div className="flex items-end justify-end gap-2">
-                        <div className="text-sm text-gray-800 px-4 py-2 rounded-xl self-start max-w-[320px]">
-                          We will be with you in a moment!
-                        </div>
-                      </div>
-
-                      <div className="text-[10px] text-gray-400 text-center flex items-center gap-2 my-2">
-                        <div className="flex-grow h-px bg-gray-200" />
-                        You are now chatting with Billing agent
-                        <div className="flex-grow h-px bg-gray-200" />
-                      </div>
-
-                      <div className="flex flex-col items-end gap-1 self-end">
-                        <img
-                          src="../src/assets/profile/av3.jpg"
-                          alt="agent"
-                          className="w-8 h-8 rounded-full"
-                        />
-                        <div className="relative bg-[#f5f5f5] px-3 py-2 rounded-bl-xl rounded-tl-xl rounded-br-xl text-sm max-w-[300px] mr-7 break-words whitespace-pre-wrap">
-                          Hi, I'm Maria. How may I help you?
-                          <div className="text-[10px] text-right text-gray-400 mt-1">
-                            1:20 PM
-                          </div>
-                        </div>
-                      </div>
-
-                      {messages.map((msg, index) => (
-                        <div
-                          key={index}
-                          className="flex items-end justify-end gap-2"
-                        >
-                          <div className="bg-[#f5f5f5] text-gray-800 px-4 py-2 rounded-xl max-w-[320px] text-sm break-words whitespace-pre-wrap">
-                            {msg.content}
-                            <div className="text-[10px] text-right text-gray-400 mt-1">
-                              {msg.timestamp}
+                          <div className="flex items-end justify-end gap-2">
+                            <div className="text-sm text-gray-800 px-4 py-2 rounded-xl self-start max-w-[320px]">
+                              To connect you with the right support team, please
+                              select one of the following options:
                             </div>
                           </div>
-                        </div>
-                      ))}
+
+                          <div className="flex flex-col items-start gap-1">
+                            <img
+                              src={selectedCustomer.profile}
+                              alt="avatar"
+                              className="w-8 h-8 rounded-full object-cover"
+                            />
+                            <div className="relative bg-[#6237A0] text-white px-4 py-2 ml-7 rounded-br-xl rounded-tr-xl rounded-bl-xl text-sm max-w-[300px]">
+                              Billing
+                              <div className="text-[10px] text-light text-gray-300 text-right mt-1 ml-2">
+                                1:20 PM
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-end justify-end gap-2">
+                            <div className="text-sm text-gray-800 px-4 py-2 rounded-xl self-start max-w-[320px]">
+                              We will be with you in a moment!
+                            </div>
+                          </div>
+
+                          <div className="text-[10px] text-gray-400 text-center flex items-center gap-2 my-2">
+                            <div className="flex-grow h-px bg-gray-200" />
+                            You are now chatting with Billing agent
+                            <div className="flex-grow h-px bg-gray-200" />
+                          </div>
+
+                          <div className="flex flex-col items-end gap-1 self-end">
+                            <img
+                              src="../src/assets/profile/av3.jpg"
+                              alt="agent"
+                              className="w-8 h-8 rounded-full"
+                            />
+                            <div className="relative bg-[#f5f5f5] px-3 py-2 rounded-bl-xl rounded-tl-xl rounded-br-xl text-sm max-w-[300px] mr-7 break-words whitespace-pre-wrap">
+                              Hi, I'm Maria. How may I help you?
+                              <div className="text-[10px] text-right text-gray-400 mt-1">
+                                1:20 PM
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      
+
+                      {/* Grouped messages with date markers */}
+                      {groupedMessages.map((item, index) => {
+                        if (item.type === 'date') {
+                          return (
+                            <div key={`date-${index}`} className="text-[10px] text-gray-400 text-center flex items-center gap-2 my-2">
+                              <div className="flex-grow h-px bg-gray-200" />
+                              {item.content}
+                              <div className="flex-grow h-px bg-gray-200" />
+                            </div>
+                          );
+                        } else {
+                          return (
+                            <div
+                              key={`msg-${index}`}
+                              className={`flex items-end gap-2 ${
+                                item.sender === "user" ? "justify-end" : "justify-start"
+                              }`}
+                            >
+                              {item.sender !== "user" && (
+                                <img
+                                  src={
+                                    item.sender === "system" 
+                                      ? "../src/assets/profile/av3.jpg" 
+                                      : selectedCustomer.profile
+                                  }
+                                  alt={item.sender === "system" ? "agent" : "customer"}
+                                  className="w-8 h-8 rounded-full"
+                                />
+                              )}
+                              <div className={`${
+                                item.sender === "user" 
+                                  ? "bg-[#f5f5f5] text-gray-800" 
+                                  : item.sender === "system"
+                                    ? "bg-[#6237A0] text-white"
+                                    : "bg-[#f5f5f5] text-gray-800"
+                              } px-4 py-2 rounded-xl max-w-[320px] text-sm break-words whitespace-pre-wrap`}>
+                                {item.content}
+                                <div className={`text-[10px] text-right mt-1 ${
+                                  item.sender === "system" ? "text-gray-300" : "text-gray-400"
+                                }`}>
+                                  {item.displayTime}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        }
+                      })}
 
                       <div ref={bottomRef} />
                     </div>
                   </div>
 
                   {/* Message input area */}
-                  {showCannedMessages ? (
-  <div className="border-t border-gray-200 pt-4 bg-white canned-dropdown">
-    {/* Message input box inside canned messages container */}
-    <div className="flex items-center gap-2 px-4 pb-3">
-    
-      <textarea
-        ref={textareaRef}
-        rows={1}
-        placeholder="Message"
-        value={inputMessage}
-        onChange={(e) => setInputMessage(e.target.value)}
-        onClick={() => setShowCannedMessages(false)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-          }
-        }}
-        className="flex-1 bg-[#F2F0F0] rounded-xl px-4 py-2 leading-tight focus:outline-none text-gray-800 resize-none overflow-hidden"
-      />
-      
-    </div>
+                  {chatEnded ? (
+                    <div className="mt-4 border-t border-gray-200 pt-4 px-4">
+                      <div className="text-center text-gray-500 py-2">
+                        This chat has ended
+                      </div>
+                    </div>
+                  ) : showCannedMessages ? (
+                    <div className="border-t border-gray-200 pt-4 bg-white canned-dropdown">
+                      {/* Message input box inside canned messages container */}
+                      <div className="flex items-center gap-2 px-4 pb-3">
+                        <button
+                          className="p-2 text-[#5C2E90] hover:bg-gray-100 rounded-full"
+                          onClick={() => setShowCannedMessages(false)}
+                        >
+                          <Menu size={20} />
+                        </button>
+                        <textarea
+                          ref={textareaRef}
+                          rows={1}
+                          placeholder="Message"
+                          value={inputMessage}
+                          onChange={(e) => setInputMessage(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                              e.preventDefault();
+                              sendMessage();
+                            }
+                          }}
+                          className="flex-1 bg-[#F2F0F0] rounded-xl px-4 py-2 leading-tight focus:outline-none text-gray-800 resize-none overflow-hidden"
+                        />
+                        <button 
+                          className="p-2 text-[#5C2E90] hover:bg-gray-100 rounded-full" 
+                          onClick={sendMessage}
+                        >
+                          <Send size={20} className="transform rotate-45" />
+                        </button>
+                      </div>
 
-    {/* Suggested replies section */}
-    <div className=" px-4 pt-3">
-      
-     
-      <div className="grid grid-cols-1 gap-2 pb-3 max-h-[200px] overflow-y-auto">
-        {cannedMessages.map((msg, index,) => (
-          <button
-            key={index}
-            onClick={() => {
-              
-              setInputMessage(msg);
-              setShowCannedMessages(false);
-             
-            }}
-            className="text-sm text-left px-4 py-3 bg-[#F5F5F5] rounded-xl hover:bg-[#EFEAFE] transition text-gray-800"
-          >
-            {msg}
-          </button>
-        ))}
-      </div>
-    </div>
-  </div>
-) : (
-  <div className="mt-4 flex items-center gap-2 border-t border-gray-200 pt-4 px-4">
-    <button
-      className="p-2 text-[#5C2E90] hover:bg-gray-100 rounded-full"
-      onClick={() => setShowCannedMessages(true)}
-    >
-      <Menu size={20} />
-    </button>
-    <textarea
-      ref={textareaRef}
-      rows={1}
-      placeholder="Message"
-      value={inputMessage}
-      onChange={(e) => setInputMessage(e.target.value)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          sendMessage();
-        }
-      }}
-      className="flex-1 bg-[#F2F0F0] rounded-xl px-4 py-2 leading-tight focus:outline-none text-gray-800 resize-none overflow-hidden"
-    />
-    <button 
-      className="p-2 text-[#5C2E90] hover:bg-gray-100 rounded-full" 
-      onClick={sendMessage}
-    >
-      <Send size={20} className="transform rotate-45" />
-    </button>
-  </div>
-)}
+                      {/* Suggested replies section */}
+                      <div className="px-4 pt-3">
+                        <div className="grid grid-cols-1 gap-2 pb-3 max-h-[200px] overflow-y-auto">
+                          {cannedMessages.map((msg, index) => (
+                            <button
+                              key={index}
+                              onClick={() => {
+                                setInputMessage(msg);
+                                setShowCannedMessages(false);
+                              }}
+                              className="text-sm text-left px-4 py-3 bg-[#F5F5F5] rounded-xl hover:bg-[#EFEAFE] transition text-gray-800"
+                            >
+                              {msg}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-4 flex items-center gap-2 border-t border-gray-200 pt-4 px-4">
+                      <button
+                        className="p-2 text-[#5C2E90] hover:bg-gray-100 rounded-full"
+                        onClick={() => setShowCannedMessages(true)}
+                      >
+                        <Menu size={20} />
+                      </button>
+                      <textarea
+                        ref={textareaRef}
+                        rows={1}
+                        placeholder="Message"
+                        value={inputMessage}
+                        onChange={(e) => setInputMessage(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            sendMessage();
+                          }
+                        }}
+                        className="flex-1 bg-[#F2F0F0] rounded-xl px-4 py-2 leading-tight focus:outline-none text-gray-800 resize-none overflow-hidden"
+                      />
+                      <button 
+                        className="p-2 text-[#5C2E90] hover:bg-gray-100 rounded-full" 
+                        onClick={sendMessage}
+                      >
+                        <Send size={20} className="transform rotate-45" />
+                      </button>
+                    </div>
+                  )}
                 </>
               ) : (
                 <div className="border-t text-[#CECECE] py-110">
                   <div className="text-gray-400 text-center">
-                    Select a customer to view chat
+                    {endedChats.length > 0 ? (
+                      "Select a customer to start a new chat"
+                    ) : (
+                      "Select a customer to view chat"
+                    )}
                   </div>
                 </div>
               )}
