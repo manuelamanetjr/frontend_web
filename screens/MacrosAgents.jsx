@@ -87,7 +87,7 @@ export default function MacrosAgents() {
                 <thead className="text-gray-500 border-b">
                   <tr>
                     <th className="py-2 px-3 pl-3">Replies</th>
-                    <th className="py-2 px-3 text-center">Active</th>
+                    <th className="py-2 px-3 text-center">Active Status</th>
                     <th className="py-2 px-3 text-center">Department</th>
                   </tr>
                 </thead>
@@ -100,6 +100,7 @@ export default function MacrosAgents() {
                           <div className="absolute top-1/2 right-0 -translate-y-1/2">
                             <Edit3
                               size={18}
+                              strokeWidth={1}
                               className="text-gray-500 cursor-pointer w-[18px] h-[18px] hover:text-purple-700 transition-colors duration-200"
                               onClick={() => {
                                 setCurrentEditIndex(idx);
@@ -129,7 +130,7 @@ export default function MacrosAgents() {
                       </td>
                       <td className="py-2 px-3 text-center">
                         <select
-                          className="rounded-md px-2 py-1 text-sm bg-white text-gray-800 focus:outline-none focus:ring-0 border-none text-center"
+                          className="rounded-md px-2 py-1 text-sm text-gray-800 focus:outline-none focus:ring-0 border-none text-center"
                           value={reply.department}
                           onChange={(e) =>
                             setReplies((prev) =>
