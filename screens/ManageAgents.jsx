@@ -235,10 +235,10 @@ function AgentsTable({
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm text-left">
-        <thead className="text-gray-500 border-b">
+        <thead className="text-gray-500 border-b bg-white">
           <tr>
-            <th className="py-2 px-3 pl-3 sticky left-0 z-10">Username</th>
-            <th className="py-2 px-3 text-center sticky left-36 z-10">Active</th>
+            <th className="py-2 px-3 pl-3 sticky bg-white left-0 z-10">Username</th>
+            <th className="py-2 px-3 text-center bg-white sticky left-36 z-10">Active</th>
             <th className="py-2 px-3 text-center relative" colSpan={visibleDepts}>
               Departments
               {departments.length > visibleDepts && (
@@ -252,8 +252,8 @@ function AgentsTable({
             </th>
           </tr>
           <tr>
-            <th className="sticky left-0 z-10 w-36"></th>
-            <th className="sticky left-36 z-10 w-20"></th>
+            <th className="sticky left-0 bg-white z-10 w-36"></th>
+            <th className="sticky left-36 bg-white z-10 w-20"></th>
             {visibleDepartments.map((dept, i) => (
               <th key={i} className="w-36 text-center px-2 shrink-0 font-medium">
                 {dept}
@@ -287,7 +287,7 @@ function AgentRow({
 }) {
   return (
     <tr className="hover:bg-gray-50 transition-colors duration-200 group">
-      <td className="py-2 px-3 sticky left-0 z-10 w-36 flex items-center gap-2">
+      <td className="py-2 px-3 sticky left-0 z-10 w-36 flex items-center gap-2 bg-white">
         {agent.username}
         <Edit3
           size={18}
@@ -296,7 +296,7 @@ function AgentRow({
           onClick={onEdit}
         />
       </td>
-      <td className="py-2 px-3 text-center sticky left-36 z-10 w-20">
+      <td className="py-2 px-3 text-center sticky left-36 z-10 w-20 bg-white">
         <ToggleSwitch checked={agent.active} onChange={onToggleActive} />
       </td>
       {visibleDepartments.map((dept, i) => (

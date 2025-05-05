@@ -229,32 +229,33 @@ function RolesTable({
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm text-left">
-        <thead className="text-gray-500 border-b">
-          <tr>
-            <th className="py-2 px-3 pl-3 sticky left-0 z-10">Role Name</th>
-            <th className="py-2 px-3 text-center sticky left-36 z-10">Active</th>
-            <th className="py-2 px-3 text-center relative" colSpan={visiblePerms}>
-              Permissions
-              {permissions.length > visiblePerms && (
-                <ScrollButtons
-                  canScrollLeft={permScrollIndex > 0}
-                  canScrollRight={permScrollIndex < permissions.length - visiblePerms}
-                  onScrollLeft={() => onScrollPerms("left")}
-                  onScrollRight={() => onScrollPerms("right")}
-                />
-              )}
-            </th>
-          </tr>
-          <tr>
-            <th className="sticky left-0 z-10 w-36"></th>
-            <th className="sticky left-36 z-10 w-20"></th>
-            {visiblePermissions.map((perm, i) => (
-              <th key={i} className="w-36 text-center px-2 shrink-0 font-medium">
-                {perm}
-              </th>
-            ))}
-          </tr>
-        </thead>
+      <thead className="text-gray-500 border-b z-20 bg-white">
+  <tr className="z-20">
+    <th className="py-2 px-3 pl-3 sticky left-0 z-30 bg-white">Role Name</th>
+    <th className="py-2 px-3 text-center sticky left-36 z-30 bg-white">Active</th>
+    <th className="py-2 px-3 text-center relative" colSpan={visiblePerms}>
+      Permissions
+      {permissions.length > visiblePerms && (
+        <ScrollButtons
+          canScrollLeft={permScrollIndex > 0}
+          canScrollRight={permScrollIndex < permissions.length - visiblePerms}
+          onScrollLeft={() => onScrollPerms("left")}
+          onScrollRight={() => onScrollPerms("right")}
+        />
+      )}
+    </th>
+  </tr>
+  <tr className="z-20">
+    <th className="sticky left-0 bg-white z-30 w-36"></th>
+    <th className="sticky left-36 bg-white z-30 w-20"></th>
+    {visiblePermissions.map((perm, i) => (
+      <th key={i} className="w-36 text-center px-2 shrink-0 font-medium bg-white">
+        {perm}
+      </th>
+    ))}
+  </tr>
+</thead>
+
         <tbody>
           {roles.map((role, idx) => (
             <RoleRow
@@ -281,7 +282,8 @@ function RoleRow({
 }) {
   return (
     <tr className="hover:bg-gray-50 transition-colors duration-200 group">
-      <td className="py-2 px-3 sticky left-0 z-10 w-36 flex items-center gap-2">
+<td className="py-2 px-3 sticky left-0 z-10 w-36 flex items-center gap-2 bg-white">
+
         {role.name}
         <Edit3
           size={18}
@@ -290,7 +292,8 @@ function RoleRow({
           onClick={onEdit}
         />
       </td>
-      <td className="py-2 px-3 text-center sticky left-36 z-10 w-20">
+      <td className="py-2 px-3 text-center sticky left-36 z-10 w-20 bg-white">
+
         <ToggleSwitch checked={role.active} onChange={onToggleActive} />
       </td>
       {visiblePermissions.map((perm, i) => (
@@ -306,19 +309,18 @@ function RoleRow({
   );
 }
 
-function ToggleSwitch({ checked, onChange }) {
-  return (
-    <label className="inline-flex relative items-center cursor-pointer">
-      <input
-        type="checkbox"
-        className="sr-only peer"
-        checked={checked}
-        onChange={onChange}
-      />
-      <div className="w-7 h-4 bg-gray-200 rounded-full peer peer-checked:bg-[#6237A0] transition-colors duration-300 relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-transform peer-checked:after:translate-x-3" />
-    </label>
-  );
-}
+
+const ToggleSwitch = ({ checked, onChange }) => (
+  <label className="inline-flex relative items-center cursor-pointer z-30">
+    <input
+      type="checkbox"
+      className="sr-only peer"
+      checked={checked}
+      onChange={onChange}
+    />
+    <div className="w-7 h-4 bg-gray-200 rounded-full peer peer-checked:bg-[#6237A0] transition-colors duration-300 relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-transform peer-checked:after:translate-x-3" />
+  </label>
+);
 
 function ScrollButtons({ canScrollLeft, canScrollRight, onScrollLeft, onScrollRight }) {
   return (
