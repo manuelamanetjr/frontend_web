@@ -60,7 +60,7 @@ const NavItem = ({ to, Icon, label, isActive }) => (
       }`}
     >
       <Icon size={18} strokeWidth={1} />
-      <span className="w-full text-center">{label}</span>
+      <span className="w-full text-left">{label}</span>
     </Link>
   </div>
 );
@@ -92,7 +92,7 @@ const DropdownItem = ({ icon: Icon, items, id, isOpen, toggleDropdown }) => {
         }`}
       >
         <Icon size={18} strokeWidth={1} />
-        <span className="w-full text-center">
+        <span className="w-full text-left">
           {activeItem?.label || id.charAt(0).toUpperCase() + id.slice(1)}
         </span>
         {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
