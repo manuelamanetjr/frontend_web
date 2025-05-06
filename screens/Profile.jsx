@@ -122,19 +122,19 @@ export default function Profile() {
                 <div>
                   <p className="font-medium text-gray-500">Date of Birth</p>
                   <p className="text-base text-gray-800">
-                    {profileData.dateOfBirth || "_____________________________________"}
+                    {profileData.dateOfBirth || "-"}
                   </p>
                 </div>
                 <div>
                   <p className="font-medium text-gray-500">Email</p>
                   <p className="text-base text-gray-800">
-                    {profileData.email || "_____________________________________"}
+                    {profileData.email || "-"}
                   </p>
                 </div>
                 <div>
                   <p className="font-medium text-gray-500">Address</p>
                   <p className="text-base text-gray-800">
-                    {profileData.address || "_____________________________________"}
+                    {profileData.address || "-"}
                   </p>
                 </div>
               </div>
