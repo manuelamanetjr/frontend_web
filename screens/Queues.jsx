@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Filter, Send, Menu, MoreVertical } from "react-feather";
-import Select from 'react-select';
+import Select from "react-select";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 
@@ -17,44 +17,84 @@ export default function Queues() {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const [endedChats, setEndedChats] = useState([]);
-const [showTransferModal, setShowTransferModal] = useState(false);
-const [showTransferConfirmModal, setShowTransferConfirmModal] = useState(false);
-const [selectedDepartment, setSelectedDepartment] = useState('');
-const departments = ['Billing', 'Technical Support', 'Sales', 'Customer Service'];
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [showTransferConfirmModal, setShowTransferConfirmModal] =
+    useState(false);
+  const [selectedDepartment, setSelectedDepartment] = useState("Billing");
+  const [showDeptDropdown, setShowDeptDropdown] = useState(false);
 
-const departmentOptions = departments.map(dept => ({
-  value: dept,
-  label: dept
-}));
+  const departmentCustomers = {
+    Billing: [
+      {
+        id: 1,
+        name: "Customer 1",
+        number: "09123456789",
+        time: "9:00 AM",
+        profile: "../src/assets/profile/client.jpg",
+      },
+      {
+        id: 2,
+        name: "Customer 2",
+        number: "09123456780",
+        time: "10:00 AM",
+        profile: "../src/assets/profile/character.jpg",
+      },
+      {
+        id: 3,
+        name: "Customer 3",
+        number: "09123456781",
+        time: "11:11 AM",
+        profile: "../src/assets/profile/download.jpg",
+      },
+    ],
+    "Technical Support": [
+      {
+        id: 4,
+        name: "Customer 4",
+        number: "09123456782",
+        time: "9:30 AM",
+        profile: "../src/assets/profile/tech1.jpg",
+      },
+      {
+        id: 5,
+        name: "Customer 5",
+        number: "09123456782",
+        time: "9:30 AM",
+        profile: "../src/assets/profile/tech2.jpg",
+      },
+    ],
+    Sales: [
+      {
+        id: 6,
+        name: "Customer 6",
+        number: "09123456782",
+        time: "9:30 AM",
+        profile: "../src/assets/profile/sales.jpg",
+      },
+      {
+        id: 7,
+        name: "Customer 7",
+        number: "09123456782",
+        time: "9:30 AM",
+        profile: "../src/assets/profile/sales2.jpg",
+      },
+    ],
+    "Customer Service": [
+      {
+        id: 8,
+        name: "Customer 8",
+        number: "09123456782",
+        time: "9:30 AM",
+        profile: "../src/assets/profile/sales3.jpg",
+      },
+    ],
+  };
 
-const handleTransferClick = () => {
-  setOpenDropdown(null);
-  setShowTransferModal(true);
-};
-
-const handleDepartmentSelect = () => {
-  if (selectedDepartment) {
-    setShowTransferModal(false);
-    setShowTransferConfirmModal(true);
-  }
-};
-
-const confirmTransfer = () => {
-  setShowTransferConfirmModal(false);
-  // Here you would implement the actual transfer logic
-  console.log(`Transferring to ${selectedDepartment}`);
-  // For now, we'll just show an alert
-  alert(`Customer transferred to ${selectedDepartment}`);
-};
-
-const cancelTransfer = () => {
-  setShowTransferModal(false);
-  setSelectedDepartment('');
-};
-
-const cancelTransferConfirm = () => {
-  setShowTransferConfirmModal(false);
-};
+  const departments = Object.keys(departmentCustomers);
+  const departmentOptions = departments.map((dept) => ({
+    value: dept,
+    label: dept,
+  }));
 
   const cannedMessages = [
     "Can you describe the issue in detail?",
@@ -63,6 +103,33 @@ const cancelTransferConfirm = () => {
     "Thank you for your patience.",
     "I will escalate this issue to our support team.",
   ];
+
+  const handleTransferClick = () => {
+    setOpenDropdown(null);
+    setShowTransferModal(true);
+  };
+
+  const handleDepartmentSelect = () => {
+    if (selectedDepartment) {
+      setShowTransferModal(false);
+      setShowTransferConfirmModal(true);
+    }
+  };
+
+  const confirmTransfer = () => {
+    setShowTransferConfirmModal(false);
+    console.log(`Transferring to ${selectedDepartment}`);
+    alert(`Customer transferred to ${selectedDepartment}`);
+  };
+
+  const cancelTransfer = () => {
+    setShowTransferModal(false);
+    setSelectedDepartment("");
+  };
+
+  const cancelTransferConfirm = () => {
+    setShowTransferConfirmModal(false);
+  };
 
   const toggleDropdown = (name) => {
     setOpenDropdown((prev) => (prev === name ? null : name));
@@ -86,20 +153,21 @@ const cancelTransferConfirm = () => {
       displayTime: now.toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
-      }), 
+      }),
     };
 
     setMessages((prev) => [...prev, endMessage]);
-    
-    // Move the chat to ended chats
+
     if (selectedCustomer) {
-      setEndedChats(prev => [...prev, {
-        ...selectedCustomer,
-        messages: [...messages, endMessage],
-        endedAt: now.toISOString()
-      }]);
-      
-      // Clear current chat
+      setEndedChats((prev) => [
+        ...prev,
+        {
+          ...selectedCustomer,
+          messages: [...messages, endMessage],
+          endedAt: now.toISOString(),
+        },
+      ]);
+
       setSelectedCustomer(null);
       setMessages([]);
     }
@@ -114,18 +182,19 @@ const cancelTransferConfirm = () => {
     const today = new Date();
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    
+
     if (messageDate.toDateString() === today.toDateString()) {
       return "Today";
-    }
-    else if (messageDate.toDateString() === yesterday.toDateString()) {
+    } else if (messageDate.toDateString() === yesterday.toDateString()) {
       return "Yesterday";
-    }
-    else {
+    } else {
       return messageDate.toLocaleDateString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        year: messageDate.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+        month: "short",
+        day: "numeric",
+        year:
+          messageDate.getFullYear() !== today.getFullYear()
+            ? "numeric"
+            : undefined,
       });
     }
   };
@@ -152,31 +221,6 @@ const cancelTransferConfirm = () => {
   const toggleSidebar = () => {
     setMobileSidebarOpen((prev) => !prev);
   };
-
-  
-  const customers = [
-    {
-      id: 1,
-      name: "Customer 1",
-      number: "09123456789",
-      time: "9:00 AM",
-      profile: "../src/assets/profile/client.jpg",
-    },
-    {
-      id: 2,
-      name: "Customer 2",
-      number: "09123456780",
-      time: "10:00 AM",
-      profile: "../src/assets/profile/character.jpg",
-    },
-    {
-      id: 3,
-      name: "Customer 3",
-      number: "09123456781",
-      time: "11:11 AM",
-      profile: "../src/assets/profile/download.jpg",
-    },
-  ];
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -214,24 +258,24 @@ const cancelTransferConfirm = () => {
   const groupMessagesByDate = () => {
     const groupedMessages = [];
     let currentDate = null;
-    
+
     messages.forEach((message) => {
       const messageDate = formatMessageDate(message.timestamp);
-      
+
       if (messageDate !== currentDate) {
         currentDate = messageDate;
         groupedMessages.push({
-          type: 'date',
-          content: messageDate
+          type: "date",
+          content: messageDate,
         });
       }
-      
+
       groupedMessages.push({
-        type: 'message',
-        ...message
+        type: "message",
+        ...message,
       });
     });
-    
+
     return groupedMessages;
   };
 
@@ -243,113 +287,123 @@ const cancelTransferConfirm = () => {
 
       {/* End Chat Modal */}
       {showEndChatModal && (
-<div className="fixed inset-0 bg-gray-400/50 bg-opacity-10 flex items-center justify-center z-50">
-    <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl border border-gray-200">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">End Chat</h3>
-      <p className="text-gray-600 mb-6">Are you sure you want to end this chat session?</p>
-      <div className="flex justify-center gap-20">
-        <button
-          onClick={cancelEndChat}
-          className="px-5 py-2 border  rounded-lg text-white bg-[#BCBCBC] hover:bg-gray-500 transition-colors"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={confirmEndChat}
-          className="px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-        >
-          Confirm
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+        <div className="fixed inset-0 bg-gray-400/50 bg-opacity-10 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl border border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              End Chat
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to end this chat session?
+            </p>
+            <div className="flex justify-center gap-20">
+              <button
+                onClick={cancelEndChat}
+                className="px-5 py-2 border rounded-lg text-white bg-[#BCBCBC] hover:bg-gray-500 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmEndChat}
+                className="px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
+      {showTransferModal && (
+        <div className="fixed inset-0 bg-gray-400/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl border border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Transfer Department
+            </h3>
+            <div className="mb-6">
+              <label
+                htmlFor="department"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Select Department
+              </label>
+              <Select
+                options={departmentOptions}
+                onChange={(selected) => setSelectedDepartment(selected?.value)}
+                classNamePrefix="select"
+                placeholder="Select a department"
+                styles={{
+                  option: (provided, state) => ({
+                    ...provided,
+                    backgroundColor: state.isSelected
+                      ? "#6237A0"
+                      : state.isFocused
+                      ? "#E6DCF7"
+                      : "white",
+                    color: state.isSelected ? "white" : "#000000",
+                  }),
+                  control: (provided) => ({
+                    ...provided,
+                    borderColor: "#D1D5DB",
+                    minHeight: "42px",
+                    boxShadow: "none",
+                  }),
+                  singleValue: (provided) => ({
+                    ...provided,
+                    color: "#000000",
+                  }),
+                }}
+              />
+            </div>
+            <div className="flex justify-center gap-20">
+              <button
+                onClick={cancelTransfer}
+                className="px-5 py-2 border rounded-lg text-white bg-[#BCBCBC] hover:bg-gray-500 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDepartmentSelect}
+                disabled={!selectedDepartment}
+                className={`px-5 py-2 text-white rounded-lg transition-colors ${
+                  selectedDepartment
+                    ? "bg-[#6237A0] hover:bg-[#4c2b7d]"
+                    : "bg-[#6237A0]/50 cursor-not-allowed"
+                }`}
+              >
+                Select
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-{showTransferModal && (
-  <div className="fixed inset-0 bg-gray-400/50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl border border-gray-200">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Transfer Department</h3>
-      <div className="mb-6">
-        <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-2">
-          Select Department
-        </label>
-        <Select
-          options={departmentOptions}
-          onChange={(selected) => setSelectedDepartment(selected?.value)}
-          classNamePrefix="select"
-          placeholder="Select a department"
-          styles={{
-            option: (provided, state) => ({
-              ...provided,
-              backgroundColor: state.isSelected
-                ? '#6237A0'
-                : state.isFocused
-                ? '#E6DCF7'
-                : 'white',
-              color: state.isSelected ? 'white' : '#000000',
-            }),
-            control: (provided) => ({
-              ...provided,
-              borderColor: '#D1D5DB',
-              minHeight: '42px',
-              boxShadow: 'none',
-            }),
-            singleValue: (provided) => ({
-              ...provided,
-              color: '#000000',
-            }),
-          }}
-        />
-      </div>
-      <div className="flex justify-center gap-20">
-        <button
-          onClick={cancelTransfer}
-          className="px-5 py-2 border rounded-lg text-white bg-[#BCBCBC] hover:bg-gray-500 transition-colors"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={handleDepartmentSelect}
-          disabled={!selectedDepartment}
-          className={`px-5 py-2 text-white rounded-lg transition-colors ${
-            selectedDepartment
-              ? 'bg-[#6237A0] hover:bg-[#4c2b7d]'
-              : 'bg-[#6237A0]/50 cursor-not-allowed'
-          }`}
-        >
-          Select
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
-
-{showTransferConfirmModal && (
-  <div className="fixed inset-0 bg-gray-400/50 bg-opacity-10 flex items-center justify-center z-50">
-    <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl border border-gray-200">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Confirm Transfer</h3>
-      <p className="text-gray-600 mb-6">
-        Are you sure you want to transfer this customer to {selectedDepartment}?
-      </p>
-      <div className="flex justify-center gap-20">
-        <button
-          onClick={cancelTransferConfirm}
-          className="px-5 py-2 border rounded-lg text-white bg-[#BCBCBC] hover:bg-gray-500 transition-colors"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={confirmTransfer}
-          className="px-5 py-2 bg-[#6237A0] text-white rounded-lg hover:bg-[#4c2b7d] transition-colors"
-        >
-          Confirm
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      {showTransferConfirmModal && (
+        <div className="fixed inset-0 bg-gray-400/50 bg-opacity-10 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl border border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Confirm Transfer
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to transfer this customer to{" "}
+              {selectedDepartment}?
+            </p>
+            <div className="flex justify-center gap-20">
+              <button
+                onClick={cancelTransferConfirm}
+                className="px-5 py-2 border rounded-lg text-white bg-[#BCBCBC] hover:bg-gray-500 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmTransfer}
+                className="px-5 py-2 bg-[#6237A0] text-white rounded-lg hover:bg-[#4c2b7d] transition-colors"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
@@ -368,20 +422,49 @@ const cancelTransferConfirm = () => {
         <main className="flex-1 bg-white">
           <div className="flex flex-col md:flex-row h-full">
             {/* Queues list */}
-            <div className="w-full md:w-[320px] bg-[#F5F5F5] overflow-y-auto">
-              <div className="p-4 flex text-center justify-between rounded-xl py-2 px-4 items-center m-4 shadow-sm bg-[#E6DCF7]">
-                <span className="text-sm text-[#6237A0] w-full">Billing</span>
-                <button className="text-[#6237A0] hover:text-purple-800 transition">
+            <div className="w-full md:w-1/3 border-r border-gray-200 overflow-y-auto">
+              <div className="relative p-4 flex text-center justify-between rounded-xl py-2 px-4 items-center m-4 shadow-sm bg-[#E6DCF7]">
+                <button
+                  className="text-sm text-[#6237A0] w-full text-left focus:outline-none"
+                  onClick={() => setShowDeptDropdown((prev) => !prev)}
+                >
+                  {selectedDepartment}
+                </button>
+                <button
+                  className="text-[#6237A0] hover:text-purple-800 transition"
+                  onClick={() => setShowDeptDropdown((prev) => !prev)}
+                >
                   <Filter size={16} />
                 </button>
+                {showDeptDropdown && (
+                  <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
+                    {departments.map((dept) => (
+                      <div
+                        key={dept}
+                        className={`px-4 py-2 cursor-pointer hover:bg-[#E6DCF7] ${
+                          dept === selectedDepartment
+                            ? "font-bold text-[#6237A0]"
+                            : ""
+                        }`}
+                        onClick={() => {
+                          setSelectedDepartment(dept);
+                          setShowDeptDropdown(false);
+                          setSelectedCustomer(null);
+                        }}
+                      >
+                        {dept}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              <div>
-                {customers.map((customer) => (
+              {(departmentCustomers[selectedDepartment] || []).map(
+                (customer) => (
                   <div
                     key={customer.id}
                     onClick={() => {
-                      if (!endedChats.some(chat => chat.id === customer.id)) {
+                      if (!endedChats.some((chat) => chat.id === customer.id)) {
                         setSelectedCustomer(customer);
                         setChatEnded(false);
                       }
@@ -389,72 +472,80 @@ const cancelTransferConfirm = () => {
                     className={`flex items-center justify-between px-4 py-3 border-2 ${
                       selectedCustomer?.id === customer.id
                         ? "bg-[#E6DCF7]"
-                        : endedChats.some(chat => chat.id === customer.id)
+                        : endedChats.some((chat) => chat.id === customer.id)
                         ? "bg-gray-100 opacity-70"
                         : "bg-[#f5f5f5]"
                     } border-[#E6DCF7] rounded-xl hover:bg-[#E6DCF7] cursor-pointer transition m-2 min-h-[100px]`}
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 flex-1">
                       <img
                         src={customer.profile}
                         alt="profile"
-                        className="w-19 h-19 rounded-full object-cover"
+                        className="w-15 h-15 rounded-full object-cover"
                       />
-                      <div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-end mb-1">
+                          {/* Department label ABOVE the name */}
+                          <span className="text-[10px] font-semibold text-purple-600 bg-purple-100 px-2 py-[2px] rounded-full whitespace-nowrap">
+                            {selectedDepartment}
+                          </span>
+                        </div>
                         <p
-                          className={`text-sm font-medium ${
+                          className={`text-sm font-medium truncate ${
                             selectedCustomer?.id === customer.id
                               ? "text-[#6237A0]"
-                              : endedChats.some(chat => chat.id === customer.id)
+                              : endedChats.some(
+                                  (chat) => chat.id === customer.id
+                                )
                               ? "text-gray-500"
                               : "text-gray-800"
                           }`}
                         >
                           {customer.name}
                         </p>
-                        <p
-                          className={`text-xs ${
-                            selectedCustomer?.id === customer.id
-                              ? "text-[#6237A0]"
-                              : endedChats.some(chat => chat.id === customer.id)
-                              ? "text-gray-400"
-                              : "text-gray-500"
-                          }`}
-                        >
-                          {customer.number}
-                        </p>
+                        <div className="flex justify-between items-center">
+                          <p
+                            className={`text-xs truncate ${
+                              selectedCustomer?.id === customer.id
+                                ? "text-[#6237A0]"
+                                : endedChats.some(
+                                    (chat) => chat.id === customer.id
+                                  )
+                                ? "text-gray-400"
+                                : "text-gray-500"
+                            }`}
+                          >
+                            {customer.number}
+                          </p>
+                          <span className="text-[10px] text-gray-400 ml-2 whitespace-nowrap mt-5">
+                            {customer.time}
+                          </span>
+                        </div>
                       </div>
                     </div>
-
-                    <div className="flex flex-col justify-between items-end h-full">
-                      <span className="text-[10px] font-semibold text-purple-600 bg-purple-100 px-2 py-[2px] rounded-full mb-4">
-                        Billing
-                      </span>
-                      <span className="text-[10px] text-gray-400">
-                        {customer.time}
-                      </span>
-                    </div>
                   </div>
-                ))}
-              </div>
+                )
+              )}
             </div>
 
             {/* Chat area */}
-            <div className="flex-1 bg-white hidden md:flex flex-col justify-end p-4 overflow-hidden">
+            <div className="flex-1 flex flex-col">
               {selectedCustomer ? (
                 <>
-                  {/* User Profile Header */}
-                  <div className="border-b pb-2 text-[#CECECE]">
-                    <div className="flex items-center gap-4">
-                      <img
-                        src={selectedCustomer.profile}
-                        alt="Customer profile"
-                        className="w-16 h-16 rounded-full object-cover border-2 border-[#E6DCF7]"
-                      />
-                      <div>
-                        <h3 className="text-lg font-medium text-gray-800 text-center">
-                          {selectedCustomer.name}
-                        </h3>
+                  <div className="border-b border-gray-200 p-4">
+                    <div className="flex items-center">
+                      <div className="flex items-center gap-4">
+                        <img
+                          src={selectedCustomer.profile}
+                          alt="profile"
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                        <div>
+                          <h3 className="text-lg font-medium text-gray-800">
+                            {selectedCustomer.name}
+                          </h3>
+                        </div>
                       </div>
                       <div className="relative ml-auto">
                         {!chatEnded && (
@@ -492,8 +583,7 @@ const cancelTransferConfirm = () => {
                   {/* Chat messages */}
                   <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 pb-2 auto-hide-scrollbar">
                     <div className="flex flex-col justify-end min-h-full gap-4 pt-4">
-                      {/* Initial messages */}
-                      {/* {messages.length === 0 && ( */}
+                      {messages.length === 0 && (
                         <>
                           <div className="text-[10px] text-gray-400 text-center flex items-center gap-2 my-2">
                             <div className="flex-grow h-px bg-gray-200" />
@@ -515,7 +605,7 @@ const cancelTransferConfirm = () => {
                               className="w-8 h-8 rounded-full object-cover"
                             />
                             <div className="relative bg-[#6237A0] text-white px-4 py-2 ml-7 rounded-br-xl rounded-tr-xl rounded-bl-xl text-sm max-w-[300px]">
-                              Billing
+                              {selectedDepartment}
                               <div className="text-[10px] text-light text-gray-300 text-right mt-1 ml-2">
                                 1:20 PM
                               </div>
@@ -530,7 +620,7 @@ const cancelTransferConfirm = () => {
 
                           <div className="text-[10px] text-gray-400 text-center flex items-center gap-2 my-2">
                             <div className="flex-grow h-px bg-gray-200" />
-                            You are now chatting with Billing agent
+                            You are now chatting with {selectedDepartment} agent
                             <div className="flex-grow h-px bg-gray-200" />
                           </div>
 
@@ -548,13 +638,15 @@ const cancelTransferConfirm = () => {
                             </div>
                           </div>
                         </>
-                      
+                      )}
 
-                      {/* Grouped messages with date markers */}
                       {groupedMessages.map((item, index) => {
-                        if (item.type === 'date') {
+                        if (item.type === "date") {
                           return (
-                            <div key={`date-${index}`} className="text-[10px] text-gray-400 text-center flex items-center gap-2 my-2">
+                            <div
+                              key={`date-${index}`}
+                              className="text-[10px] text-gray-400 text-center flex items-center gap-2 my-2"
+                            >
                               <div className="flex-grow h-px bg-gray-200" />
                               {item.content}
                               <div className="flex-grow h-px bg-gray-200" />
@@ -565,31 +657,43 @@ const cancelTransferConfirm = () => {
                             <div
                               key={`msg-${index}`}
                               className={`flex items-end gap-2 ${
-                                item.sender === "user" ? "justify-end" : "justify-start"
+                                item.sender === "user"
+                                  ? "justify-end"
+                                  : "justify-start"
                               }`}
                             >
                               {item.sender !== "user" && (
                                 <img
                                   src={
-                                    item.sender === "system" 
-                                      ? "../src/assets/profile/av3.jpg" 
+                                    item.sender === "system"
+                                      ? "../src/assets/profile/av3.jpg"
                                       : selectedCustomer.profile
                                   }
-                                  alt={item.sender === "system" ? "agent" : "customer"}
+                                  alt={
+                                    item.sender === "system"
+                                      ? "agent"
+                                      : "customer"
+                                  }
                                   className="w-8 h-8 rounded-full"
                                 />
                               )}
-                              <div className={`${
-                                item.sender === "user" 
-                                  ? "bg-[#f5f5f5] text-gray-800" 
-                                  : item.sender === "system"
+                              <div
+                                className={`${
+                                  item.sender === "user"
+                                    ? "bg-[#f5f5f5] text-gray-800"
+                                    : item.sender === "system"
                                     ? "bg-[#6237A0] text-white"
                                     : "bg-[#f5f5f5] text-gray-800"
-                              } px-4 py-2 rounded-xl max-w-[320px] text-sm break-words whitespace-pre-wrap`}>
+                                } px-4 py-2 rounded-xl max-w-[320px] text-sm break-words whitespace-pre-wrap`}
+                              >
                                 {item.content}
-                                <div className={`text-[10px] text-right mt-1 ${
-                                  item.sender === "system" ? "text-gray-300" : "text-gray-400"
-                                }`}>
+                                <div
+                                  className={`text-[10px] text-right mt-1 ${
+                                    item.sender === "system"
+                                      ? "text-gray-300"
+                                      : "text-gray-400"
+                                  }`}
+                                >
                                   {item.displayTime}
                                 </div>
                               </div>
@@ -611,7 +715,6 @@ const cancelTransferConfirm = () => {
                     </div>
                   ) : showCannedMessages ? (
                     <div className="border-t border-gray-200 pt-4 bg-white canned-dropdown">
-                      {/* Message input box inside canned messages container */}
                       <div className="flex items-center gap-2 px-4 pb-3">
                         <button
                           className="p-2 text-[#5C2E90] hover:bg-gray-100 rounded-full"
@@ -633,15 +736,14 @@ const cancelTransferConfirm = () => {
                           }}
                           className="flex-1 bg-[#F2F0F0] rounded-xl px-4 py-2 leading-tight focus:outline-none text-gray-800 resize-none overflow-hidden"
                         />
-                        <button 
-                          className="p-2 text-[#5C2E90] hover:bg-gray-100 rounded-full" 
+                        <button
+                          className="p-2 text-[#5C2E90] hover:bg-gray-100 rounded-full"
                           onClick={sendMessage}
                         >
                           <Send size={20} className="transform rotate-45" />
                         </button>
                       </div>
 
-                      {/* Suggested replies section */}
                       <div className="px-4 pt-3">
                         <div className="grid grid-cols-1 gap-2 pb-3 max-h-[200px] overflow-y-auto">
                           {cannedMessages.map((msg, index) => (
@@ -681,8 +783,8 @@ const cancelTransferConfirm = () => {
                         }}
                         className="flex-1 bg-[#F2F0F0] rounded-xl px-4 py-2 leading-tight focus:outline-none text-gray-800 resize-none overflow-hidden"
                       />
-                      <button 
-                        className="p-2 text-[#5C2E90] hover:bg-gray-100 rounded-full" 
+                      <button
+                        className="p-2 text-[#5C2E90] hover:bg-gray-100 rounded-full"
                         onClick={sendMessage}
                       >
                         <Send size={20} className="transform rotate-45" />
@@ -691,13 +793,11 @@ const cancelTransferConfirm = () => {
                   )}
                 </>
               ) : (
-                <div className="border-t text-[#CECECE] py-110">
-                  <div className="text-gray-400 text-center">
-                    {endedChats.length > 0 ? (
-                      "Select a customer to start a new chat"
-                    ) : (
-                      "Select a customer to view chat"
-                    )}
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="text-gray-400">
+                    {endedChats.length > 0
+                      ? "Select a customer to start a new chat"
+                      : "Select a customer to view chat"}
                   </div>
                 </div>
               )}
