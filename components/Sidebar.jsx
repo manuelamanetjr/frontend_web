@@ -60,7 +60,7 @@ const NavItem = ({ to, Icon, label, isActive }) => (
       }`}
     >
       <Icon size={18} strokeWidth={1} />
-      <span className="w-full text-center">{label}</span>
+      <span className="text-left">{label}</span>
     </Link>
   </div>
 );
@@ -87,14 +87,16 @@ const DropdownItem = ({ icon: Icon, items, id, isOpen, toggleDropdown }) => {
       )}
       <button
         onClick={handleDropdownToggle}
-        className={`relative flex items-center gap-3 px-3 py-2 w-full rounded-lg z-10 ${
+        className={`relative flex items-center justify-between gap-3 px-3 py-2 w-full rounded-lg z-10 ${
           isActive ? "text-white" : "text-black hover:text-gray-700"
         }`}
       >
-        <Icon size={18} strokeWidth={1} />
-        <span className="w-full text-center">
-          {activeItem?.label || id.charAt(0).toUpperCase() + id.slice(1)}
-        </span>
+        <div className="flex items-center gap-3">
+          <Icon size={18} strokeWidth={1} />
+          <span className="text-left">
+            {activeItem?.label || id.charAt(0).toUpperCase() + id.slice(1)}
+          </span>
+        </div>
         {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
       </button>
 
