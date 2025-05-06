@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Filter, Send, Menu, MoreVertical } from "react-feather";
+import Select from 'react-select';
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 
@@ -16,6 +17,44 @@ export default function Queues() {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const [endedChats, setEndedChats] = useState([]);
+const [showTransferModal, setShowTransferModal] = useState(false);
+const [showTransferConfirmModal, setShowTransferConfirmModal] = useState(false);
+const [selectedDepartment, setSelectedDepartment] = useState('');
+const departments = ['Billing', 'Technical Support', 'Sales', 'Customer Service'];
+
+const departmentOptions = departments.map(dept => ({
+  value: dept,
+  label: dept
+}));
+
+const handleTransferClick = () => {
+  setOpenDropdown(null);
+  setShowTransferModal(true);
+};
+
+const handleDepartmentSelect = () => {
+  if (selectedDepartment) {
+    setShowTransferModal(false);
+    setShowTransferConfirmModal(true);
+  }
+};
+
+const confirmTransfer = () => {
+  setShowTransferConfirmModal(false);
+  // Here you would implement the actual transfer logic
+  console.log(`Transferring to ${selectedDepartment}`);
+  // For now, we'll just show an alert
+  alert(`Customer transferred to ${selectedDepartment}`);
+};
+
+const cancelTransfer = () => {
+  setShowTransferModal(false);
+  setSelectedDepartment('');
+};
+
+const cancelTransferConfirm = () => {
+  setShowTransferConfirmModal(false);
+};
 
   const cannedMessages = [
     "Can you describe the issue in detail?",
@@ -114,6 +153,7 @@ export default function Queues() {
     setMobileSidebarOpen((prev) => !prev);
   };
 
+  
   const customers = [
     {
       id: 1,
@@ -210,13 +250,99 @@ export default function Queues() {
       <div className="flex justify-center gap-20">
         <button
           onClick={cancelEndChat}
-          className="px-5 py-2 border  rounded-lg text-white bg-[#BCBCBC] hover:bg-gray-500          transition-colors"
+          className="px-5 py-2 border  rounded-lg text-white bg-[#BCBCBC] hover:bg-gray-500 transition-colors"
         >
           Cancel
         </button>
         <button
           onClick={confirmEndChat}
           className="px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+        >
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
+{showTransferModal && (
+  <div className="fixed inset-0 bg-gray-400/50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl border border-gray-200">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">Transfer Department</h3>
+      <div className="mb-6">
+        <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-2">
+          Select Department
+        </label>
+        <Select
+          options={departmentOptions}
+          onChange={(selected) => setSelectedDepartment(selected?.value)}
+          classNamePrefix="select"
+          placeholder="Select a department"
+          styles={{
+            option: (provided, state) => ({
+              ...provided,
+              backgroundColor: state.isSelected
+                ? '#6237A0'
+                : state.isFocused
+                ? '#E6DCF7'
+                : 'white',
+              color: state.isSelected ? 'white' : '#000000',
+            }),
+            control: (provided) => ({
+              ...provided,
+              borderColor: '#D1D5DB',
+              minHeight: '42px',
+              boxShadow: 'none',
+            }),
+            singleValue: (provided) => ({
+              ...provided,
+              color: '#000000',
+            }),
+          }}
+        />
+      </div>
+      <div className="flex justify-center gap-20">
+        <button
+          onClick={cancelTransfer}
+          className="px-5 py-2 border rounded-lg text-white bg-[#BCBCBC] hover:bg-gray-500 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleDepartmentSelect}
+          disabled={!selectedDepartment}
+          className={`px-5 py-2 text-white rounded-lg transition-colors ${
+            selectedDepartment
+              ? 'bg-[#6237A0] hover:bg-[#4c2b7d]'
+              : 'bg-[#6237A0]/50 cursor-not-allowed'
+          }`}
+        >
+          Select
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
+{showTransferConfirmModal && (
+  <div className="fixed inset-0 bg-gray-400/50 bg-opacity-10 flex items-center justify-center z-50">
+    <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl border border-gray-200">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">Confirm Transfer</h3>
+      <p className="text-gray-600 mb-6">
+        Are you sure you want to transfer this customer to {selectedDepartment}?
+      </p>
+      <div className="flex justify-center gap-20">
+        <button
+          onClick={cancelTransferConfirm}
+          className="px-5 py-2 border rounded-lg text-white bg-[#BCBCBC] hover:bg-gray-500 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={confirmTransfer}
+          className="px-5 py-2 bg-[#6237A0] text-white rounded-lg hover:bg-[#4c2b7d] transition-colors"
         >
           Confirm
         </button>
@@ -353,10 +479,7 @@ export default function Queues() {
                             <div className="border-t border-gray-200" />
                             <button
                               className="block w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
-                              onClick={() => {
-                                console.log("Transfer Department clicked");
-                                setOpenDropdown(null);
-                              }}
+                              onClick={handleTransferClick}
                             >
                               Transfer Department
                             </button>
