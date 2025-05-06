@@ -583,7 +583,7 @@ export default function Queues() {
                   {/* Chat messages */}
                   <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 pb-2 auto-hide-scrollbar">
                     <div className="flex flex-col justify-end min-h-full gap-4 pt-4">
-                      {messages.length === 0 && (
+                      {/* {messages.length === 0 && ( */}
                         <>
                           <div className="text-[10px] text-gray-400 text-center flex items-center gap-2 my-2">
                             <div className="flex-grow h-px bg-gray-200" />
@@ -638,7 +638,7 @@ export default function Queues() {
                             </div>
                           </div>
                         </>
-                      )}
+                      
 
                       {groupedMessages.map((item, index) => {
                         if (item.type === "date") {
