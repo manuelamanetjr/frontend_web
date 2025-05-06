@@ -82,7 +82,7 @@ export default function Departments() {
                 <thead className="text-gray-500 border-b">
                   <tr>
                     <th className="py-2 px-3 pl-3">Department</th>
-                    <th className="py-2 px-3 text-center">Active</th>
+                    <th className="py-2 px-3 text-center">Active Status</th>
                   </tr>
                 </thead>
                 <tbody>

@@ -238,7 +238,7 @@ function AgentsTable({
         <thead className="text-gray-500 border-b bg-white">
           <tr>
             <th className="py-2 px-3 pl-3 sticky bg-white left-0 z-10">Username</th>
-            <th className="py-2 px-3 text-center bg-white sticky left-36 z-10">Active</th>
+            <th className="py-2 px-3 text-center bg-white sticky left-36 z-10">Active Status</th>
             <th className="py-2 px-3 text-center relative" colSpan={visibleDepts}>
               Departments
               {departments.length > visibleDepts && (
