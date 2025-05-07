@@ -87,22 +87,25 @@ export default function Departments() {
                 </thead>
                 <tbody>
                   {filteredDepartments.map((dept, idx) => (
-                    <tr
-                      key={idx}
-                      className=" transition-colors duration-200"
-                    >
-                      <td className="py-2 px-3 flex items-center gap-2">
-                        {dept.name}
-                        <Edit3
-                          size={18}
-                          className="text-gray-500 cursor-pointer w-[18px] h-[18px] flex-shrink-0 transition-colors duration-200 hover:text-purple-700"
-                          onClick={() => {
-                            setCurrentEditIndex(idx);
-                            setEditText(dept.name);
-                            setIsModalOpen(true);
-                          }}
-                        />
-                      </td>
+                    <tr key={idx} className=" transition-colors duration-200">
+<td className="py-2 px-3 align-top">
+  <div className="flex items-center gap-2">
+    <p className="text-sm break-words max-w-[200px] whitespace-pre-wrap">
+      {dept.name}
+    </p>
+    <Edit3
+      size={18}
+      className="text-gray-500 cursor-pointer flex-shrink-0 transition-colors duration-200 hover:text-purple-700"
+      onClick={() => {
+        setCurrentEditIndex(idx);
+        setEditText(dept.name);
+        setIsModalOpen(true);
+      }}
+    />
+  </div>
+</td>
+
+
                       <td className="py-2 px-3 text-center">
                         <label className="inline-flex relative items-center cursor-pointer">
                           <input
