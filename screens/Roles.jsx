@@ -281,7 +281,7 @@ function RoleRow({
   onTogglePermission,
 }) {
   return (
-    <tr className="hover:bg-gray-50 transition-colors duration-200">
+    <tr className=" transition-colors duration-200">
       <td className="py-3 px-3 align-top sticky left-0 z-10 bg-white w-100">
         <div className="max-w-[180px] break-words text-gray-800 relative pr-6">
           <span>{role.name}</span>
