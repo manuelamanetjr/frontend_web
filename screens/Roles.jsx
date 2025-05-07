@@ -190,7 +190,7 @@ export default function ManageRoles() {
   );
 }
 
-// Extracted components for better organization
+// Extracted components
 
 function SearchInput({ value, onChange, placeholder }) {
   return (
@@ -207,7 +207,7 @@ function SearchInput({ value, onChange, placeholder }) {
         <X
           size={16}
           strokeWidth={1}
-          className="text-gray-500 cursor-pointer absolute right-3 "
+          className="text-gray-500 cursor-pointer absolute right-3"
           onClick={() => onChange("")}
         />
       )}
@@ -229,32 +229,32 @@ function RolesTable({
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm text-left">
-      <thead className="text-gray-500 border-b z-20 bg-white">
-  <tr className="z-20">
-    <th className="py-2 px-3 pl-3 sticky left-0 z-30 bg-white">Role Name</th>
-    <th className="py-2 px-3 text-center sticky left-36 z-30 bg-white">Active Status</th>
-    <th className="py-2 px-3 text-center relative" colSpan={visiblePerms}>
-      Permissions
-      {permissions.length > visiblePerms && (
-        <ScrollButtons
-          canScrollLeft={permScrollIndex > 0}
-          canScrollRight={permScrollIndex < permissions.length - visiblePerms}
-          onScrollLeft={() => onScrollPerms("left")}
-          onScrollRight={() => onScrollPerms("right")}
-        />
-      )}
-    </th>
-  </tr>
-  <tr className="z-20">
-    <th className="sticky left-0 bg-white z-30 w-36"></th>
-    <th className="sticky left-36 bg-white z-30 w-20"></th>
-    {visiblePermissions.map((perm, i) => (
-      <th key={i} className="w-36 text-center px-2 shrink-0 font-medium bg-white">
-        {perm}
-      </th>
-    ))}
-  </tr>
-</thead>
+        <thead className="text-gray-500 border-b z-20 bg-white">
+          <tr className="z-20">
+            <th className="py-2 px-3 pl-3 sticky left-0 z-30 bg-white w-48">Role Name</th>
+            <th className="py-2 px-3 text-center sticky left-25 z-30 bg-white w-24">Status</th>
+            <th className="py-2 px-3 text-center relative" colSpan={visiblePerms}>
+              Permissions
+              {permissions.length > visiblePerms && (
+                <ScrollButtons
+                  canScrollLeft={permScrollIndex > 0}
+                  canScrollRight={permScrollIndex < permissions.length - visiblePerms}
+                  onScrollLeft={() => onScrollPerms("left")}
+                  onScrollRight={() => onScrollPerms("right")}
+                />
+              )}
+            </th>
+          </tr>
+          <tr className="z-20">
+            <th className="sticky left-0 bg-white z-30 w-48"></th>
+            <th className="sticky left-25 bg-white z-30 w-24"></th>
+            {visiblePermissions.map((perm, i) => (
+              <th key={i} className="py-2 px-3 text-center font-medium bg-white min-w-[120px]">
+                {perm}
+              </th>
+            ))}
+          </tr>
+        </thead>
 
         <tbody>
           {roles.map((role, idx) => (
@@ -281,34 +281,36 @@ function RoleRow({
   onTogglePermission,
 }) {
   return (
-    <tr className=" transition-colors duration-200 group">
-<td className="py-2 px-3 sticky left-0 z-10 w-36 flex items-center gap-2 bg-white">
-
-        {role.name}
-        <Edit3
-          size={18}
-          strokeWidth={1}
-          className="text-gray-500 cursor-pointer hover:text-purple-700"
-          onClick={onEdit}
-        />
+    <tr className="hover:bg-gray-50 transition-colors duration-200">
+      <td className="py-3 px-3 align-top sticky left-0 z-10 bg-white w-100">
+        <div className="max-w-[180px] break-words text-gray-800 relative pr-6">
+          <span>{role.name}</span>
+          <div className="absolute top-1/2 right-0 -translate-y-1/2">
+            <Edit3
+              size={18}
+              strokeWidth={1}
+              className="text-gray-500 cursor-pointer w-[18px] h-[18px] transition-colors duration-200 hover:text-purple-700"
+              onClick={onEdit}
+            />
+          </div>
+        </div>
       </td>
-      <td className="py-2 px-3 text-center sticky left-36 z-10 w-20 bg-white">
-
+      <td className="py-3 px-3 text-center sticky left-25 z-10 bg-white w-100">
         <ToggleSwitch checked={role.active} onChange={onToggleActive} />
       </td>
       {visiblePermissions.map((perm, i) => (
-        <td key={i} className="w-36 text-center px-2 shrink-0">
+        <td key={i} className="py-3 px-3 text-center min-w-[120px]">
           <input
             type="checkbox"
             checked={role.permissions.includes(perm)}
             onChange={() => onTogglePermission(perm)}
+            className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
           />
         </td>
       ))}
     </tr>
   );
 }
-
 
 const ToggleSwitch = ({ checked, onChange }) => (
   <label className="inline-flex relative items-center cursor-pointer z-30">
@@ -357,7 +359,7 @@ function RoleModal({ isEdit, formData, onFormChange, onClose, onSave }) {
           onChange={(value) => onFormChange({ ...formData, name: value })}
         />
 
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-2 mt-4">
           <button
             onClick={onClose}
             className="bg-gray-300 text-gray-800 px-4 py-1 rounded-lg text-sm hover:bg-gray-400 transition-colors duration-200"
