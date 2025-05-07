@@ -27,7 +27,6 @@ const initialAgents = [
 const departments = ["CSR", "Billing", "Sales", "Tech Support", "Admin", "HR"];
 
 export default function ManageAgents() {
-  // State management
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -41,7 +40,6 @@ export default function ManageAgents() {
     password: "",
   });
 
-  // Derived state
   const filteredAgents = agents.filter((agent) =>
     agent.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -50,7 +48,6 @@ export default function ManageAgents() {
     deptScrollIndex + visibleDepts
   );
 
-  // Handlers
   const toggleSidebar = () => setMobileSidebarOpen((prev) => !prev);
 
   const handleScrollDepts = (direction) => {
@@ -75,7 +72,6 @@ export default function ManageAgents() {
 
   const handleSaveAgent = () => {
     if (currentEditIndex !== null) {
-      // Update existing agent
       setAgents((prev) =>
         prev.map((agent, i) =>
           i === currentEditIndex
@@ -84,7 +80,6 @@ export default function ManageAgents() {
         )
       );
     } else {
-      // Add new agent
       setAgents((prev) => [
         ...prev,
         {
@@ -110,22 +105,18 @@ export default function ManageAgents() {
     setAgents((prev) =>
       prev.map((agent, i) => {
         if (i !== agentIndex) return agent;
-        
         const updatedDepartments = agent.departments.includes(department)
           ? agent.departments.filter((d) => d !== department)
           : [...agent.departments, department];
-          
         return { ...agent, departments: updatedDepartments };
       })
     );
   };
 
-  // Effects
   useEffect(() => {
     const handleResize = () => {
       setVisibleDepts(window.innerWidth >= 1280 ? 4 : departments.length);
     };
-
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -136,7 +127,7 @@ export default function ManageAgents() {
       <TopNavbar toggleSidebar={toggleSidebar} />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
-          isMobile={true}
+          isMobile
           isOpen={mobileSidebarOpen}
           toggleDropdown={setOpenDropdown}
           openDropdown={openDropdown}
@@ -151,7 +142,7 @@ export default function ManageAgents() {
           <div className="bg-white p-4 rounded-lg min-h-[80vh] transition-all duration-300">
             {/* Search and Add Button */}
             <div className="flex justify-between items-center mb-4">
-              <SearchInput 
+              <SearchInput
                 value={searchQuery}
                 onChange={setSearchQuery}
                 placeholder="Search usernames..."
@@ -196,8 +187,6 @@ export default function ManageAgents() {
   );
 }
 
-// Extracted components for better organization
-
 function SearchInput({ value, onChange, placeholder }) {
   return (
     <div className="flex items-center bg-gray-100 px-3 py-2 rounded-md w-1/3 relative">
@@ -213,7 +202,7 @@ function SearchInput({ value, onChange, placeholder }) {
         <X
           size={16}
           strokeWidth={1}
-          className="text-gray-500 cursor-pointer absolute right-3 "
+          className="text-gray-500 cursor-pointer absolute right-3"
           onClick={() => onChange("")}
         />
       )}
@@ -237,8 +226,10 @@ function AgentsTable({
       <table className="min-w-full text-sm text-left">
         <thead className="text-gray-500 border-b bg-white">
           <tr>
-            <th className="py-2 px-3 pl-3 sticky bg-white left-0 z-10">Username</th>
-            <th className="py-2 px-3 text-center bg-white sticky left-36 z-10">Active Status</th>
+            <th className="py-2 px-3 pl-3 sticky left-0 bg-white z-10">Username</th>
+            <th className="py-2 px-3 text-center sticky left-30 bg-white z-10">
+              Active Status
+            </th>
             <th className="py-2 px-3 text-center relative" colSpan={visibleDepts}>
               Departments
               {departments.length > visibleDepts && (
@@ -253,7 +244,7 @@ function AgentsTable({
           </tr>
           <tr>
             <th className="sticky left-0 bg-white z-10 w-36"></th>
-            <th className="sticky left-36 bg-white z-10 w-20"></th>
+            <th className="sticky left-30 bg-white z-10 w-20"></th>
             {visibleDepartments.map((dept, i) => (
               <th key={i} className="w-36 text-center px-2 shrink-0 font-medium">
                 {dept}
@@ -263,52 +254,37 @@ function AgentsTable({
         </thead>
         <tbody>
           {agents.map((agent, idx) => (
-            <AgentRow
-              key={idx}
-              agent={agent}
-              visibleDepartments={visibleDepartments}
-              onEdit={() => onEdit(idx)}
-              onToggleActive={() => onToggleActive(idx)}
-              onToggleDepartment={(dept) => onToggleDepartment(idx, dept)}
-            />
+            <tr key={idx} className="transition-colors duration-200 group">
+              <td className="py-3 px-3 align-top sticky left-0 z-10 bg-white w-100">
+              <div className="max-w-[180px] break-words text-gray-800 relative pr-6">
+                <span>{agent.username}</span>
+                <div className="absolute top-1/2 right-0 -translate-y-1/2">
+                <Edit3
+                  size={18}
+                  strokeWidth={1}
+                  className="text-gray-500 cursor-pointer hover:text-purple-700"
+                  onClick={() => onEdit(idx)}
+                />
+                </div>
+                </div>
+              </td>
+              <td className="py-2 px-3 text-center sticky left-30 z-10 bg-white w-100">
+                <ToggleSwitch checked={agent.active} onChange={() => onToggleActive(idx)} />
+              </td>
+              {visibleDepartments.map((dept, i) => (
+                <td key={i} className="w-36 text-center px-2 shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={agent.departments.includes(dept)}
+                    onChange={() => onToggleDepartment(idx, dept)}
+                  />
+                </td>
+              ))}
+            </tr>
           ))}
         </tbody>
       </table>
     </div>
-  );
-}
-
-function AgentRow({
-  agent,
-  visibleDepartments,
-  onEdit,
-  onToggleActive,
-  onToggleDepartment,
-}) {
-  return (
-    <tr className=" transition-colors duration-200 group">
-      <td className="py-2 px-3 sticky left-0 z-10 w-36 flex items-center gap-2 bg-white">
-        {agent.username}
-        <Edit3
-          size={18}
-          strokeWidth={1}
-          className="text-gray-500 cursor-pointer hover:text-purple-700"
-          onClick={onEdit}
-        />
-      </td>
-      <td className="py-2 px-3 text-center sticky left-36 z-10 w-20 bg-white">
-        <ToggleSwitch checked={agent.active} onChange={onToggleActive} />
-      </td>
-      {visibleDepartments.map((dept, i) => (
-        <td key={i} className="w-36 text-center px-2 shrink-0">
-          <input
-            type="checkbox"
-            checked={agent.departments.includes(dept)}
-            onChange={() => onToggleDepartment(dept)}
-          />
-        </td>
-      ))}
-    </tr>
   );
 }
 
@@ -400,3 +376,4 @@ function FormField({ label, type = "text", value, onChange, className = "" }) {
     </div>
   );
 }
+
