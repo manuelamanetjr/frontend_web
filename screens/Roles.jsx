@@ -232,7 +232,7 @@ function RolesTable({
         <thead className="text-gray-500 border-b z-20 bg-white">
           <tr className="z-20">
             <th className="py-2 px-3 pl-3 sticky left-0 z-30 bg-white w-48">Role Name</th>
-            <th className="py-2 px-3 text-center sticky left-25 z-30 bg-white w-24">Status</th>
+            <th className="py-2 px-3 text-center sticky left-25 z-30 bg-white w-24">Active Status</th>
             <th className="py-2 px-3 text-center relative" colSpan={visiblePerms}>
               Permissions
               {permissions.length > visiblePerms && (
