@@ -422,7 +422,7 @@ export default function Queues() {
         <main className="flex-1 bg-white">
           <div className="flex flex-col md:flex-row h-full">
             {/* Queues list */}
-            <div className="w-full md:w-1/3 border-r border-gray-200 overflow-y-auto">
+            <div className="w-full md:w-[320px] bg-[#F5F5F5] overflow-y-auto">
               <div className="relative p-4 flex text-center justify-between rounded-xl py-2 px-4 items-center m-4 shadow-sm bg-[#E6DCF7]">
                 <button
                   className="text-sm text-[#6237A0] w-full text-left focus:outline-none"
