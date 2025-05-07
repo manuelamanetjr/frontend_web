@@ -422,7 +422,11 @@ export default function Queues() {
         <main className="flex-1 bg-white">
           <div className="flex flex-col md:flex-row h-full">
             {/* Queues list */}
+<<<<<<< HEAD
             <div className="w-full md:w-[320px] bg-[#F5F5F5] overflow-y-auto">
+=======
+            <div className="w-full md:w-1/3 border-r border-gray-200 overflow-y-auto">
+>>>>>>> 00e01d8878261b448c7d6532d647bdc30be9c1f4
               <div className="relative p-4 flex text-center justify-between rounded-xl py-2 px-4 items-center m-4 shadow-sm bg-[#E6DCF7]">
                 <button
                   className="text-sm text-[#6237A0] w-full text-left focus:outline-none"
@@ -583,7 +587,11 @@ export default function Queues() {
                   {/* Chat messages */}
                   <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 pb-2 auto-hide-scrollbar">
                     <div className="flex flex-col justify-end min-h-full gap-4 pt-4">
+<<<<<<< HEAD
                       {messages.length === 0 && (
+=======
+                      {/* {messages.length === 0 && ( */}
+>>>>>>> 00e01d8878261b448c7d6532d647bdc30be9c1f4
                         <>
                           <div className="text-[10px] text-gray-400 text-center flex items-center gap-2 my-2">
                             <div className="flex-grow h-px bg-gray-200" />
