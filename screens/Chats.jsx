@@ -37,13 +37,10 @@ export default function Chats() {
 
         {/* Main content */}
         <main className="flex-1 bg-gray-100 p-6 overflow-auto">
-            <h1 className="text-3xl font-bold mb-4">Chats</h1>
-            <p>This is the Chats page content.</p>
+          <h1 className="text-3xl font-bold mb-4">Chats</h1>
+          <p>This is the Chats page content.</p>
         </main>
       </div>
     </div>
   );
 }
-
-
-
