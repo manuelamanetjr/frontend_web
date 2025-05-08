@@ -16,7 +16,7 @@ const initialRoles = [
   },
   {
     name: "Support",
-    active: false, 
+    active: false,
     permissions: ["Create Account", "View Profile", "Manage Profile"],
   },
 ];
@@ -24,7 +24,6 @@ const initialRoles = [
 const permissions = ["View Messages", "Send Messages", "View Profile", "Create Account", "Manage Auto Reply", "Manage Department"];
 
 export default function ManageRoles() {
-  // State management
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -37,7 +36,6 @@ export default function ManageRoles() {
     name: "",
   });
 
-  // Derived state
   const filteredRoles = roles.filter((role) =>
     role.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -46,7 +44,6 @@ export default function ManageRoles() {
     permScrollIndex + visiblePerms
   );
 
-  // Handlers
   const toggleSidebar = () => setMobileSidebarOpen((prev) => !prev);
 
   const handleScrollPerms = (direction) => {
@@ -70,7 +67,6 @@ export default function ManageRoles() {
 
   const handleSaveRole = () => {
     if (currentEditIndex !== null) {
-      // Update existing role
       setRoles((prev) =>
         prev.map((role, i) =>
           i === currentEditIndex
@@ -79,7 +75,6 @@ export default function ManageRoles() {
         )
       );
     } else {
-      // Add new role
       setRoles((prev) => [
         ...prev,
         {
@@ -114,7 +109,6 @@ export default function ManageRoles() {
     );
   };
 
-  // Effects
   useEffect(() => {
     const handleResize = () => {
       setVisiblePerms(window.innerWidth >= 1280 ? 4 : permissions.length);
@@ -143,7 +137,6 @@ export default function ManageRoles() {
 
         <main className="flex-1 bg-gray-100 p-15 overflow-y-auto transition-colors duration-300">
           <div className="bg-white p-4 rounded-lg min-h-[80vh] transition-all duration-300">
-            {/* Search and Add Button */}
             <div className="flex justify-between items-center mb-4">
               <SearchInput 
                 value={searchQuery}
@@ -158,7 +151,6 @@ export default function ManageRoles() {
               </button>
             </div>
 
-            {/* Roles Table */}
             <div className="relative">
               <RolesTable
                 roles={filteredRoles}
@@ -174,7 +166,6 @@ export default function ManageRoles() {
             </div>
           </div>
 
-          {/* Edit/Add Modal */}
           {isModalOpen && (
             <RoleModal
               isEdit={currentEditIndex !== null}
@@ -189,8 +180,6 @@ export default function ManageRoles() {
     </div>
   );
 }
-
-// Extracted components
 
 function SearchInput({ value, onChange, placeholder }) {
   return (
@@ -232,7 +221,7 @@ function RolesTable({
         <thead className="text-gray-500 border-b z-20 bg-white">
           <tr className="z-20">
             <th className="py-2 px-3 pl-3 sticky left-0 z-30 bg-white w-48">Role Name</th>
-            <th className="py-2 px-3 text-center sticky left-25 z-30 bg-white w-24">Active Status</th>
+            <th className="py-2 px-3 text-center sticky left-48 z-30 bg-white w-24">Active Status</th>
             <th className="py-2 px-3 text-center relative" colSpan={visiblePerms}>
               Permissions
               {permissions.length > visiblePerms && (
@@ -244,15 +233,6 @@ function RolesTable({
                 />
               )}
             </th>
-          </tr>
-          <tr className="z-20">
-            <th className="sticky left-0 bg-white z-30 w-48"></th>
-            <th className="sticky left-25 bg-white z-30 w-24"></th>
-            {visiblePermissions.map((perm, i) => (
-              <th key={i} className="py-2 px-3 text-center font-medium bg-white min-w-[120px]">
-                {perm}
-              </th>
-            ))}
           </tr>
         </thead>
 
@@ -281,9 +261,9 @@ function RoleRow({
   onTogglePermission,
 }) {
   return (
-    <tr className="hover:bg-gray-50 transition-colors duration-200">
+    <tr className="transition-colors duration-200">
       <td className="py-3 px-3 align-top sticky left-0 z-10 bg-white w-100">
-        <div className="max-w-[180px] break-words text-gray-800 relative pr-6">
+        <div className="min-w-[180px] max-w-[180px] break-words text-gray-800 relative pr-6 whitespace-normal">
           <span>{role.name}</span>
           <div className="absolute top-1/2 right-0 -translate-y-1/2">
             <Edit3
@@ -295,7 +275,7 @@ function RoleRow({
           </div>
         </div>
       </td>
-      <td className="py-3 px-3 text-center sticky left-25 z-10 bg-white w-100">
+      <td className="py-3 px-3 text-center sticky left-48 z-10 bg-white w-100">
         <ToggleSwitch checked={role.active} onChange={onToggleActive} />
       </td>
       {visiblePermissions.map((perm, i) => (
