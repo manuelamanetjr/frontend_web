@@ -18,10 +18,10 @@ export default function Queues() {
   const [inputMessage, setInputMessage] = useState("");
   const [endedChats, setEndedChats] = useState([]);
   const [showTransferModal, setShowTransferModal] = useState(false);
-  const [showTransferConfirmModal, setShowTransferConfirmModal] =
-    useState(false);
+  const [showTransferConfirmModal, setShowTransferConfirmModal] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState("Billing");
   const [showDeptDropdown, setShowDeptDropdown] = useState(false);
+  const [transferDepartment, setTransferDepartment] = useState(null);
 
   const departmentCustomers = {
     Billing: [
@@ -107,10 +107,11 @@ export default function Queues() {
   const handleTransferClick = () => {
     setOpenDropdown(null);
     setShowTransferModal(true);
+    setTransferDepartment(selectedDepartment ); // Initialize the transfer department with the current department
   };
 
   const handleDepartmentSelect = () => {
-    if (selectedDepartment) {
+    if (transferDepartment) {
       setShowTransferModal(false);
       setShowTransferConfirmModal(true);
     }
@@ -118,13 +119,13 @@ export default function Queues() {
 
   const confirmTransfer = () => {
     setShowTransferConfirmModal(false);
-    console.log(`Transferring to ${selectedDepartment}`);
-    alert(`Customer transferred to ${selectedDepartment}`);
+    console.log(`Transferring to ${transferDepartment}`);
+    alert(`Customer transferred to ${transferDepartment}`);
   };
 
   const cancelTransfer = () => {
     setShowTransferModal(false);
-    setSelectedDepartment("");
+    setTransferDepartment(null); // Reset the transfer department
   };
 
   const cancelTransferConfirm = () => {
@@ -328,7 +329,11 @@ export default function Queues() {
               </label>
               <Select
                 options={departmentOptions}
-                onChange={(selected) => setSelectedDepartment(selected?.value)}
+                onChange={(selected) => {
+                  setTransferDepartment(selected?.value || null);
+                  console.log("Selected Department:", selected?.value); // Debugging
+                }}
+                value={departmentOptions.find((option) => option.value === transferDepartment) || null}
                 classNamePrefix="select"
                 placeholder="Select a department"
                 styles={{
@@ -356,18 +361,28 @@ export default function Queues() {
             </div>
             <div className="flex justify-center gap-20">
               <button
-                onClick={cancelTransfer}
+                 onClick={() => {
+                  cancelTransfer();
+                  setTransferDepartment(null); // Reset the transfer department on cancel
+                }}
                 className="px-5 py-2 border rounded-lg text-white bg-[#BCBCBC] hover:bg-gray-500 transition-colors"
               >
                 Cancel
               </button>
               <button
-                onClick={handleDepartmentSelect}
-                disabled={!selectedDepartment}
+                onClick={(e) => {
+                  if (!transferDepartment || transferDepartment === selectedDepartment) {
+                    e.preventDefault(); // Prevent the default action if no department is selected
+                    return;
+                  }
+                  handleDepartmentSelect();
+                  }
+                }
+                disabled={!transferDepartment || transferDepartment === selectedDepartment}  // Properly disable the button
                 className={`px-5 py-2 text-white rounded-lg transition-colors ${
-                  selectedDepartment
-                    ? "bg-[#6237A0] hover:bg-[#4c2b7d]"
-                    : "bg-[#6237A0]/50 cursor-not-allowed"
+                  transferDepartment && transferDepartment !== selectedDepartment
+                    ? "bg-[#6237A0] hover:bg-[#4c2b7d]" //enable button
+                    : "bg-[#6237A0]/50 cursor-not-allowed" // disable button
                 }`}
               >
                 Select
@@ -384,8 +399,8 @@ export default function Queues() {
               Confirm Transfer
             </h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to transfer this customer to{" "}
-              {selectedDepartment}?
+              Are you sure you want to transfer this customer to {transferDepartment}?
+              
             </p>
             <div className="flex justify-center gap-20">
               <button
@@ -717,7 +732,7 @@ export default function Queues() {
                     <div className="border-t border-gray-200 pt-4 bg-white canned-dropdown">
                       <div className="flex items-center gap-2 px-4 pb-3">
                         <button
-                          className="p-2 text-[#5C2E90] hover:bg-gray-100 rounded-full"
+                          className="p-3 text-[#5C2E90] hover:bg-gray-100 rounded-full"
                           onClick={() => setShowCannedMessages(false)}
                         >
                           <Menu size={20} />
@@ -728,6 +743,7 @@ export default function Queues() {
                           placeholder="Message"
                           value={inputMessage}
                           onChange={(e) => setInputMessage(e.target.value)}
+                          onClick={() => setShowCannedMessages(false)} // Hide canned messages when clicking on the textarea
                           onKeyDown={(e) => {
                             if (e.key === "Enter" && !e.shiftKey) {
                               e.preventDefault();
@@ -743,6 +759,8 @@ export default function Queues() {
                           <Send size={20} className="transform rotate-45" />
                         </button>
                       </div>
+                      
+                       {/* CANNED MESSAGES */}
 
                       <div className="px-4 pt-3">
                         <div className="grid grid-cols-1 gap-2 pb-3 max-h-[200px] overflow-y-auto">
@@ -764,7 +782,7 @@ export default function Queues() {
                   ) : (
                     <div className="mt-4 flex items-center gap-2 border-t border-gray-200 pt-4 px-4">
                       <button
-                        className="p-2 text-[#5C2E90] hover:bg-gray-100 rounded-full"
+                        className="p-2 mb-4 text-[#5C2E90] hover:bg-gray-100 rounded-full"
                         onClick={() => setShowCannedMessages(true)}
                       >
                         <Menu size={20} />
@@ -781,10 +799,10 @@ export default function Queues() {
                             sendMessage();
                           }
                         }}
-                        className="flex-1 bg-[#F2F0F0] rounded-xl px-4 py-2 leading-tight focus:outline-none text-gray-800 resize-none overflow-hidden"
+                        className="flex-1 bg-[#F2F0F0] rounded-xl px-4 py-2  mb-4 leading-tight focus:outline-none text-gray-800 resize-none overflow-hidden"
                       />
                       <button
-                        className="p-2 text-[#5C2E90] hover:bg-gray-100 rounded-full"
+                        className="p-2 mb-4 text-[#5C2E90] hover:bg-gray-100 rounded-full"
                         onClick={sendMessage}
                       >
                         <Send size={20} className="transform rotate-45" />
