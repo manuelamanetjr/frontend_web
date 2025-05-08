@@ -12,10 +12,26 @@ export default function MacrosAgents() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [replies, setReplies] = useState([
-    { text: "How can I assist you today?", active: true, department: "Billing" },
-    { text: "Can you describe the issue in more detail?", active: true, department: "Customer Support" },
-    { text: "Do you have the model number or serial number of the product?", active: false, department: "Sales" },
-    { text: "What is your account number or username?", active: true, department: "All" },
+    {
+      text: "How can I assist you today?",
+      active: true,
+      department: "Billing",
+    },
+    {
+      text: "Can you describe the issue in more detail?",
+      active: true,
+      department: "Customer Support",
+    },
+    {
+      text: "Do you have the model number or serial number of the product?",
+      active: false,
+      department: "Sales",
+    },
+    {
+      text: "What is your account number or username?",
+      active: true,
+      department: "All",
+    },
   ]);
 
   const departments = ["Billing", "Customer Support", "Sales", "All"];
@@ -53,7 +69,10 @@ export default function MacrosAgents() {
           <div className="bg-white p-4 rounded-lg min-h-[80vh] transition-all duration-300">
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center bg-gray-100 px-3 py-2 rounded-md w-1/3 relative">
-                <Search size={18} className="text-gray-500 mr-2 flex-shrink-0" />
+                <Search
+                  size={18}
+                  className="text-gray-500 mr-2 flex-shrink-0"
+                />
                 <input
                   type="text"
                   placeholder="Search..."
@@ -135,7 +154,9 @@ export default function MacrosAgents() {
                           onChange={(e) =>
                             setReplies((prev) =>
                               prev.map((r, i) =>
-                                i === idx ? { ...r, department: e.target.value } : r
+                                i === idx
+                                  ? { ...r, department: e.target.value }
+                                  : r
                               )
                             )
                           }
@@ -160,7 +181,9 @@ export default function MacrosAgents() {
                 <h2 className="text-md font-semibold mb-2">
                   {currentEditIndex !== null ? "Edit Macro" : "Add Macro"}
                 </h2>
-                <label className="text-sm text-gray-700 mb-1 block">Message</label>
+                <label className="text-sm text-gray-700 mb-1 block">
+                  Message
+                </label>
                 <textarea
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
@@ -178,7 +201,9 @@ export default function MacrosAgents() {
                       if (currentEditIndex !== null) {
                         setReplies((prev) =>
                           prev.map((r, i) =>
-                            i === currentEditIndex ? { ...r, text: editText } : r
+                            i === currentEditIndex
+                              ? { ...r, text: editText }
+                              : r
                           )
                         );
                       } else {

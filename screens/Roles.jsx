@@ -7,7 +7,15 @@ const initialRoles = [
   {
     name: "Admin",
     active: true,
-    permissions: ["View Messages", "Create Account", "Send Messages", "Manage Profile", "Use Canned Messages", "Manage Auto Reply", "Manage Department"],
+    permissions: [
+      "View Messages",
+      "Create Account",
+      "Send Messages",
+      "Manage Profile",
+      "Use Canned Messages",
+      "Manage Auto Reply",
+      "Manage Department",
+    ],
   },
   {
     name: "Manager",
@@ -16,12 +24,19 @@ const initialRoles = [
   },
   {
     name: "Support",
-    active: false, 
+    active: false,
     permissions: ["Create Account", "View Profile", "Manage Profile"],
   },
 ];
 
-const permissions = ["View Messages", "Send Messages", "View Profile", "Create Account", "Manage Auto Reply", "Manage Department"];
+const permissions = [
+  "View Messages",
+  "Send Messages",
+  "View Profile",
+  "Create Account",
+  "Manage Auto Reply",
+  "Manage Department",
+];
 
 export default function ManageRoles() {
   // State management
@@ -73,9 +88,7 @@ export default function ManageRoles() {
       // Update existing role
       setRoles((prev) =>
         prev.map((role, i) =>
-          i === currentEditIndex
-            ? { ...role, name: editForm.name }
-            : role
+          i === currentEditIndex ? { ...role, name: editForm.name } : role
         )
       );
     } else {
@@ -104,11 +117,11 @@ export default function ManageRoles() {
     setRoles((prev) =>
       prev.map((role, i) => {
         if (i !== roleIndex) return role;
-        
+
         const updatedPermissions = role.permissions.includes(permission)
           ? role.permissions.filter((p) => p !== permission)
           : [...role.permissions, permission];
-          
+
         return { ...role, permissions: updatedPermissions };
       })
     );
@@ -145,7 +158,7 @@ export default function ManageRoles() {
           <div className="bg-white p-4 rounded-lg min-h-[80vh] transition-all duration-300">
             {/* Search and Add Button */}
             <div className="flex justify-between items-center mb-4">
-              <SearchInput 
+              <SearchInput
                 value={searchQuery}
                 onChange={setSearchQuery}
                 placeholder="Search roles..."
@@ -195,7 +208,11 @@ export default function ManageRoles() {
 function SearchInput({ value, onChange, placeholder }) {
   return (
     <div className="flex items-center bg-gray-100 px-3 py-2 rounded-md w-1/3 relative">
-      <Search size={18} strokeWidth={1} className="text-gray-500 mr-2 flex-shrink-0" />
+      <Search
+        size={18}
+        strokeWidth={1}
+        className="text-gray-500 mr-2 flex-shrink-0"
+      />
       <input
         type="text"
         placeholder={placeholder}
@@ -231,14 +248,23 @@ function RolesTable({
       <table className="min-w-full text-sm text-left">
         <thead className="text-gray-500 border-b z-20 bg-white">
           <tr className="z-20">
-            <th className="py-2 px-3 pl-3 sticky left-0 z-30 bg-white w-48">Role Name</th>
-            <th className="py-2 px-3 text-center sticky left-25 z-30 bg-white w-24">Active Status</th>
-            <th className="py-2 px-3 text-center relative" colSpan={visiblePerms}>
+            <th className="py-2 px-3 pl-3 sticky left-0 z-30 bg-white w-48">
+              Role Name
+            </th>
+            <th className="py-2 px-3 text-center sticky left-25 z-30 bg-white w-24">
+              Active Status
+            </th>
+            <th
+              className="py-2 px-3 text-center relative"
+              colSpan={visiblePerms}
+            >
               Permissions
               {permissions.length > visiblePerms && (
                 <ScrollButtons
                   canScrollLeft={permScrollIndex > 0}
-                  canScrollRight={permScrollIndex < permissions.length - visiblePerms}
+                  canScrollRight={
+                    permScrollIndex < permissions.length - visiblePerms
+                  }
                   onScrollLeft={() => onScrollPerms("left")}
                   onScrollRight={() => onScrollPerms("right")}
                 />
@@ -249,7 +275,10 @@ function RolesTable({
             <th className="sticky left-0 bg-white z-30 w-48"></th>
             <th className="sticky left-25 bg-white z-30 w-24"></th>
             {visiblePermissions.map((perm, i) => (
-              <th key={i} className="py-2 px-3 text-center font-medium bg-white min-w-[120px]">
+              <th
+                key={i}
+                className="py-2 px-3 text-center font-medium bg-white min-w-[120px]"
+              >
                 {perm}
               </th>
             ))}
@@ -324,20 +353,29 @@ const ToggleSwitch = ({ checked, onChange }) => (
   </label>
 );
 
-function ScrollButtons({ canScrollLeft, canScrollRight, onScrollLeft, onScrollRight }) {
+function ScrollButtons({
+  canScrollLeft,
+  canScrollRight,
+  onScrollLeft,
+  onScrollRight,
+}) {
   return (
     <div className="absolute right-0 top-1/2 transform -translate-y-1/2 flex gap-1">
       <button
         onClick={onScrollLeft}
         disabled={!canScrollLeft}
-        className={`p-1 rounded ${!canScrollLeft ? 'text-gray-300' : 'text-gray-600 hover:bg-gray-100'}`}
+        className={`p-1 rounded ${
+          !canScrollLeft ? "text-gray-300" : "text-gray-600 hover:bg-gray-100"
+        }`}
       >
         <ChevronLeft size={16} />
       </button>
       <button
         onClick={onScrollRight}
         disabled={!canScrollRight}
-        className={`p-1 rounded ${!canScrollRight ? 'text-gray-300' : 'text-gray-600 hover:bg-gray-100'}`}
+        className={`p-1 rounded ${
+          !canScrollRight ? "text-gray-300" : "text-gray-600 hover:bg-gray-100"
+        }`}
       >
         <ChevronRight size={16} />
       </button>

@@ -116,7 +116,8 @@ export default function Profile() {
                 <div>
                   <p className="font-medium text-gray-500">Name</p>
                   <p className="text-base font-regular text-gray-800">
-                    {profileData.firstName} {profileData.middleName} {profileData.lastName}
+                    {profileData.firstName} {profileData.middleName}{" "}
+                    {profileData.lastName}
                   </p>
                 </div>
                 <div>
@@ -187,7 +188,10 @@ export default function Profile() {
                   className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
                   value={profileData.firstName}
                   onChange={(e) =>
-                    setProfileData({ ...profileData, firstName: e.target.value })
+                    setProfileData({
+                      ...profileData,
+                      firstName: e.target.value,
+                    })
                   }
                 />
               </div>
@@ -200,7 +204,10 @@ export default function Profile() {
                   className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
                   value={profileData.middleName}
                   onChange={(e) =>
-                    setProfileData({ ...profileData, middleName: e.target.value })
+                    setProfileData({
+                      ...profileData,
+                      middleName: e.target.value,
+                    })
                   }
                 />
               </div>
@@ -252,7 +259,10 @@ export default function Profile() {
                   className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
                   value={profileData.dateOfBirth}
                   onChange={(e) =>
-                    setProfileData({ ...profileData, dateOfBirth: e.target.value })
+                    setProfileData({
+                      ...profileData,
+                      dateOfBirth: e.target.value,
+                    })
                   }
                 />
               </div>

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
-import {Search, X } from "react-feather";
+import { Search, X } from "react-feather";
 
 export default function ChangeRoles() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -74,10 +74,7 @@ export default function ChangeRoles() {
                 </thead>
                 <tbody>
                   {filteredUsers.map((user, idx) => (
-                    <tr
-                      key={idx}
-                      className=" transition-colors duration-200"
-                    >
+                    <tr key={idx} className=" transition-colors duration-200">
                       <td className="py-2 px-3 flex items-center gap-2">
                         {user.name}
                       </td>
@@ -115,7 +112,6 @@ export default function ChangeRoles() {
                               key={i}
                               value={role}
                               className="bg-[#f3f4f6] text-[#1f2937] hover:bg-gray-100"
-                              
                             >
                               {role}
                             </option>

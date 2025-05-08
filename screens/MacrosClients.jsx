@@ -13,8 +13,16 @@ export default function MacrosClients() {
 
   const [replies, setReplies] = useState([
     { text: "What’s my account balance?", active: true, department: "General" },
-    { text: "What are your business hours?", active: true, department: "Support" },
-    { text: "How long will it take to receive my order?", active: false, department: "Sales" },
+    {
+      text: "What are your business hours?",
+      active: true,
+      department: "Support",
+    },
+    {
+      text: "How long will it take to receive my order?",
+      active: false,
+      department: "Sales",
+    },
     { text: "Why was my account suspended?", active: true, department: "All" },
   ]);
 
@@ -54,7 +62,10 @@ export default function MacrosClients() {
           <div className="bg-white p-4 rounded-lg min-h-[80vh] transition-all duration-300">
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center bg-gray-100 px-3 py-2 rounded-md w-1/3 relative">
-                <Search size={18} className="text-gray-500 mr-2 flex-shrink-0" />
+                <Search
+                  size={18}
+                  className="text-gray-500 mr-2 flex-shrink-0"
+                />
                 <input
                   type="text"
                   placeholder="Search..."
@@ -136,7 +147,9 @@ export default function MacrosClients() {
                           onChange={(e) =>
                             setReplies((prev) =>
                               prev.map((r, i) =>
-                                i === idx ? { ...r, department: e.target.value } : r
+                                i === idx
+                                  ? { ...r, department: e.target.value }
+                                  : r
                               )
                             )
                           }
@@ -161,7 +174,9 @@ export default function MacrosClients() {
                 <h2 className="text-md font-semibold mb-2">
                   {currentEditIndex !== null ? "Edit Macro" : "Add Macro"}
                 </h2>
-                <label className="text-sm text-gray-700 mb-1 block">Message</label>
+                <label className="text-sm text-gray-700 mb-1 block">
+                  Message
+                </label>
                 <textarea
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
@@ -179,7 +194,9 @@ export default function MacrosClients() {
                       if (currentEditIndex !== null) {
                         setReplies((prev) =>
                           prev.map((r, i) =>
-                            i === currentEditIndex ? { ...r, text: editText } : r
+                            i === currentEditIndex
+                              ? { ...r, text: editText }
+                              : r
                           )
                         );
                       } else {
