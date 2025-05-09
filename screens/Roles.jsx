@@ -198,7 +198,7 @@ export default function ManageRoles() {
             </div>
             <div className="overflow-x-auto ">
               <table className="min-w-full text-sm text-left">
-                <thead className="bg-white text-gray-500">
+                <thead className="bg-white border-b text-gray-500">
                   <tr>
                     <th className="sticky left-0 z-30 bg-white py-2 px-3 w-48">
                       Role Name
