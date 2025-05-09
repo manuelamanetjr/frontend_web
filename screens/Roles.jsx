@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Edit3, Search, X, ChevronLeft, ChevronRight } from "react-feather";
+import { Edit3, Search, X } from "react-feather";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 
@@ -7,28 +7,104 @@ const initialRoles = [
   {
     name: "Admin",
     active: true,
-    permissions: ["View Messages", "Create Account", "Send Messages", "Manage Profile", "Use Canned Messages", "Manage Auto Reply", "Manage Department"],
+    permissions: [
+      "Can view Queues",
+      "Can Reply",
+      "Can view Chats",
+      "Can End Chat",
+      "Can Transfer Department",
+      "Can view Macros",
+      "Can send Macros",
+      "Can view Department",
+      "Can Edit Department",
+      "Can Assign Department",
+      "Can Add Department",
+      "Can Manage Profile",
+      "Can View Auto-Replies",
+      "Can Edit Auto-Replies",
+      "Can Add Auto-Replies",
+      "Can view Admin",
+      "Can Edit Admin Accounts",
+      "Can Add Admin Accounts",
+      "Can view Roles",
+      "Can Edit Roles",
+      "Can Assign Roles",
+      "Can Add Roles",
+      "Can View Manage Agents",
+    ],
   },
   {
-    name: "Manager",
+    name: "Client",
     active: true,
-    permissions: ["View Messages", "View Profile", "Manage Profile"],
+    permissions: ["Can view Queues", "Can view Chats", "Can View Auto-Replies"],
   },
   {
-    name: "Support",
-    active: false,
-    permissions: ["Create Account", "View Profile", "Manage Profile"],
+    name: "Agent",
+    active: true,
+    permissions: [
+      "Can view Queues",
+      "Can Reply",
+      "Can view Chats",
+      "Can End Chat",
+      "Can Transfer Department",
+      "Can view Macros",
+      "Can send Macros",
+      "Can View Auto-Replies",
+      "Can Manage Profile",
+    ],
+  },
+  {
+    name: "Supervisor",
+    active: true,
+    permissions: [
+      "Can view Queues",
+      "Can Reply",
+      "Can view Chats",
+      "Can End Chat",
+      "Can Transfer Department",
+      "Can view Macros",
+      "Can send Macros",
+      "Can view Department",
+      "Can Edit Department",
+      "Can Assign Department",
+      "Can View Auto-Replies",
+      "Can Edit Auto-Replies",
+      "Can Manage Profile",
+      "Can View Manage Agents",
+    ],
   },
 ];
 
-const permissions = ["View Messages", "Send Messages", "View Profile", "Create Account", "Manage Auto Reply", "Manage Department"];
+const permissions = [
+  "Can view Queues",
+  "Can Reply",
+  "Can view Chats",
+  "Can End Chat",
+  "Can Transfer Department",
+  "Can view Macros",
+  "Can send Macros",
+  "Can view Department",
+  "Can Edit Department",
+  "Can Assign Department",
+  "Can Add Department",
+  "Can Manage Profile",
+  "Can View Auto-Replies",
+  "Can Edit Auto-Replies",
+  "Can Add Auto-Replies",
+  "Can view Admin",
+  "Can Edit Admin Accounts",
+  "Can Add Admin Accounts",
+  "Can view Roles",
+  "Can Edit Roles",
+  "Can Assign Roles",
+  "Can Add Roles",
+  "Can View Manage Agents",
+];
 
 export default function ManageRoles() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [visiblePerms, setVisiblePerms] = useState(4);
-  const [permScrollIndex, setPermScrollIndex] = useState(0);
   const [roles, setRoles] = useState(initialRoles);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentEditIndex, setCurrentEditIndex] = useState(null);
@@ -38,23 +114,7 @@ export default function ManageRoles() {
     role.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const visiblePermissions = permissions.slice(
-    permScrollIndex,
-    permScrollIndex + visiblePerms
-  );
-
   const toggleSidebar = () => setMobileSidebarOpen((prev) => !prev);
-
-  const handleScrollPerms = (direction) => {
-    if (direction === "left" && permScrollIndex > 0) {
-      setPermScrollIndex(permScrollIndex - 1);
-    } else if (
-      direction === "right" &&
-      permScrollIndex < permissions.length - visiblePerms
-    ) {
-      setPermScrollIndex(permScrollIndex + 1);
-    }
-  };
 
   const handleOpenEditModal = (index = null) => {
     setCurrentEditIndex(index);
@@ -68,9 +128,7 @@ export default function ManageRoles() {
     if (currentEditIndex !== null) {
       setRoles((prev) =>
         prev.map((role, i) =>
-          i === currentEditIndex
-            ? { ...role, name: editForm.name }
-            : role
+          i === currentEditIndex ? { ...role, name: editForm.name } : role
         )
       );
     } else {
@@ -108,16 +166,6 @@ export default function ManageRoles() {
     );
   };
 
-  useEffect(() => {
-    const handleResize = () => {
-      setVisiblePerms(window.innerWidth >= 1280 ? 4 : permissions.length);
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   return (
     <div className="flex flex-col h-screen overflow-hidden">
       <TopNavbar toggleSidebar={toggleSidebar} />
@@ -133,11 +181,10 @@ export default function ManageRoles() {
           toggleDropdown={setOpenDropdown}
           openDropdown={openDropdown}
         />
-
         <main className="flex-1 bg-gray-100 p-15 overflow-y-auto transition-colors duration-300">
           <div className="bg-white p-4 rounded-lg min-h-[80vh] transition-all duration-300">
             <div className="flex justify-between items-center mb-4">
-              <SearchInput 
+              <SearchInput
                 value={searchQuery}
                 onChange={setSearchQuery}
                 placeholder="Search roles..."
@@ -149,19 +196,62 @@ export default function ManageRoles() {
                 Add Role
               </button>
             </div>
-
-            <div className="relative">
-              <RolesTable
-                roles={filteredRoles}
-                visiblePermissions={visiblePermissions}
-                permissions={permissions}
-                visiblePerms={visiblePerms}
-                permScrollIndex={permScrollIndex}
-                onScrollPerms={handleScrollPerms}
-                onEdit={handleOpenEditModal}
-                onToggleActive={handleToggleActive}
-                onTogglePermission={handleTogglePermission}
-              />
+            <div className="overflow-x-auto ">
+              <table className="min-w-full text-sm text-left">
+                <thead className="bg-white text-gray-500">
+                  <tr>
+                    <th className="sticky left-0 z-30 bg-white py-2 px-3 w-48">
+                      Role Name
+                    </th>
+                    <th className="sticky left-[12rem] z-30 bg-white py-2 px-3 text-center w-24">
+                      Active Status
+                    </th>
+                    {permissions.map((perm, i) => (
+                      <th
+                        key={i}
+                        className="py-2 px-3 text-center min-w-[120px]"
+                      >
+                        {perm}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredRoles.map((role, idx) => (
+                    <tr key={idx} className="bg-white ">
+                      <td className="align-top w-100 sticky left-0 bg-white py-3 px-3 z-10">
+                        <div className="relative min-w-[180px] max-w-[180px] pr-6">
+                          <span className="break-words whitespace-normal text-sm block">
+                            {role.name}
+                          </span>
+                          <Edit3
+                            size={18}
+                            strokeWidth={1}
+                            className="text-gray-500 cursor-pointer hover:text-purple-700 absolute top-1/2 right-1 -translate-y-1/2"
+                            onClick={() => handleOpenEditModal(idx)}
+                          />
+                        </div>
+                      </td>
+                      <td className="sticky left-[12rem] bg-white py-3 px-3 z-10 text-center">
+                        <ToggleSwitch
+                          checked={role.active}
+                          onChange={() => handleToggleActive(idx)}
+                        />
+                      </td>
+                      {permissions.map((perm, i) => (
+                        <td key={i} className="py-3 px-3 text-center">
+                          <input
+                            type="checkbox"
+                            checked={role.permissions.includes(perm)}
+                            onChange={() => handleTogglePermission(idx, perm)}
+                            className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                          />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
 
@@ -183,7 +273,11 @@ export default function ManageRoles() {
 function SearchInput({ value, onChange, placeholder }) {
   return (
     <div className="flex items-center bg-gray-100 px-3 py-2 rounded-md w-1/3 relative">
-      <Search size={18} strokeWidth={1} className="text-gray-500 mr-2 flex-shrink-0" />
+      <Search
+        size={18}
+        strokeWidth={1}
+        className="text-gray-500 mr-2 flex-shrink-0"
+      />
       <input
         type="text"
         placeholder={placeholder}
@@ -203,174 +297,24 @@ function SearchInput({ value, onChange, placeholder }) {
   );
 }
 
-function RolesTable({
-  roles,
-  visiblePermissions,
-  permissions,
-  visiblePerms,
-  permScrollIndex,
-  onScrollPerms,
-  onEdit,
-  onToggleActive,
-  onTogglePermission,
-}) {
+function ToggleSwitch({ checked, onChange }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full text-sm text-left">
-        <thead className="text-gray-500 border-b z-20 bg-white">
-          {/* First Row with Header Labels */}
-          <tr>
-            <th className="py-2 px-3 pl-3 sticky left-0 z-30 bg-white w-48">Role Name</th>
-            <th className="py-2 px-3 text-center sticky left-48 z-30 bg-white w-24">Active Status</th>
-            <th
-              className="py-2 px-3 text-center bg-white relative"
-              colSpan={visiblePerms}
-            >
-              Permissions
-            </th>
-          </tr>
-
-          {/* Second Row with Scroll Buttons Only Below Permissions Header */}
-          <tr>
-            <th className="sticky left-0 bg-white z-30" />
-            <th className="sticky left-48 bg-white z-30" />
-            <th colSpan={visiblePerms} className="bg-white text-center py-1">
-              {permissions.length > visiblePerms && (
-                <ScrollButtons
-                  canScrollLeft={permScrollIndex > 0}
-                  canScrollRight={permScrollIndex < permissions.length - visiblePerms}
-                  onScrollLeft={() => onScrollPerms("left")}
-                  onScrollRight={() => onScrollPerms("right")}
-                />
-              )}
-            </th>
-          </tr>
-
-          {/* Third Row with Permission Column Headers */}
-          <tr className="text-xs text-gray-400 border-b">
-            <th className="sticky left-0 bg-white z-30"></th>
-            <th className="sticky left-48 bg-white z-30"></th>
-            {visiblePermissions.map((perm, i) => (
-              <th key={i} className="text-center py-2 px-3 min-w-[120px]">
-                {perm}
-              </th>
-            ))}
-          </tr>
-        </thead>
-
-        <tbody>
-          {roles.map((role, idx) => (
-            <RoleRow
-              key={idx}
-              role={role}
-              visiblePermissions={visiblePermissions}
-              onEdit={() => onEdit(idx)}
-              onToggleActive={() => onToggleActive(idx)}
-              onTogglePermission={(perm) => onTogglePermission(idx, perm)}
-            />
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function RoleRow({
-  role,
-  visiblePermissions,
-  onEdit,
-  onToggleActive,
-  onTogglePermission,
-}) {
-  return (
-    <tr className="transition-colors duration-200">
-      <td className="py-3 px-3 align-top sticky left-0 z-10 bg-white w-100">
-        <div className="min-w-[180px] max-w-[180px] break-words text-gray-800 relative pr-6 whitespace-normal">
-          <span>{role.name}</span>
-          <div className="absolute top-1/2 right-0 -translate-y-1/2">
-            <Edit3
-              size={18}
-              strokeWidth={1}
-              className="text-gray-500 cursor-pointer w-[18px] h-[18px] transition-colors duration-200 hover:text-purple-700"
-              onClick={onEdit}
-            />
-          </div>
-        </div>
-      </td>
-      <td className="py-3 px-3 text-center sticky left-48 z-10 bg-white w-100">
-        <ToggleSwitch checked={role.active} onChange={onToggleActive} />
-      </td>
-      {visiblePermissions.map((perm, i) => (
-        <td key={i} className="py-3 px-3 text-center min-w-[120px]">
-          <input
-            type="checkbox"
-            checked={role.permissions.includes(perm)}
-            onChange={() => onTogglePermission(perm)}
-            className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
-          />
-        </td>
-      ))}
-    </tr>
-  );
-}
-
-
-function PermissionRow({ role, visiblePermissions, onTogglePermission }) {
-  return (
-    <tr className="bg-gray-50">
-      <td colSpan={2} className="sticky left-0 bg-gray-50 z-0"></td>
-      {visiblePermissions.map((perm, i) => (
-        <td key={i} className="py-3 px-3 text-center min-w-[120px]">
-          <input
-            type="checkbox"
-            checked={role.permissions.includes(perm)}
-            onChange={() => onTogglePermission(perm)}
-            className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
-          />
-          <div className="text-xs text-gray-500 mt-1">{perm}</div>
-        </td>
-      ))}
-    </tr>
-  );
-}
-
-const ToggleSwitch = ({ checked, onChange }) => (
-  <label className="inline-flex relative items-center cursor-pointer z-30">
-    <input
-      type="checkbox"
-      className="sr-only peer"
-      checked={checked}
-      onChange={onChange}
-    />
-    <div className="w-7 h-4 bg-gray-200 rounded-full peer peer-checked:bg-[#6237A0] transition-colors duration-300 relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-transform peer-checked:after:translate-x-3" />
-  </label>
-);
-
-function ScrollButtons({ canScrollLeft, canScrollRight, onScrollLeft, onScrollRight }) {
-  return (
-    <div className="absolute right-0 top-1/2 transform -translate-y-1/2 flex gap-1">
-      <button
-        onClick={onScrollLeft}
-        disabled={!canScrollLeft}
-        className={`p-1 rounded ${!canScrollLeft ? 'text-gray-300' : 'text-gray-600 hover:bg-gray-100'}`}
-      >
-        <ChevronLeft size={16} />
-      </button>
-      <button
-        onClick={onScrollRight}
-        disabled={!canScrollRight}
-        className={`p-1 rounded ${!canScrollRight ? 'text-gray-300' : 'text-gray-600 hover:bg-gray-100'}`}
-      >
-        <ChevronRight size={16} />
-      </button>
-    </div>
+    <label className="inline-flex relative items-center cursor-pointer">
+      <input
+        type="checkbox"
+        className="sr-only peer"
+        checked={checked}
+        onChange={onChange}
+      />
+      <div className="w-7 h-4 bg-gray-200 rounded-full peer peer-checked:bg-[#6237A0] transition-colors duration-300 relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-transform peer-checked:after:translate-x-3" />
+    </label>
   );
 }
 
 function RoleModal({ isEdit, formData, onFormChange, onClose, onSave }) {
   return (
-    <div className="fixed inset-0 bg-gray-400/50 flex justify-center items-center z-50 transition-opacity duration-300">
-      <div className="bg-white rounded-lg shadow-xl p-6 w-96 transform scale-95 animate-fadeIn transition-transform duration-300 ease-out">
+    <div className="fixed inset-0 bg-gray-400/50 flex justify-center items-center z-50">
+      <div className="bg-white rounded-lg shadow-xl p-6 w-96">
         <h2 className="text-md font-semibold mb-4">
           {isEdit ? "Edit Role" : "Add Role"}
         </h2>
@@ -400,9 +344,9 @@ function RoleModal({ isEdit, formData, onFormChange, onClose, onSave }) {
   );
 }
 
-function FormField({ label, type = "text", value, onChange, className = "" }) {
+function FormField({ label, type = "text", value, onChange }) {
   return (
-    <div className={className}>
+    <div>
       <label className="text-sm text-gray-700 mb-1 block">{label}</label>
       <input
         type={type}
