@@ -480,15 +480,19 @@ export default function Queues() {
                 )}
               </div>
 
+              {/* Chat list */}
+
               {(departmentCustomers[selectedDepartment] || []).map(
                 (customer) => (
                   <div
                     key={customer.id}
                     onClick={() => {
-                      if (!endedChats.some((chat) => chat.id === customer.id)) {
+                      
                         setSelectedCustomer(customer);
-                        setChatEnded(false);
-                      }
+                        setChatEnded(
+                          endedChats.some((chat) => chat.id === customer.id) //Update chat ended state
+                        );
+                      
                     }}
                     className={`flex items-center justify-between px-4 py-3 border-2 ${
                       selectedCustomer?.id === customer.id
@@ -660,7 +664,8 @@ export default function Queues() {
                           </div>
                         </>
                       
-
+                      
+                        {/* Existing messages */}
                       {groupedMessages.map((item, index) => {
                         if (item.type === "date") {
                           return (
@@ -723,18 +728,22 @@ export default function Queues() {
                         }
                       })}
 
+                      {/* Chat ended system message */}
+    {chatEnded && (
+      <div className="text-[10px] text-gray-400 text-center flex items-center gap-2 my-2">
+        <div className="flex-grow h-px bg-gray-200" />
+        Chat has ended
+        <div className="flex-grow h-px bg-gray-200" />
+      </div>
+    )}
+
+
                       <div ref={bottomRef} />
                     </div>
                   </div>
 
                   {/* Message input area */}
-                  {chatEnded ? (
-                    <div className="mt-4 border-t border-gray-200 pt-4 px-4">
-                      <div className="text-center text-gray-500 py-2">
-                        This chat has ended
-                      </div>
-                    </div>
-                  ) : showCannedMessages ? (
+                 { showCannedMessages ? (
                     <div className="border-t border-gray-200 pt-4 bg-white canned-dropdown">
                       <div className="flex items-center gap-2 px-4 pb-3">
                         <button
@@ -756,7 +765,8 @@ export default function Queues() {
                               sendMessage();
                             }
                           }}
-                          className="flex-1 bg-[#F2F0F0] rounded-xl px-4 py-2 leading-tight focus:outline-none text-gray-800 resize-none overflow-hidden"
+                          className="flex-1 bg-[#F2F0F0] rounded-xl px-4 py-2 leading-tight focus:outline-none text-gray-800 resize-none overflow-y-auto"
+                          style={{maxHeight: "100px"}}
                         />
                         <button
                           className="p-2 text-[#5C2E90] hover:bg-gray-100 rounded-full"
@@ -785,11 +795,16 @@ export default function Queues() {
                         </div>
                       </div>
                     </div>
-                  ) : (
+                  ) : ( //Message input area when chat has ended
                     <div className="mt-4 flex items-center gap-2 border-t border-gray-200 pt-4 px-4">
                       <button
-                        className="p-2 mb-4 text-[#5C2E90] hover:bg-gray-100 rounded-full"
+                        className={`p-2 mb-4 text-[#5C2E90] hover:bg-gray-100 rounded-full
+                           ${chatEnded
+                            ? "text-gray-400 cursor-not-allowed"
+                            : "text-[#5C2E90] hover:bg-gray-100"
+                          }`}
                         onClick={() => setShowCannedMessages(true)}
+                        disabled={chatEnded}
                       >
                         <Menu size={20} />
                       </button>
@@ -798,19 +813,29 @@ export default function Queues() {
                         rows={1}
                         placeholder="Message"
                         value={inputMessage}
-                        onChange={(e) => setInputMessage(e.target.value)}
+                        onChange={handleInputChange}
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && !e.shiftKey) {
                             e.preventDefault();
                             sendMessage();
                           }
                         }}
-                        className="flex-1 bg-[#F2F0F0] rounded-xl px-4 py-2  mb-4 leading-tight focus:outline-none text-gray-800 resize-none overflow-y-auto"
-                        style={{ maxHeight: "100px" }} // Limit height to 100px
+                        className={`flex-1 bg-[#F2F0F0] rounded-xl px-4 py-2  mb-4 leading-tight focus:outline-none text-gray-800 resize-none overflow-y-auto
+                        ${chatEnded
+                          ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                          : "bg-[#F2F0F0] text-gray-800"
+                        }`}
+                        style={{ maxHeight: "100px" }}
+                        disabled={chatEnded} // Disable the textarea if chat has ended
                       />
                       <button
-                        className="p-2 mb-4 text-[#5C2E90] hover:bg-gray-100 rounded-full"
+                        className={`p-2 mb-4 text-[#5C2E90] hover:bg-gray-100 rounded-full
+                          ${chatEnded
+                            ? "text-gray-400 cursor-not-allowed"
+                            : "text-[#5C2E90] hover:bg-gray-100"
+                          }`}
                         onClick={sendMessage}
+                        disabled={chatEnded} // Disable the button if chat has ended
                       >
                         <Send size={20} className="transform rotate-45" />
                       </button>
