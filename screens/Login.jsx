@@ -1,11 +1,20 @@
-import React from "react";
+import React, {useState} from "react";
 import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "react-feather";
 
 export default function Login() {
   const navigate = useNavigate();
 
   const handleLogin = () => {
     navigate("/queues");
+  };
+
+  const [showPassword, setShowPassword] = useState(false); // Correctly imported and used
+  const [password, setPassword] = useState(""); // Added state for password
+
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   return (
@@ -37,18 +46,36 @@ export default function Login() {
               </div>
 
               <div className="space-y-2">
+                
                 <label
                   htmlFor="password"
                   className="block font-medium text-sm text-black"
                 >
                   Password
+                  
                 </label>
+                <div className="relative">
+
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
                   placeholder="Enter your password"
-                  className="w-full border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 pr-10"
+                  
                 />
+                {showPassword ? (
+                  <Eye className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer"
+                  onClick={togglePasswordVisibility}
+                  />
+                ) : (
+                  <EyeOff className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer"
+                  onClick={togglePasswordVisibility}
+                  />
+                )}
+                
+                </div>
                 <div className="text-right">
                   <a
                     href="#"
@@ -70,14 +97,14 @@ export default function Login() {
         </div>
 
         {/* Right side - Logo (appears on top on mobile) */}
-        <div className="w-full md:w-3/5 bg-gray-50 flex items-center justify-center p-10 sm:p-20">
-          <div className="flex flex-col items-center md:flex-row">
+        <div className="w-full md:w-3/5 bg-gray-50 flex items-center justify-center p-20 sm:p-20">
+          <div className="flex flex-row items-center md:flex-row">
             <img
               src="src/assets/images/icon.png"
               alt="Servana Logo"
-              className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 mb-4 md:mb-0 md:mr-4"
+              className="w-32 h-32 sm:w-35 sm:h-35 md:w-50 md:h-50 mb-2 md:mb-0 md:mr-2"
             />
-            <span className="text-5xl sm:text-6xl font-medium text-[#6237A0] font-baloo text-center md:text-left">
+            <span className="text-6xl sm:text-7xl font-medium text-[#6237A0] font-baloo text-center md:text-left">
               servana
             </span>
           </div>
