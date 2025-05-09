@@ -32,13 +32,12 @@ export default function ManageRoles() {
   const [roles, setRoles] = useState(initialRoles);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentEditIndex, setCurrentEditIndex] = useState(null);
-  const [editForm, setEditForm] = useState({
-    name: "",
-  });
+  const [editForm, setEditForm] = useState({ name: "" });
 
   const filteredRoles = roles.filter((role) =>
     role.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
   const visiblePermissions = permissions.slice(
     permScrollIndex,
     permScrollIndex + visiblePerms
@@ -99,11 +98,11 @@ export default function ManageRoles() {
     setRoles((prev) =>
       prev.map((role, i) => {
         if (i !== roleIndex) return role;
-        
+
         const updatedPermissions = role.permissions.includes(permission)
           ? role.permissions.filter((p) => p !== permission)
           : [...role.permissions, permission];
-          
+
         return { ...role, permissions: updatedPermissions };
       })
     );
@@ -219,11 +218,23 @@ function RolesTable({
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm text-left">
         <thead className="text-gray-500 border-b z-20 bg-white">
-          <tr className="z-20">
+          {/* First Row with Header Labels */}
+          <tr>
             <th className="py-2 px-3 pl-3 sticky left-0 z-30 bg-white w-48">Role Name</th>
             <th className="py-2 px-3 text-center sticky left-48 z-30 bg-white w-24">Active Status</th>
-            <th className="py-2 px-3 text-center relative" colSpan={visiblePerms}>
+            <th
+              className="py-2 px-3 text-center bg-white relative"
+              colSpan={visiblePerms}
+            >
               Permissions
+            </th>
+          </tr>
+
+          {/* Second Row with Scroll Buttons Only Below Permissions Header */}
+          <tr>
+            <th className="sticky left-0 bg-white z-30" />
+            <th className="sticky left-48 bg-white z-30" />
+            <th colSpan={visiblePerms} className="bg-white text-center py-1">
               {permissions.length > visiblePerms && (
                 <ScrollButtons
                   canScrollLeft={permScrollIndex > 0}
@@ -233,6 +244,17 @@ function RolesTable({
                 />
               )}
             </th>
+          </tr>
+
+          {/* Third Row with Permission Column Headers */}
+          <tr className="text-xs text-gray-400 border-b">
+            <th className="sticky left-0 bg-white z-30"></th>
+            <th className="sticky left-48 bg-white z-30"></th>
+            {visiblePermissions.map((perm, i) => (
+              <th key={i} className="text-center py-2 px-3 min-w-[120px]">
+                {perm}
+              </th>
+            ))}
           </tr>
         </thead>
 
@@ -286,6 +308,26 @@ function RoleRow({
             onChange={() => onTogglePermission(perm)}
             className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
           />
+        </td>
+      ))}
+    </tr>
+  );
+}
+
+
+function PermissionRow({ role, visiblePermissions, onTogglePermission }) {
+  return (
+    <tr className="bg-gray-50">
+      <td colSpan={2} className="sticky left-0 bg-gray-50 z-0"></td>
+      {visiblePermissions.map((perm, i) => (
+        <td key={i} className="py-3 px-3 text-center min-w-[120px]">
+          <input
+            type="checkbox"
+            checked={role.permissions.includes(perm)}
+            onChange={() => onTogglePermission(perm)}
+            className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+          />
+          <div className="text-xs text-gray-500 mt-1">{perm}</div>
         </td>
       ))}
     </tr>
