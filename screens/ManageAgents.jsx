@@ -163,13 +163,13 @@ export default function ManageAgents() {
             </div>
             <div className="overflow-x-auto ">
               <table className="min-w-full text-sm text-left">
-                <thead className="bg-white text-gray-500">
+                <thead className="bg-white border-b text-gray-500">
                   <tr>
                     <th className="sticky left-0 z-30 bg-white py-2 px-3 w-48">
                       Agent Name
                     </th>
                     <th className="sticky left-[12rem] z-30 bg-white py-2 px-3 text-center w-24">
-                      Active
+                      Active Status
                     </th>
                     {allDepartments.map((dept, i) => (
                       <th
