@@ -200,6 +200,12 @@ export default function Queues() {
     }
   };
 
+  const handleInputChange = (e) => {
+  setInputMessage(e.target.value);
+  textareaRef.current.style.height = "auto"; // Reset the height
+  textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`; // Adjust to content
+};
+
   const sendMessage = () => {
     const trimmedMessage = inputMessage.replace(/\n+$/, "");
     if (trimmedMessage.trim() === "") return;
@@ -742,7 +748,7 @@ export default function Queues() {
                           rows={1}
                           placeholder="Message"
                           value={inputMessage}
-                          onChange={(e) => setInputMessage(e.target.value)}
+                          onChange={handleInputChange}
                           onClick={() => setShowCannedMessages(false)} // Hide canned messages when clicking on the textarea
                           onKeyDown={(e) => {
                             if (e.key === "Enter" && !e.shiftKey) {
@@ -799,7 +805,8 @@ export default function Queues() {
                             sendMessage();
                           }
                         }}
-                        className="flex-1 bg-[#F2F0F0] rounded-xl px-4 py-2  mb-4 leading-tight focus:outline-none text-gray-800 resize-none overflow-hidden"
+                        className="flex-1 bg-[#F2F0F0] rounded-xl px-4 py-2  mb-4 leading-tight focus:outline-none text-gray-800 resize-none overflow-y-auto"
+                        style={{ maxHeight: "100px" }} // Limit height to 100px
                       />
                       <button
                         className="p-2 mb-4 text-[#5C2E90] hover:bg-gray-100 rounded-full"
