@@ -218,7 +218,7 @@ export default function ManageRoles() {
                 </thead>
                 <tbody>
                   {filteredRoles.map((role, idx) => (
-                    <tr key={idx} className=" hover:bg-gray-100">
+                    <tr key={idx}>
                       <td className="align-top w-100 sticky left-0 bg-white py-3 px-3 z-10">
                         <div className="relative min-w-[180px] max-w-[180px] pr-6">
                           <span className="break-words whitespace-normal text-sm block">
