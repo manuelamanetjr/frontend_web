@@ -200,10 +200,10 @@ export default function ManageRoles() {
               <table className="min-w-full text-sm text-left">
                 <thead className=" border-b text-gray-500">
                   <tr>
-                    <th className="sticky left-0 z-30 bg-white  py-2 px-3 w-48">
+                    <th className="sticky left-0 z-30 bg-white  py-2 px-3 w-48 border-b-2 border-gray-500">
                       Role Name
                     </th>
-                    <th className="sticky left-[12rem] z-30 bg-white py-2 px-3 text-center w-24">
+                    <th className="sticky left-[12rem] z-30 bg-white py-2 px-3 text-center w-24 border-b-2 border-gray-500">
                       Active Status
                     </th>
                     {permissions.map((perm, i) => (
