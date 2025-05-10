@@ -198,9 +198,9 @@ export default function ManageRoles() {
             </div>
             <div className="overflow-x-auto ">
               <table className="min-w-full text-sm text-left">
-                <thead className="bg-white border-b text-gray-500">
+                <thead className=" border-b text-gray-500">
                   <tr>
-                    <th className="sticky left-0 z-30 bg-white py-2 px-3 w-48">
+                    <th className="sticky left-0 z-30 bg-white  py-2 px-3 w-48">
                       Role Name
                     </th>
                     <th className="sticky left-[12rem] z-30 bg-white py-2 px-3 text-center w-24">
@@ -218,7 +218,7 @@ export default function ManageRoles() {
                 </thead>
                 <tbody>
                   {filteredRoles.map((role, idx) => (
-                    <tr key={idx} className="bg-white ">
+                    <tr key={idx} className=" hover:bg-gray-100">
                       <td className="align-top w-100 sticky left-0 bg-white py-3 px-3 z-10">
                         <div className="relative min-w-[180px] max-w-[180px] pr-6">
                           <span className="break-words whitespace-normal text-sm block">

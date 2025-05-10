@@ -74,7 +74,7 @@ export default function ChangeRoles() {
                 </thead>
                 <tbody>
                   {filteredUsers.map((user, idx) => (
-                    <tr key={idx} className=" transition-colors duration-200">
+                    <tr key={idx} className=" transition-colors duration-200 hover:bg-gray-50">
                       <td className="py-2 px-3 flex items-center gap-2">
                         {user.name}
                       </td>
@@ -97,7 +97,7 @@ export default function ChangeRoles() {
                       </td>
                       <td className="py-2 px-3 text-center">
                         <select
-                          className="px-2 py-1 text-sm bg-white text-gray-800 rounded-md border border-transparent focus:outline-none focus:ring-0 hover:cursor-pointer"
+                          className="px-2 py-1 text-sm text-gray-800 rounded-md border border-transparent focus:outline-none focus:ring-0 hover:cursor-pointer"
                           value={user.role}
                           onChange={(e) =>
                             setUsers((prev) =>

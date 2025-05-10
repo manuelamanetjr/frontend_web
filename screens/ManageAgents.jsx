@@ -183,7 +183,7 @@ export default function ManageAgents() {
                 </thead>
                 <tbody>
                   {filteredAgents.map((agent, idx) => (
-                    <tr key={idx} className="bg-white ">
+                    <tr key={idx} className="hover:bg-gray-100 ">
                       <td className="align-top sticky left-0 bg-white py-3 px-3 z-10">
                         <div className="relative min-w-[180px] max-w-[180px] pr-6">
                           <span className="break-words whitespace-normal text-sm block">
