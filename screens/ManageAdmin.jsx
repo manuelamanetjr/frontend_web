@@ -101,7 +101,7 @@ export default function ManageAgents() {
                 </thead>
                 <tbody>
                   {filteredAgents.map((agent, idx) => (
-                    <tr key={idx} className="transition-colors duration-200">
+                    <tr key={idx} className="transition-colors duration-200 hover:bg-gray-100">
                       <td className="py-2 px-3 flex items-center gap-2">
                         {agent.username}
                         <Edit3
@@ -137,7 +137,7 @@ export default function ManageAgents() {
                       </td>
                       <td className="py-2 px-3 text-center">
                         <select
-                          className="rounded-md px-2 py-1 text-sm bg-white text-gray-800 outline-none"
+                          className="rounded-md px-2 py-1 text-sm text-gray-800 outline-none"
                           value={agent.Role}
                           onChange={(e) =>
                             setAgents((prev) =>

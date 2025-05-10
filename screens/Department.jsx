@@ -11,11 +11,23 @@ export default function Departments() {
   const [editText, setEditText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [departments, setDepartments] = useState([
-    { name: "Billing", active: true },
-    { name: "Customer Service", active: true },
-    { name: "Sales", active: false },
-  ]);
+const [departments, setDepartments] = useState([
+  { name: "CSR", active: true },
+  { name: "Billing", active: true },
+  { name: "Sales", active: true },
+  { name: "Technical Support", active: true },
+  { name: "Customer Success", active: true },
+  { name: "Retention", active: true },
+  { name: "Onboarding", active: true },
+  { name: "Product", active: true },
+  { name: "Quality Assurance", active: true },
+  { name: "IT", active: true },
+  { name: "Logistics", active: true },
+  { name: "Marketing", active: true },
+  { name: "Legal", active: true },
+  { name: "Finance", active: true },
+  { name: "Human Resources", active: true },
+]);
 
   const toggleSidebar = () => setMobileSidebarOpen((prev) => !prev);
 
@@ -87,7 +99,7 @@ export default function Departments() {
                 </thead>
                 <tbody>
                   {filteredDepartments.map((dept, idx) => (
-                    <tr key={idx} className=" transition-colors duration-200">
+                    <tr key={idx} className="transition-colors duration-200 hover:bg-gray-100">
                       <td className="py-2 px-3 align-top">
                         <div className="flex items-center gap-2">
                           <p className="text-sm break-words max-w-[200px] whitespace-pre-wrap">

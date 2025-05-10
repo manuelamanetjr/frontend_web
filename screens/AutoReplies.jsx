@@ -107,7 +107,7 @@ export default function AutoReplies() {
                 </thead>
                 <tbody>
                   {filteredReplies.map((reply, idx) => (
-                    <tr key={idx} className=" transition-colors duration-200">
+                    <tr key={idx} className=" transition-colors duration-200 hover:bg-gray-100">
                       <td className="py-2 px-3 align-top">
                         <div className="max-w-xs break-words text-gray-800 relative pr-6">
                           <span>{reply.text}</span>
@@ -143,7 +143,7 @@ export default function AutoReplies() {
                       </td>
                       <td className="py-2 px-3 text-center">
                         <select
-                          className="rounded-md px-2 py-1 text-sm bg-white text-gray-800 focus:outline-none focus:ring-0 border-none text-center"
+                          className="rounded-md px-2 py-1 text-sm text-gray-800 focus:outline-none focus:ring-0 border-none text-center"
                           value={reply.department}
                           onChange={(e) =>
                             setReplies((prev) =>
