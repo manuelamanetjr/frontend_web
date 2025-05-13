@@ -5,6 +5,8 @@ import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 
 export default function Queues() {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768); // Check if it's mobile view
+  const [view, setView] = useState("chatList"); // "chatList" or "conversation"
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [showEndChatModal, setShowEndChatModal] = useState(false);
@@ -142,7 +144,7 @@ export default function Queues() {
   };
 
   const confirmEndChat = () => {
-    setShowEndChatModal(false);
+    setShowEndChatModal(false); 
     setChatEnded(true);
 
     const now = new Date();
@@ -158,7 +160,7 @@ export default function Queues() {
     };
 
     setMessages((prev) => [...prev, endMessage]);
-
+ 
     if (selectedCustomer) {
       setEndedChats((prev) => [
         ...prev,
@@ -287,6 +289,33 @@ export default function Queues() {
   };
 
   const groupedMessages = groupMessagesByDate();
+
+
+
+    useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  const handleChatClick = (customer) => {
+    setSelectedCustomer(customer);
+    setChatEnded(endedChats.some((chat) => chat.id === customer.id));
+    if (isMobile) {
+      setView("conversation");
+    }
+  };
+
+  const handleBackClick = () => {
+    setView("chatList");
+    setSelectedCustomer(null);
+  };
+
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
@@ -440,6 +469,9 @@ export default function Queues() {
           openDropdown={openDropdown}
         />
 
+      <Sidebar isMobile={true} isOpen={mobileSidebarOpen} />
+
+
         <main className="flex-1 bg-white">
           <div className="flex flex-col md:flex-row h-full">
             {/* Queues list */}
@@ -481,6 +513,7 @@ export default function Queues() {
               </div>
 
               {/* Chat list */}
+              
 
               {(departmentCustomers[selectedDepartment] || []).map(
                 (customer) => (
@@ -736,8 +769,6 @@ export default function Queues() {
         <div className="flex-grow h-px bg-gray-200" />
       </div>
     )}
-
-
                       <div ref={bottomRef} />
                     </div>
                   </div>
