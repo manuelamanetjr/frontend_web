@@ -9,7 +9,7 @@ export default function Profile() {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [fileName, setFileName] = useState("Upload Image");
   const [profilePicture, setProfilePicture] = useState(
-    "https://randomuser.me/api/portraits/women/44.jpg"
+    "../src/assets/profile/av3.jpg"
   );
   const [imageUploaded, setImageUploaded] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -43,7 +43,7 @@ export default function Profile() {
       reader.readAsDataURL(file);
     } else {
       setFileName("Upload Image");
-      setProfilePicture("https://randomuser.me/api/portraits/women/44.jpg");
+      setProfilePicture("../src/assets/profile/av3.jpg");
       setImageUploaded(false);
     }
   };
