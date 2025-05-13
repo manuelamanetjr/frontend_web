@@ -5,8 +5,8 @@ import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 
 export default function Queues() {
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768); // Check if it's mobile view
-  const [view, setView] = useState("chatList"); // "chatList" or "conversation"
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [view, setView] = useState("chatList");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [showEndChatModal, setShowEndChatModal] = useState(false);
@@ -109,7 +109,7 @@ export default function Queues() {
   const handleTransferClick = () => {
     setOpenDropdown(null);
     setShowTransferModal(true);
-    setTransferDepartment(selectedDepartment ); // Initialize the transfer department with the current department
+    setTransferDepartment(selectedDepartment);
   };
 
   const handleDepartmentSelect = () => {
@@ -127,7 +127,7 @@ export default function Queues() {
 
   const cancelTransfer = () => {
     setShowTransferModal(false);
-    setTransferDepartment(null); // Reset the transfer department
+    setTransferDepartment(null);
   };
 
   const cancelTransferConfirm = () => {
@@ -203,10 +203,10 @@ export default function Queues() {
   };
 
   const handleInputChange = (e) => {
-  setInputMessage(e.target.value);
-  textareaRef.current.style.height = "auto"; // Reset the height
-  textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`; // Adjust to content
-};
+    setInputMessage(e.target.value);
+    textareaRef.current.style.height = "auto";
+    textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+  };
 
   const sendMessage = () => {
     const trimmedMessage = inputMessage.replace(/\n+$/, "");
@@ -290,9 +290,7 @@ export default function Queues() {
 
   const groupedMessages = groupMessagesByDate();
 
-
-
-    useEffect(() => {
+  useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
     };
@@ -315,7 +313,6 @@ export default function Queues() {
     setView("chatList");
     setSelectedCustomer(null);
   };
-
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
@@ -366,7 +363,7 @@ export default function Queues() {
                 options={departmentOptions}
                 onChange={(selected) => {
                   setTransferDepartment(selected?.value || null);
-                  console.log("Selected Department:", selected?.value); // Debugging
+                  console.log("Selected Department:", selected?.value);
                 }}
                 value={departmentOptions.find((option) => option.value === transferDepartment) || null}
                 classNamePrefix="select"
@@ -396,9 +393,9 @@ export default function Queues() {
             </div>
             <div className="flex justify-center gap-20">
               <button
-                 onClick={() => {
+                onClick={() => {
                   cancelTransfer();
-                  setTransferDepartment(null); // Reset the transfer department on cancel
+                  setTransferDepartment(null);
                 }}
                 className="px-5 py-2 border rounded-lg text-white bg-[#BCBCBC] hover:bg-gray-500 transition-colors"
               >
@@ -407,17 +404,16 @@ export default function Queues() {
               <button
                 onClick={(e) => {
                   if (!transferDepartment || transferDepartment === selectedDepartment) {
-                    e.preventDefault(); // Prevent the default action if no department is selected
+                    e.preventDefault();
                     return;
                   }
                   handleDepartmentSelect();
-                  }
-                }
-                disabled={!transferDepartment || transferDepartment === selectedDepartment}  // Properly disable the button
+                }}
+                disabled={!transferDepartment || transferDepartment === selectedDepartment}
                 className={`px-5 py-2 text-white rounded-lg transition-colors ${
                   transferDepartment && transferDepartment !== selectedDepartment
-                    ? "bg-[#6237A0] hover:bg-[#4c2b7d]" //enable button
-                    : "bg-[#6237A0]/50 cursor-not-allowed" // disable button
+                    ? "bg-[#6237A0] hover:bg-[#4c2b7d]"
+                    : "bg-[#6237A0]/50 cursor-not-allowed"
                 }`}
               >
                 Select
@@ -435,7 +431,6 @@ export default function Queues() {
             </h3>
             <p className="text-gray-600 mb-6">
               Are you sure you want to transfer this customer to {transferDepartment}?
-              
             </p>
             <div className="flex justify-center gap-20">
               <button
@@ -461,6 +456,7 @@ export default function Queues() {
           isOpen={mobileSidebarOpen}
           toggleDropdown={toggleDropdown}
           openDropdown={openDropdown}
+          onClose={() => setMobileSidebarOpen(false)}
         />
 
         <Sidebar
@@ -469,13 +465,10 @@ export default function Queues() {
           openDropdown={openDropdown}
         />
 
-      <Sidebar isMobile={true} isOpen={mobileSidebarOpen} />
-
-
         <main className="flex-1 bg-white">
           <div className="flex flex-col md:flex-row h-full">
             {/* Queues list */}
-            <div className="w-full md:w-[320px] bg-[#F5F5F5] overflow-y-auto">
+            <div className={`${view === "chatList" ? "block" : "hidden md:block"} w-full md:w-[320px] bg-[#F5F5F5] overflow-y-auto`}>
               <div className="relative p-4 flex text-center justify-between rounded-xl py-2 px-4 items-center m-4 shadow-sm bg-[#E6DCF7]">
                 <button
                   className="text-sm text-[#6237A0] w-full text-left focus:outline-none"
@@ -513,86 +506,97 @@ export default function Queues() {
               </div>
 
               {/* Chat list */}
-              
+              <div className="chat-list overflow-auto">
+                {(departmentCustomers[selectedDepartment] || []).map(
+                  (customer) => (
+                    <div
+                      key={customer.id}
+                      onClick={() => handleChatClick(customer)}
+                      className={`flex items-center justify-between px-4 py-3 border-2 ${
+                        selectedCustomer?.id === customer.id
+                          ? "bg-[#E6DCF7]"
+                          : endedChats.some((chat) => chat.id === customer.id)
+                          ? "bg-gray-100 opacity-70"
+                          : "bg-[#f5f5f5]"
+                      } border-[#E6DCF7] rounded-xl hover:bg-[#E6DCF7] cursor-pointer transition m-2 min-h-[100px]`}
+                    >
+                      <div className="flex items-center gap-2 flex-1">
+                        <img
+                          src={customer.profile}
+                          alt="profile"
+                          className="w-15 h-15 rounded-full object-cover"
+                        />
 
-              {(departmentCustomers[selectedDepartment] || []).map(
-                (customer) => (
-                  <div
-                    key={customer.id}
-                    onClick={() => {
-                      
-                        setSelectedCustomer(customer);
-                        setChatEnded(
-                          endedChats.some((chat) => chat.id === customer.id) //Update chat ended state
-                        );
-                      
-                    }}
-                    className={`flex items-center justify-between px-4 py-3 border-2 ${
-                      selectedCustomer?.id === customer.id
-                        ? "bg-[#E6DCF7]"
-                        : endedChats.some((chat) => chat.id === customer.id)
-                        ? "bg-gray-100 opacity-70"
-                        : "bg-[#f5f5f5]"
-                    } border-[#E6DCF7] rounded-xl hover:bg-[#E6DCF7] cursor-pointer transition m-2 min-h-[100px]`}
-                  >
-                    <div className="flex items-center gap-2 flex-1">
-                      <img
-                        src={customer.profile}
-                        alt="profile"
-                        className="w-15 h-15 rounded-full object-cover"
-                      />
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-end mb-1">
-                          {/* Department label ABOVE the name */}
-                          <span className="text-[10px] font-semibold text-purple-600 bg-purple-100 px-2 py-[2px] rounded-full whitespace-nowrap">
-                            {selectedDepartment}
-                          </span>
-                        </div>
-                        <p
-                          className={`text-sm font-medium truncate ${
-                            selectedCustomer?.id === customer.id
-                              ? "text-[#6237A0]"
-                              : endedChats.some(
-                                  (chat) => chat.id === customer.id
-                                )
-                              ? "text-gray-500"
-                              : "text-gray-800"
-                          }`}
-                        >
-                          {customer.name}
-                        </p>
-                        <div className="flex justify-between items-center">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-end mb-1">
+                            <span className="text-[10px] font-semibold text-purple-600 bg-purple-100 px-2 py-[2px] rounded-full whitespace-nowrap">
+                              {selectedDepartment}
+                            </span>
+                          </div>
                           <p
-                            className={`text-xs truncate ${
+                            className={`text-sm font-medium truncate ${
                               selectedCustomer?.id === customer.id
                                 ? "text-[#6237A0]"
                                 : endedChats.some(
                                     (chat) => chat.id === customer.id
                                   )
-                                ? "text-gray-400"
-                                : "text-gray-500"
+                                ? "text-gray-500"
+                                : "text-gray-800"
                             }`}
                           >
-                            {customer.number}
+                            {customer.name}
                           </p>
-                          <span className="text-[10px] text-gray-400 ml-2 whitespace-nowrap mt-5">
-                            {customer.time}
-                          </span>
+                          <div className="flex justify-between items-center">
+                            <p
+                              className={`text-xs truncate ${
+                                selectedCustomer?.id === customer.id
+                                  ? "text-[#6237A0]"
+                                  : endedChats.some(
+                                      (chat) => chat.id === customer.id
+                                    )
+                                  ? "text-gray-400"
+                                  : "text-gray-500"
+                              }`}
+                            >
+                              {customer.number}
+                            </p>
+                            <span className="text-[10px] text-gray-400 ml-2 whitespace-nowrap mt-5">
+                              {customer.time}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )
-              )}
+                  )
+                )}
+              </div>
             </div>
 
             {/* Chat area */}
-            <div className="flex-1 flex flex-col">
+            <div className={`${view === "conversation" ? "block" : "hidden md:flex"} flex-1 flex flex-col`}>
               {selectedCustomer ? (
                 <>
                   <div className="border-b border-gray-200 p-4">
                     <div className="flex items-center">
+                      {isMobile && (
+                        <button
+                          onClick={handleBackClick}
+                          className="mr-2 text-gray-600 hover:text-gray-800"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </button>
+                      )}
                       <div className="flex items-center gap-4">
                         <img
                           src={selectedCustomer.profile}
@@ -641,64 +645,63 @@ export default function Queues() {
                   {/* Chat messages */}
                   <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 pb-2 auto-hide-scrollbar">
                     <div className="flex flex-col justify-end min-h-full gap-4 pt-4">
-                      {/* {messages.length === 0 && ( */}
-                        <>
-                          <div className="text-[10px] text-gray-400 text-center flex items-center gap-2 my-2">
-                            <div className="flex-grow h-px bg-gray-200" />
-                            Today
-                            <div className="flex-grow h-px bg-gray-200" />
-                          </div>
+                      <>
+                        <div className="text-[10px] text-gray-400 text-center flex items-center gap-2 my-2">
+                          <div className="flex-grow h-px bg-gray-200" />
+                          Today
+                          <div className="flex-grow h-px bg-gray-200" />
+                        </div>
 
-                          <div className="flex items-end justify-end gap-2">
-                            <div className="text-sm text-gray-800 px-4 py-2 rounded-xl self-start max-w-[320px]">
-                              To connect you with the right support team, please
-                              select one of the following options:
+                        <div className="flex items-end justify-end gap-2">
+                          <div className="text-sm text-gray-800 px-4 py-2 rounded-xl self-start max-w-[320px]">
+                            To connect you with the right support team, please
+                            select one of the following options:
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-start gap-1">
+                          <img
+                            src={selectedCustomer.profile}
+                            alt="avatar"
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
+                          <div className="relative bg-[#6237A0] text-white px-4 py-2 ml-7 rounded-br-xl rounded-tr-xl rounded-bl-xl text-sm max-w-[300px]">
+                            {selectedDepartment}
+                            <div className="text-[10px] text-light text-gray-300 text-right mt-1 ml-2">
+                              1:20 PM
                             </div>
                           </div>
+                        </div>
 
-                          <div className="flex flex-col items-start gap-1">
-                            <img
-                              src={selectedCustomer.profile}
-                              alt="avatar"
-                              className="w-8 h-8 rounded-full object-cover"
-                            />
-                            <div className="relative bg-[#6237A0] text-white px-4 py-2 ml-7 rounded-br-xl rounded-tr-xl rounded-bl-xl text-sm max-w-[300px]">
-                              {selectedDepartment}
-                              <div className="text-[10px] text-light text-gray-300 text-right mt-1 ml-2">
-                                1:20 PM
-                              </div>
+                        <div className="flex items-end justify-end gap-2">
+                          <div className="text-sm text-gray-800 px-4 py-2 rounded-xl self-start max-w-[320px]">
+                            We will be with you in a moment!
+                          </div>
+                        </div>
+
+                        <div className="text-[10px] text-gray-400 text-center flex items-center gap-2 my-2">
+                          <div className="flex-grow h-px bg-gray-200" />
+                          You are now chatting with {selectedDepartment} agent
+                          <div className="flex-grow h-px bg-gray-200" />
+                        </div>
+
+                        <div className="flex flex-col items-end gap-1 self-end">
+                          <img
+                            src="../src/assets/profile/av3.jpg"
+                            alt="agent"
+                            className="w-8 h-8 rounded-full"
+                          />
+                          <div className="relative bg-[#f5f5f5] px-3 py-2 rounded-bl-xl rounded-tl-xl rounded-br-xl text-sm max-w-[300px] mr-7 break-words whitespace-pre-wrap">
+                            Hi, I'm Maria. How may I help you?
+                            <div className="text-[10px] text-right text-gray-400 mt-1">
+                              1:20 PM
                             </div>
+                            <p>Chat messages with {selectedCustomer.name}...</p>
                           </div>
-
-                          <div className="flex items-end justify-end gap-2">
-                            <div className="text-sm text-gray-800 px-4 py-2 rounded-xl self-start max-w-[320px]">
-                              We will be with you in a moment!
-                            </div>
-                          </div>
-
-                          <div className="text-[10px] text-gray-400 text-center flex items-center gap-2 my-2">
-                            <div className="flex-grow h-px bg-gray-200" />
-                            You are now chatting with {selectedDepartment} agent
-                            <div className="flex-grow h-px bg-gray-200" />
-                          </div>
-
-                          <div className="flex flex-col items-end gap-1 self-end">
-                            <img
-                              src="../src/assets/profile/av3.jpg"
-                              alt="agent"
-                              className="w-8 h-8 rounded-full"
-                            />
-                            <div className="relative bg-[#f5f5f5] px-3 py-2 rounded-bl-xl rounded-tl-xl rounded-br-xl text-sm max-w-[300px] mr-7 break-words whitespace-pre-wrap">
-                              Hi, I'm Maria. How may I help you?
-                              <div className="text-[10px] text-right text-gray-400 mt-1">
-                                1:20 PM
-                              </div>
-                            </div>
-                          </div>
-                        </>
+                        </div>
+                      </>
                       
-                      
-                        {/* Existing messages */}
+                      {/* Existing messages */}
                       {groupedMessages.map((item, index) => {
                         if (item.type === "date") {
                           return (
@@ -762,19 +765,19 @@ export default function Queues() {
                       })}
 
                       {/* Chat ended system message */}
-    {chatEnded && (
-      <div className="text-[10px] text-gray-400 text-center flex items-center gap-2 my-2">
-        <div className="flex-grow h-px bg-gray-200" />
-        Chat has ended
-        <div className="flex-grow h-px bg-gray-200" />
-      </div>
-    )}
+                      {chatEnded && (
+                        <div className="text-[10px] text-gray-400 text-center flex items-center gap-2 my-2">
+                          <div className="flex-grow h-px bg-gray-200" />
+                          Chat has ended
+                          <div className="flex-grow h-px bg-gray-200" />
+                        </div>
+                      )}
                       <div ref={bottomRef} />
                     </div>
                   </div>
 
                   {/* Message input area */}
-                 { showCannedMessages ? (
+                  {showCannedMessages ? (
                     <div className="border-t border-gray-200 pt-4 bg-white canned-dropdown">
                       <div className="flex items-center gap-2 px-4 pb-3">
                         <button
@@ -789,7 +792,7 @@ export default function Queues() {
                           placeholder="Message"
                           value={inputMessage}
                           onChange={handleInputChange}
-                          onClick={() => setShowCannedMessages(false)} // Hide canned messages when clicking on the textarea
+                          onClick={() => setShowCannedMessages(false)}
                           onKeyDown={(e) => {
                             if (e.key === "Enter" && !e.shiftKey) {
                               e.preventDefault();
@@ -807,8 +810,7 @@ export default function Queues() {
                         </button>
                       </div>
                       
-                       {/* CANNED MESSAGES */}
-
+                      {/* CANNED MESSAGES */}
                       <div className="px-4 pt-3">
                         <div className="grid grid-cols-1 gap-2 pb-3 max-h-[200px] overflow-y-auto">
                           {cannedMessages.map((msg, index) => (
@@ -826,7 +828,7 @@ export default function Queues() {
                         </div>
                       </div>
                     </div>
-                  ) : ( //Message input area when chat has ended
+                  ) : (
                     <div className="mt-4 flex items-center gap-2 border-t border-gray-200 pt-4 px-4">
                       <button
                         className={`p-2 mb-4 text-[#5C2E90] hover:bg-gray-100 rounded-full
@@ -851,13 +853,13 @@ export default function Queues() {
                             sendMessage();
                           }
                         }}
-                        className={`flex-1 bg-[#F2F0F0] rounded-xl px-4 py-2  mb-4 leading-tight focus:outline-none text-gray-800 resize-none overflow-y-auto
+                        className={`flex-1 bg-[#F2F0F0] rounded-xl px-4 py-2 mb-4 leading-tight focus:outline-none text-gray-800 resize-none overflow-y-auto
                         ${chatEnded
                           ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                           : "bg-[#F2F0F0] text-gray-800"
                         }`}
                         style={{ maxHeight: "100px" }}
-                        disabled={chatEnded} // Disable the textarea if chat has ended
+                        disabled={chatEnded}
                       />
                       <button
                         className={`p-2 mb-4 text-[#5C2E90] hover:bg-gray-100 rounded-full
@@ -866,7 +868,7 @@ export default function Queues() {
                             : "text-[#5C2E90] hover:bg-gray-100"
                           }`}
                         onClick={sendMessage}
-                        disabled={chatEnded} // Disable the button if chat has ended
+                        disabled={chatEnded}
                       >
                         <Send size={20} className="transform rotate-45" />
                       </button>
