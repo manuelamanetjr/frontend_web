@@ -4,67 +4,20 @@ import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 
 const initialAgents = [
-  {
-    name: "Alice Smith",
-    active: true,
-    departments: ["CSR", "Billing"],
-  },
-  {
-    name: "Bob Johnson",
-    active: true,
-    departments: ["Sales"],
-  },
-  {
-    name: "Charlie Nguyen",
-    active: false,
-    departments: ["Technical Support", "IT"],
-  },
-  {
-    name: "Dana Lee",
-    active: true,
-    departments: ["Customer Success", "Onboarding"],
-  },
-  {
-    name: "Evan Martinez",
-    active: true,
-    departments: ["Product", "Quality Assurance"],
-  },
-  {
-    name: "Fiona Patel",
-    active: false,
-    departments: ["Legal", "Finance"],
-  },
-  {
-    name: "George Kim",
-    active: true,
-    departments: ["Retention", "Marketing"],
-  },
-  {
-    name: "Hannah Wright",
-    active: true,
-    departments: ["Human Resources", "Billing"],
-  },
+  { name: "Alice Smith", active: true, departments: ["CSR", "Billing"] },
+  { name: "Bob Johnson", active: true, departments: ["Sales"] },
+  { name: "Charlie Nguyen", active: false, departments: ["Technical Support", "IT"] },
+  { name: "Dana Lee", active: true, departments: ["Customer Success", "Onboarding"] },
+  { name: "Evan Martinez", active: true, departments: ["Product", "Quality Assurance"] },
+  { name: "Fiona Patel", active: false, departments: ["Legal", "Finance"] },
+  { name: "George Kim", active: true, departments: ["Retention", "Marketing"] },
+  { name: "Hannah Wright", active: true, departments: ["Human Resources", "Billing"] },
 ];
-
 
 const allDepartments = [
-  "CSR",
-  "Billing",
-  "Sales",
-  "Technical Support",
-  "Customer Success",
-  "Retention",
-  "Onboarding",
-  "Product",
-  "Quality Assurance",
-  "IT",
-  "Logistics",
-  "Marketing",
-  "Legal",
-  "Finance",
-  "Human Resources",
+  "CSR", "Billing", "Sales", "Technical Support", "Customer Success", "Retention", "Onboarding",
+  "Product", "Quality Assurance", "IT", "Logistics", "Marketing", "Legal", "Finance", "Human Resources"
 ];
-
 
 export default function ManageAgents() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -99,11 +52,7 @@ export default function ManageAgents() {
     } else {
       setAgents((prev) => [
         ...prev,
-        {
-          name: editForm.name,
-          active: true,
-          departments: [],
-        },
+        { name: editForm.name, active: true, departments: [] },
       ]);
     }
     setIsModalOpen(false);
@@ -121,11 +70,9 @@ export default function ManageAgents() {
     setAgents((prev) =>
       prev.map((agent, i) => {
         if (i !== agentIndex) return agent;
-
         const updatedDepartments = agent.departments.includes(dept)
           ? agent.departments.filter((d) => d !== dept)
           : [...agent.departments, dept];
-
         return { ...agent, departments: updatedDepartments };
       })
     );
@@ -146,8 +93,8 @@ export default function ManageAgents() {
           toggleDropdown={setOpenDropdown}
           openDropdown={openDropdown}
         />
-        <main className="flex-1 bg-gray-100 p-15 overflow-y-auto transition-colors duration-300">
-          <div className="bg-white p-4 rounded-lg min-h-[80vh] transition-all duration-300">
+        <main className="flex-1 bg-gray-100 p-15 overflow-hidden">
+          <div className="bg-white p-4 rounded-lg h-full flex flex-col">
             <div className="flex justify-between items-center mb-4">
               <SearchInput
                 value={searchQuery}
@@ -156,69 +103,70 @@ export default function ManageAgents() {
               />
               <button
                 onClick={() => handleOpenEditModal()}
-                className="bg-[#6237A0] text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-800 transition-colors duration-300"
+                className="bg-[#6237A0] text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-800"
               >
                 Add Agent
               </button>
             </div>
-            <div className="overflow-x-auto ">
-              <table className="min-w-full text-sm text-left border-separate border-spacing-0">
-                <thead className=" text-gray-500 ">
-                  <tr>
-                    <th className="sticky left-0 z-30 bg-white py-2 px-3 w-48 border-b border-gray-500">
-                      Agent Name
-                    </th>
-                    <th className="sticky left-[12rem] z-30 bg-white py-2 px-3 text-center w-24 border-b border-gray-500">
-                      Active Status
-                    </th>
-                    {allDepartments.map((dept, i) => (
-                      <th
-                        key={i}
-                        className="py-2 px-3 text-center min-w-[120px] border-b border-gray-500"
-                      >
-                        {dept}
+
+            <div className="overflow-x-auto flex-1">
+              <div className="h-full overflow-y-auto">
+                <table className="min-w-full text-sm text-left border-separate border-spacing-0">
+                  <thead className="text-gray-500">
+                    <tr>
+                      <th className="sticky top-0 left-0 z-30 bg-white py-2 px-3 w-48 border-b border-gray-500">
+                        Agent Name
                       </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredAgents.map((agent, idx) => (
-                    <tr key={idx} >
-                      <td className="align-top sticky left-0 bg-white py-3 px-3 z-10 ">
-                        <div className="relative min-w-[180px] max-w-[180px] pr-6">
-                          <span className="break-words whitespace-normal text-sm block">
-                            {agent.name}
-                          </span>
-                          <Edit3
-                            size={18}
-                            strokeWidth={1}
-                            className="text-gray-500 cursor-pointer hover:text-purple-700 absolute top-1/2 right-1 -translate-y-1/2"
-                            onClick={() => handleOpenEditModal(idx)}
-                          />
-                        </div>
-                      </td>
-                      <td className="sticky left-[12rem] bg-white py-3 px-3 z-10 text-center">
-                        <ToggleSwitch
-                          checked={agent.active}
-                          onChange={() => handleToggleActive(idx)}
-                        />
-                      </td>
+                      <th className="sticky top-0 left-[12rem] z-30 bg-white py-2 px-3 text-center w-24 border-b border-gray-500">
+                        Active Status
+                      </th>
                       {allDepartments.map((dept, i) => (
-                        <td key={i} className="py-3 px-3 text-center">
-                          <input
-                            type="checkbox"
-                            checked={agent.departments.includes(dept)}
-                            onChange={() =>
-                              handleToggleDepartment(idx, dept)
-                            }
-                            className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
-                          />
-                        </td>
+                        <th
+                          key={i}
+                          className="py-2 px-3 text-center min-w-[120px] border-b border-gray-500 bg-white sticky top-0 z-20"
+                        >
+                          {dept}
+                        </th>
                       ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {filteredAgents.map((agent, idx) => (
+                      <tr key={idx}>
+                        <td className="align-top sticky left-0 bg-white py-3 px-3 z-10">
+                          <div className="relative min-w-[180px] max-w-[180px] pr-6">
+                            <span className="break-words whitespace-normal text-sm block">
+                              {agent.name}
+                            </span>
+                            <Edit3
+                              size={18}
+                              strokeWidth={1}
+                              className="text-gray-500 cursor-pointer hover:text-purple-700 absolute top-1/2 right-1 -translate-y-1/2"
+                              onClick={() => handleOpenEditModal(idx)}
+                            />
+                          </div>
+                        </td>
+                        <td className="sticky left-[12rem] bg-white py-3 px-3 z-10 text-center">
+                          <ToggleSwitch
+                            checked={agent.active}
+                            onChange={() => handleToggleActive(idx)}
+                          />
+                        </td>
+                        {allDepartments.map((dept, i) => (
+                          <td key={i} className="py-3 px-3 text-center">
+                            <input
+                              type="checkbox"
+                              checked={agent.departments.includes(dept)}
+                              onChange={() => handleToggleDepartment(idx, dept)}
+                              className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
