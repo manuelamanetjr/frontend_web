@@ -52,7 +52,7 @@ const [departments, setDepartments] = useState([
           openDropdown={openDropdown}
         />
 
-        <main className="flex-1 bg-gray-100 p-15 overflow-y-auto transition-colors duration-300">
+        <main className="flex-1 bg-gray-100 p-15 overflow-hidden transition-colors duration-300">
           <div className="bg-white p-4 rounded-lg min-h-[80vh] transition-all duration-300">
             <div className="flex justify-between items-center mb-4">
               {/* Search bar */}
@@ -89,9 +89,9 @@ const [departments, setDepartments] = useState([
               </button>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="overflow-y-auto max-h-[65vh] w-full">
               <table className="w-full text-sm text-left">
-                <thead className="text-gray-500 border-b">
+                <thead className="text-gray-500 border-b sticky top-0 bg-white z-10">
                   <tr>
                     <th className="py-2 px-3 pl-3">Department</th>
                     <th className="py-2 px-3 text-center">Active Status</th>
