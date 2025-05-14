@@ -552,7 +552,7 @@ export default function Queues() {
                                 selectedCustomer?.id === customer.id
                                   ? "text-[#6237A0]"
                                   : endedChats.some(
-                                      (chat) => chat.id === customer.id
+                                      (chat) => chat.id === customer.id       
                                     )
                                   ? "text-gray-400"
                                   : "text-gray-500"
@@ -576,7 +576,8 @@ export default function Queues() {
             <div className={`${view === "conversation" ? "block" : "hidden md:flex"} flex-1 flex flex-col`}>
               {selectedCustomer ? (
                 <>
-                  <div className="border-b border-gray-200 p-4">
+                {/* Sticky Header */}
+                  <div className="sticky top-0 z-10 bg-white border-b border-gray-200 p-4">
                     <div className="flex items-center">
                       {isMobile && (
                         <button
@@ -643,7 +644,11 @@ export default function Queues() {
                   </div>
 
                   {/* Chat messages */}
-                  <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 pb-2 auto-hide-scrollbar">
+                  <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 pb-2 auto-hide-scrollbar"
+                    style={{ 
+       maxHeight: isMobile ? 'calc(100vh - 200px)' : 'none',
+       height: isMobile ? 'auto' : '100%'
+     }}>
                     <div className="flex flex-col justify-end min-h-full gap-4 pt-4">
                       <>
                         <div className="text-[10px] text-gray-400 text-center flex items-center gap-2 my-2">
@@ -690,13 +695,13 @@ export default function Queues() {
                             src="../src/assets/profile/av3.jpg"
                             alt="agent"
                             className="w-8 h-8 rounded-full"
-                          />
+                          /> 
                           <div className="relative bg-[#f5f5f5] px-3 py-2 rounded-bl-xl rounded-tl-xl rounded-br-xl text-sm max-w-[300px] mr-7 break-words whitespace-pre-wrap">
                             Hi, I'm Maria. How may I help you?
                             <div className="text-[10px] text-right text-gray-400 mt-1">
                               1:20 PM
                             </div>
-                            <p>Chat messages with {selectedCustomer.name}...</p>
+                            
                           </div>
                         </div>
                       </>
