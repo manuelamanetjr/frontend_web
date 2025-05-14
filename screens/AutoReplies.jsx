@@ -59,9 +59,10 @@ export default function AutoReplies() {
           openDropdown={openDropdown}
         />
 
-        <main className="flex-1 bg-gray-100 p-15 overflow-hidden transition-colors duration-300">
-          <div className="bg-white p-4 rounded-lg min-h-[80vh] transition-all duration-300">
+        <main className="flex-1 bg-gray-100 p-15 transition-colors duration-300 flex flex-col min-h-0">
+          <div className="bg-white p-4 rounded-lg flex flex-col flex-1 min-h-0 transition-all duration-300">
             <div className="flex justify-between items-center mb-4">
+              {/* Search bar with clear (X) icon */}
               <div className="flex items-center bg-gray-100 px-3 py-2 rounded-md w-1/3 relative">
                 <Search
                   size={18}
@@ -95,10 +96,10 @@ export default function AutoReplies() {
               </button>
             </div>
 
-            <div className="overflow-y-auto max-h-[65vh] w-full">
+            <div className="flex-1 min-h-0 overflow-x-auto overflow-y-auto">
               <table className="w-full text-sm text-left">
-                <thead className="text-gray-500 border-b sticky top-0 bg-white z-10">
-                  <tr>
+              <thead className="text-gray-500 bg-white sticky top-0 z-20 shadow-[inset_0_-1px_0_0_#000000]">
+              <tr>
                     <th className="py-2 px-3 pl-3">Replies</th>
                     <th className="py-2 px-3 text-center">Active Status</th>
                     <th className="py-2 px-3 text-center">Department</th>
@@ -171,6 +172,7 @@ export default function AutoReplies() {
             </div>
           </div>
 
+          {/* Modal for Edit/Add */}
           {isModalOpen && (
             <div className="fixed inset-0 bg-gray-400/50 flex justify-center items-center z-50 transition-opacity duration-300">
               <div className="bg-white rounded-lg shadow-xl p-6 w-96 transform scale-95 animate-fadeIn transition-transform duration-300 ease-out">
@@ -205,11 +207,7 @@ export default function AutoReplies() {
                       } else {
                         setReplies((prev) => [
                           ...prev,
-                          {
-                            text: editText,
-                            active: true,
-                            department: "All",
-                          },
+                          { text: editText, active: true, department: "All" },
                         ]);
                       }
                       setIsModalOpen(false);
