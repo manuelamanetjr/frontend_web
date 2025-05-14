@@ -38,14 +38,12 @@ export default function ChangeRoles() {
           openDropdown={openDropdown}
         />
 
-        <main className="flex-1 bg-gray-100 p-15 overflow-y-auto transition-colors duration-300">
-          <div className="bg-white p-4 rounded-lg min-h-[80vh] transition-all duration-300">
+        <main className="flex-1 bg-gray-100 p-6 overflow-hidden transition-colors duration-300 flex flex-col">
+          <div className="bg-white p-4 rounded-lg flex flex-col flex-1 min-h-0">
+            {/* Search bar */}
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center bg-gray-100 px-3 py-2 rounded-md w-1/3 relative">
-                <Search
-                  size={18}
-                  className="text-gray-500 mr-2 flex-shrink-0"
-                />
+                <Search size={18} className="text-gray-500 mr-2 flex-shrink-0" />
                 <input
                   type="text"
                   placeholder="Search users..."
@@ -63,9 +61,10 @@ export default function ChangeRoles() {
               </div>
             </div>
 
-            <div className="overflow-x-auto">
+            {/* Table section */}
+            <div className="flex-1 overflow-y-auto min-h-0">
               <table className="w-full text-sm text-left">
-                <thead className="text-gray-500 border-b">
+                <thead className="text-gray-500 bg-white sticky top-0 z-10 shadow-[inset_0_-1px_0_0_#000000]">
                   <tr>
                     <th className="py-2 px-3 pl-3">Username</th>
                     <th className="py-2 px-3 text-center">Active Status</th>
@@ -74,7 +73,10 @@ export default function ChangeRoles() {
                 </thead>
                 <tbody>
                   {filteredUsers.map((user, idx) => (
-                    <tr key={idx} className=" transition-colors duration-200 hover:bg-gray-50">
+                    <tr
+                      key={idx}
+                      className="transition-colors duration-200 hover:bg-gray-50"
+                    >
                       <td className="py-2 px-3 flex items-center gap-2">
                         {user.name}
                       </td>
