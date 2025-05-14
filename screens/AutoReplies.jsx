@@ -59,10 +59,9 @@ export default function AutoReplies() {
           openDropdown={openDropdown}
         />
 
-        <main className="flex-1 bg-gray-100 p-15 overflow-y-auto transition-colors duration-300">
+        <main className="flex-1 bg-gray-100 p-15 overflow-hidden transition-colors duration-300">
           <div className="bg-white p-4 rounded-lg min-h-[80vh] transition-all duration-300">
             <div className="flex justify-between items-center mb-4">
-              {/* Search bar with clear (X) icon */}
               <div className="flex items-center bg-gray-100 px-3 py-2 rounded-md w-1/3 relative">
                 <Search
                   size={18}
@@ -96,9 +95,9 @@ export default function AutoReplies() {
               </button>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="overflow-y-auto max-h-[65vh] w-full">
               <table className="w-full text-sm text-left">
-                <thead className="text-gray-500 border-b">
+                <thead className="text-gray-500 border-b sticky top-0 bg-white z-10">
                   <tr>
                     <th className="py-2 px-3 pl-3">Replies</th>
                     <th className="py-2 px-3 text-center">Active Status</th>
@@ -107,7 +106,10 @@ export default function AutoReplies() {
                 </thead>
                 <tbody>
                   {filteredReplies.map((reply, idx) => (
-                    <tr key={idx} className=" transition-colors duration-200 hover:bg-gray-100">
+                    <tr
+                      key={idx}
+                      className="transition-colors duration-200 hover:bg-gray-100"
+                    >
                       <td className="py-2 px-3 align-top">
                         <div className="max-w-xs break-words text-gray-800 relative pr-6">
                           <span>{reply.text}</span>
@@ -169,7 +171,6 @@ export default function AutoReplies() {
             </div>
           </div>
 
-          {/* Modal for Edit/Add */}
           {isModalOpen && (
             <div className="fixed inset-0 bg-gray-400/50 flex justify-center items-center z-50 transition-opacity duration-300">
               <div className="bg-white rounded-lg shadow-xl p-6 w-96 transform scale-95 animate-fadeIn transition-transform duration-300 ease-out">
@@ -204,7 +205,11 @@ export default function AutoReplies() {
                       } else {
                         setReplies((prev) => [
                           ...prev,
-                          { text: editText, active: true, department: "All" },
+                          {
+                            text: editText,
+                            active: true,
+                            department: "All",
+                          },
                         ]);
                       }
                       setIsModalOpen(false);
