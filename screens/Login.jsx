@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "react-feather";
 
@@ -11,7 +11,6 @@ export default function Login() {
 
   const [showPassword, setShowPassword] = useState(false); // Correctly imported and used
   const [password, setPassword] = useState(""); // Added state for password
-
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -46,38 +45,40 @@ export default function Login() {
               </div>
 
               <div className="space-y-2">
-  <label
-    htmlFor="password"
-    className="block font-medium text-sm text-black"
-  >
-    Password
-  </label>
-  <div className="relative">
-    <input
-      id="password"
-      type={showPassword ? "text" : "password"}
-      value={password}
-      placeholder="Enter your password"
-      onChange={(e) => setPassword(e.target.value)}
-      className="w-full border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 pr-10"
-    />
-    {password.length > 0 && (
-      showPassword ? (
-        <Eye size={18} strokeWidth={1}
-          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer"
-          onClick={togglePasswordVisibility}
-        />
-      ) : (
-        <EyeOff size={18} strokeWidth={1}
-          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer"
-          onClick={togglePasswordVisibility}
-        />
-      )
-    )}
-  </div>
-  <div className="text-right">
-  </div>
-</div>
+                <label
+                  htmlFor="password"
+                  className="block font-medium text-sm text-black"
+                >
+                  Password
+                </label>
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    placeholder="Enter your password"
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 pr-10"
+                  />
+                  {password.length > 0 &&
+                    (showPassword ? (
+                      <Eye
+                        size={18}
+                        strokeWidth={1}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer"
+                        onClick={togglePasswordVisibility}
+                      />
+                    ) : (
+                      <EyeOff
+                        size={18}
+                        strokeWidth={1}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer"
+                        onClick={togglePasswordVisibility}
+                      />
+                    ))}
+                </div>
+                <div className="text-right"></div>
+              </div>
 
               <button
                 className="w-full bg-[#6237A0] hover:bg-[#5C2E90] text-white font-semibold py-2 px-4 rounded-md transition"
