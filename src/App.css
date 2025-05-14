@@ -38,3 +38,16 @@
 .read-the-docs {
   color: #888;
 }
+
+.auto-hide-scrollbar {
+  scrollbar-width: thin;
+}
+
+.auto-hide-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.auto-hide-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.2);
+  border-radius: 2px;
+}
