@@ -173,6 +173,8 @@ export default function Queues() {
 
       setSelectedCustomer(null);
       setMessages([]);
+      // navigate back to chat list in mobile view
+      if (isMobile) setView("chatList");
     }
   };
 
