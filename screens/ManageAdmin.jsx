@@ -90,9 +90,9 @@ export default function ManageAgents() {
               </button>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="overflow-y-auto max-h-[65vh] w-full">
               <table className="w-full text-sm text-left">
-                <thead className="text-gray-500 border-b">
+                <thead className="text-gray-500 bg-white sticky top-0 z-10 shadow-[inset_0_-1px_0_0_#000000]">
                   <tr>
                     <th className="py-2 px-3 pl-3">Username</th>
                     <th className="py-2 px-3 text-center">Active Status</th>
@@ -103,7 +103,9 @@ export default function ManageAgents() {
                   {filteredAgents.map((agent, idx) => (
                     <tr key={idx} className="transition-colors duration-200 hover:bg-gray-100">
                       <td className="py-2 px-3 flex items-center gap-2">
-                        {agent.username}
+                        <p className="text-sm break-words max-w-[200px] whitespace-pre-wrap">
+                          {agent.username}
+                        </p>
                         <Edit3
                           size={18}
                           strokeWidth={1}
