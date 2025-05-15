@@ -94,9 +94,9 @@ export default function MacrosClients() {
               </button>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="overflow-y-auto max-h-[65vh] w-full">
               <table className="w-full text-sm text-left">
-                <thead className="text-gray-500 border-b">
+                <thead className="text-gray-500 bg-white sticky top-0 z-10 shadow-[inset_0_-1px_0_0_#000000]">
                   <tr>
                     <th className="py-2 px-3 pl-3">Replies</th>
                     <th className="py-2 px-3 text-center">Active Status</th>

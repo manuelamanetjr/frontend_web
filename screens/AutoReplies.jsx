@@ -117,6 +117,7 @@ export default function AutoReplies() {
                           <div className="absolute top-1/2 right-0 -translate-y-1/2">
                             <Edit3
                               size={18}
+                              strokeWidth={1}
                               className="text-gray-500 cursor-pointer w-[18px] h-[18px] transition-colors duration-200 hover:text-purple-700"
                               onClick={() => {
                                 setCurrentEditIndex(idx);
