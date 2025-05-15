@@ -3,17 +3,16 @@ import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 import { FiLogOut } from "react-icons/fi";
 import { Upload } from "react-feather";
+import { useNavigate } from "react-router-dom";
 
 export default function Profile() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [fileName, setFileName] = useState("Upload Image");
-  const [profilePicture, setProfilePicture] = useState(
-    "../src/assets/profile/av3.jpg"
-  );
+  const [profilePicture, setProfilePicture] = useState("../src/assets/profile/av3.jpg");
+
   const [imageUploaded, setImageUploaded] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-
   const [profileData, setProfileData] = useState({
     firstName: "Maria",
     middleName: "",
@@ -22,6 +21,7 @@ export default function Profile() {
     address: "",
     dateOfBirth: "",
   });
+  const navigate = useNavigate(); // ✅ Hook to handle navigation
 
   const toggleDropdown = (name) => {
     setOpenDropdown((prev) => (prev === name ? null : name));
@@ -165,7 +165,10 @@ export default function Profile() {
           </div>
 
           <div className="mt-10">
-            <button className="text-purple-600 hover:underline flex items-center text-sm">
+            <button
+              onClick={() => navigate("/")} // ✅ Navigates on logout
+              className="text-purple-600 hover:underline flex items-center text-sm"
+            >
               <FiLogOut className="w-4 h-4 mr-1" />
               Logout
             </button>
