@@ -91,7 +91,7 @@ const [departments, setDepartments] = useState([
 
             <div className="overflow-y-auto max-h-[65vh] w-full">
               <table className="w-full text-sm text-left">
-                <thead className="text-gray-500 border-b sticky top-0 bg-white z-10">
+                <thead className="text-gray-500 bg-white sticky top-0 z-10 shadow-[inset_0_-1px_0_0_#000000]">
                   <tr>
                     <th className="py-2 px-3 pl-3">Department</th>
                     <th className="py-2 px-3 text-center">Active Status</th>
@@ -107,6 +107,7 @@ const [departments, setDepartments] = useState([
                           </p>
                           <Edit3
                             size={18}
+                            strokeWidth={1}
                             className="text-gray-500 cursor-pointer flex-shrink-0 transition-colors duration-200 hover:text-purple-700"
                             onClick={() => {
                               setCurrentEditIndex(idx);
