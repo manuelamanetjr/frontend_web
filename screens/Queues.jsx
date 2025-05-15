@@ -24,6 +24,7 @@ export default function Queues() {
   const [selectedDepartment, setSelectedDepartment] = useState("Billing");
   const [showDeptDropdown, setShowDeptDropdown] = useState(false);
   const [transferDepartment, setTransferDepartment] = useState(null);
+  const [isTransferred, setIsTransferred] = useState(false);
 
   const departmentCustomers = {
     Billing: [
@@ -121,6 +122,7 @@ export default function Queues() {
 
   const confirmTransfer = () => {
     setShowTransferConfirmModal(false);
+    setIsTransferred(true);
     console.log(`Transferring to ${transferDepartment}`);
     alert(`Customer transferred to ${transferDepartment}`);
   };
@@ -306,6 +308,7 @@ export default function Queues() {
   const handleChatClick = (customer) => {
     setSelectedCustomer(customer);
     setChatEnded(endedChats.some((chat) => chat.id === customer.id));
+    setIsTransferred(false);
     if (isMobile) {
       setView("conversation");
     }
@@ -498,6 +501,7 @@ export default function Queues() {
                           setSelectedDepartment(dept);
                           setShowDeptDropdown(false);
                           setSelectedCustomer(null);
+                          setIsTransferred(false);
                         }}
                       >
                         {dept}
@@ -781,7 +785,21 @@ export default function Queues() {
                       )}
                       <div ref={bottomRef} />
                     </div>
-                  </div>
+                     {/* Chat ended system message */}
+                      {transferDepartment&& (
+                        <div className="text-[10px] text-gray-400 text-center flex items-center gap-2 my-2">
+                          <div className="flex-grow h-px bg-gray-200" />
+                         You have been transferred to {transferDepartment}
+                          <div className="flex-grow h-px bg-gray-200" />
+                        </div>
+                      )}
+                      <div ref={bottomRef} />
+                    </div>
+                 
+            
+
+
+                   
 
                   {/* Message input area */}
                   {showCannedMessages ? (
@@ -839,43 +857,43 @@ export default function Queues() {
                     <div className="mt-4 flex items-center gap-2 border-t border-gray-200 pt-4 px-4">
                       <button
                         className={`p-2 mb-4 text-[#5C2E90] hover:bg-gray-100 rounded-full
-                           ${chatEnded
+                           ${chatEnded || isTransferred
                             ? "text-gray-400 cursor-not-allowed"
                             : "text-[#5C2E90] hover:bg-gray-100"
                           }`}
                         onClick={() => setShowCannedMessages(true)}
-                        disabled={chatEnded}
+                        disabled={chatEnded || isTransferred}
                       >
                         <Menu size={20} />
                       </button>
                       <textarea
                         ref={textareaRef}
                         rows={1}
-                        placeholder="Message"
+                        placeholder={chatEnded || isTransferred ? "Message" : "Message"}
                         value={inputMessage}
                         onChange={handleInputChange}
                         onKeyDown={(e) => {
-                          if (e.key === "Enter" && !e.shiftKey) {
+                          if (e.key === "Enter" && !e.shiftKey && !chatEnded && !isTransferred) {
                             e.preventDefault();
                             sendMessage();
                           }
                         }}
                         className={`flex-1 bg-[#F2F0F0] rounded-xl px-4 py-2 mb-4 leading-tight focus:outline-none text-gray-800 resize-none overflow-y-auto
-                        ${chatEnded
+                        ${chatEnded || isTransferred
                           ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                           : "bg-[#F2F0F0] text-gray-800"
                         }`}
                         style={{ maxHeight: "100px" }}
-                        disabled={chatEnded}
+                        disabled={chatEnded || isTransferred}
                       />
                       <button
                         className={`p-2 mb-4 text-[#5C2E90] hover:bg-gray-100 rounded-full
-                          ${chatEnded
+                          ${chatEnded || isTransferred
                             ? "text-gray-400 cursor-not-allowed"
                             : "text-[#5C2E90] hover:bg-gray-100"
                           }`}
                         onClick={sendMessage}
-                        disabled={chatEnded}
+                        disabled={chatEnded || isTransferred}
                       >
                         <Send size={20} className="transform rotate-45" />
                       </button>
