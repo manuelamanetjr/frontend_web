@@ -137,6 +137,7 @@ export default function Queues() {
   };
 
   const toggleDropdown = (name) => {
+    if (chatEnded || isTransferred) return; //prevent clicking on the dropdown when chat is ended or transferred
     setOpenDropdown((prev) => (prev === name ? null : name));
   };
 
@@ -617,7 +618,7 @@ export default function Queues() {
                         </div>
                       </div>
                       <div className="relative ml-auto">
-                        {!chatEnded && (
+                        {!chatEnded && !isTransferred &&(
                           <button
                             className="p-2 text-black hover:text-[#6237A0] transition rounded-full"
                             onClick={() => toggleDropdown("customerMenu")}
