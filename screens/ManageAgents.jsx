@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Edit3, Search, X } from "react-feather";
+import { Edit3, Search, X, Eye, EyeOff } from "react-feather";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 
@@ -26,7 +26,7 @@ export default function ManageAgents() {
   const [agents, setAgents] = useState(initialAgents);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentEditIndex, setCurrentEditIndex] = useState(null);
-  const [editForm, setEditForm] = useState({ name: "" });
+  const [editForm, setEditForm] = useState({ name: "", password: "" });
 
   const filteredAgents = agents.filter((agent) =>
     agent.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -38,6 +38,7 @@ export default function ManageAgents() {
     setCurrentEditIndex(index);
     setEditForm({
       name: index !== null ? agents[index].name : "",
+      password: "",
     });
     setIsModalOpen(true);
   };
@@ -115,7 +116,7 @@ export default function ManageAgents() {
                   <thead className="text-gray-500">
                     <tr>
                       <th className="sticky top-0 left-0 z-30 bg-white py-2 px-3 w-48 border-b border-gray-500">
-                        Agent Name
+                        Username
                       </th>
                       <th className="sticky top-0 left-[12rem] z-30 bg-white py-2 px-3 text-center w-24 border-b border-gray-500">
                         Active Status
@@ -223,17 +224,45 @@ function ToggleSwitch({ checked, onChange }) {
 }
 
 function AgentModal({ isEdit, formData, onFormChange, onClose, onSave }) {
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <div className="fixed inset-0 bg-gray-400/50 flex justify-center items-center z-50">
       <div className="bg-white rounded-lg shadow-xl p-6 w-96">
         <h2 className="text-md font-semibold mb-4">
           {isEdit ? "Edit Agent" : "Add Agent"}
         </h2>
+
         <FormField
-          label="Agent Name"
+          label="Username"
           value={formData.name}
           onChange={(value) => onFormChange({ ...formData, name: value })}
         />
+
+        <div className="mt-3">
+          <label className="text-sm text-gray-700 mb-1 block">Password</label>
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              value={formData.password}
+              onChange={(e) =>
+                onFormChange({ ...formData, password: e.target.value })
+              }
+              className="w-full border rounded-md p-2 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none pr-10"
+            />
+            <span
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute right-3 top-2.5 text-gray-500 cursor-pointer"
+            >
+              {showPassword ? (
+                <EyeOff size={18} strokeWidth={1} />
+              ) : (
+                <Eye size={18} strokeWidth={1} />
+              )}
+            </span>
+          </div>
+        </div>
+
         <div className="flex justify-end gap-2 mt-4">
           <button
             onClick={onClose}
