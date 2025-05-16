@@ -1,17 +1,17 @@
 import React, { useState } from "react";
-import { Edit3, Search, X } from "react-feather";
+import { Edit3, Search, X, Eye, EyeOff } from "react-feather";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 
 const initialAgents = [
-  { name: "Alice Smith", active: true, departments: ["CSR", "Billing"] },
-  { name: "Bob Johnson", active: true, departments: ["Sales"] },
-  { name: "Charlie Nguyen", active: false, departments: ["Technical Support", "IT"] },
-  { name: "Dana Lee", active: true, departments: ["Customer Success", "Onboarding"] },
-  { name: "Evan Martinez", active: true, departments: ["Product", "Quality Assurance"] },
-  { name: "Fiona Patel", active: false, departments: ["Legal", "Finance"] },
-  { name: "George Kim", active: true, departments: ["Retention", "Marketing"] },
-  { name: "Hannah Wright", active: true, departments: ["Human Resources", "Billing"] },
+  { username: "alicego", password: "password123", active: true, departments: ["CSR", "Billing"] },
+  { username: "bobmarlie", password: "bobpass", active: true, departments: ["Sales"] },
+  { username: "charliechaplin", password: "charlie123", active: false, departments: ["Technical Support", "IT"] },
+  { username: "danabells", password: "dana456", active: true, departments: ["Customer Success", "Onboarding"] },
+  { username: "evanovich", password: "evan789", active: true, departments: ["Product", "Quality Assurance"] },
+  { username: "fionashrek", password: "fiona999", active: false, departments: ["Legal", "Finance"] },
+  { username: "georgewashington", password: "gkim321", active: true, departments: ["Retention", "Marketing"] },
+  { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
 ];
 
 const allDepartments = [
@@ -25,37 +25,46 @@ export default function ManageAgents() {
   const [searchQuery, setSearchQuery] = useState("");
   const [agents, setAgents] = useState(initialAgents);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [currentEditIndex, setCurrentEditIndex] = useState(null);
-  const [editForm, setEditForm] = useState({ name: "" });
+  const [editForm, setEditForm] = useState({ username: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
 
   const filteredAgents = agents.filter((agent) =>
-    agent.name.toLowerCase().includes(searchQuery.toLowerCase())
+    agent.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const toggleSidebar = () => setMobileSidebarOpen((prev) => !prev);
 
   const handleOpenEditModal = (index = null) => {
     setCurrentEditIndex(index);
-    setEditForm({
-      name: index !== null ? agents[index].name : "",
-    });
+    setEditForm(
+      index !== null
+        ? { username: agents[index].username, password: agents[index].password }
+        : { username: "", password: "" }
+    );
     setIsModalOpen(true);
   };
 
   const handleSaveAgent = () => {
+    setIsConfirmModalOpen(true);
+  };
+
+  const confirmSaveAgent = () => {
     if (currentEditIndex !== null) {
       setAgents((prev) =>
         prev.map((agent, i) =>
-          i === currentEditIndex ? { ...agent, name: editForm.name } : agent
+          i === currentEditIndex ? { ...agent, username: editForm.username, password: editForm.password } : agent
         )
       );
     } else {
       setAgents((prev) => [
         ...prev,
-        { name: editForm.name, active: true, departments: [] },
+        { username: editForm.username, password: editForm.password, active: true, departments: [] },
       ]);
     }
     setIsModalOpen(false);
+    setIsConfirmModalOpen(false);
   };
 
   const handleToggleActive = (index) => {
@@ -115,7 +124,7 @@ export default function ManageAgents() {
                   <thead className="text-gray-500">
                     <tr>
                       <th className="sticky top-0 left-0 z-30 bg-white py-2 px-3 w-48 border-b border-gray-500">
-                        Agent Name
+                        Username
                       </th>
                       <th className="sticky top-0 left-[12rem] z-30 bg-white py-2 px-3 text-center w-24 border-b border-gray-500">
                         Active Status
@@ -136,7 +145,7 @@ export default function ManageAgents() {
                         <td className="align-top sticky left-0 bg-white py-3 px-3 z-10">
                           <div className="relative min-w-[180px] max-w-[180px] pr-6">
                             <span className="break-words whitespace-normal text-sm block">
-                              {agent.name}
+                              {agent.username}
                             </span>
                             <Edit3
                               size={18}
@@ -177,7 +186,32 @@ export default function ManageAgents() {
               onFormChange={setEditForm}
               onClose={() => setIsModalOpen(false)}
               onSave={handleSaveAgent}
+              showPassword={showPassword}
+              setShowPassword={setShowPassword}
             />
+          )}
+
+          {isConfirmModalOpen && (
+            <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+              <div className="bg-white p-6 rounded-lg shadow-md w-96">
+                <h2 className="text-lg font-semibold mb-4">Confirm Save</h2>
+                <p className="text-sm text-gray-700 mb-6">Are you sure you want to save this agent's details?</p>
+                <div className="flex justify-end gap-2">
+                  <button
+                    onClick={() => setIsConfirmModalOpen(false)}
+                    className="bg-gray-300 text-gray-800 px-4 py-1 rounded-lg text-sm hover:bg-gray-400"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmSaveAgent}
+                    className="bg-purple-700 text-white px-4 py-1 rounded-lg text-sm hover:bg-purple-800"
+                  >
+                    Confirm
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
         </main>
       </div>
@@ -222,7 +256,7 @@ function ToggleSwitch({ checked, onChange }) {
   );
 }
 
-function AgentModal({ isEdit, formData, onFormChange, onClose, onSave }) {
+function AgentModal({ isEdit, formData, onFormChange, onClose, onSave, showPassword, setShowPassword }) {
   return (
     <div className="fixed inset-0 bg-gray-400/50 flex justify-center items-center z-50">
       <div className="bg-white rounded-lg shadow-xl p-6 w-96">
@@ -230,10 +264,26 @@ function AgentModal({ isEdit, formData, onFormChange, onClose, onSave }) {
           {isEdit ? "Edit Agent" : "Add Agent"}
         </h2>
         <FormField
-          label="Agent Name"
-          value={formData.name}
-          onChange={(value) => onFormChange({ ...formData, name: value })}
+          label="Username"
+          value={formData.username}
+          onChange={(value) => onFormChange({ ...formData, username: value })}
         />
+        <div className="relative mt-4">
+          <label className="text-sm text-gray-700 mb-1 block">Password</label>
+          <input
+            type={showPassword ? "text" : "password"}
+            value={formData.password}
+            onChange={(e) => onFormChange({ ...formData, password: e.target.value })}
+            className="w-full border rounded-md p-2 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none pr-10"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute right-3 top-9 text-gray-600"
+          >
+            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
+        </div>
         <div className="flex justify-end gap-2 mt-4">
           <button
             onClick={onClose}
