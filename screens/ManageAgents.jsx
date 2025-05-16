@@ -43,6 +43,7 @@ export default function ManageAgents() {
         ? { username: agents[index].username, password: agents[index].password }
         : { username: "", password: "" }
     );
+    setShowPassword(false);
     setIsModalOpen(true);
   };
 

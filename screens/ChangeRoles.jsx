@@ -8,12 +8,13 @@ export default function ChangeRoles() {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [users, setUsers] = useState([
-    { name: "alicejohnson", active: true, role: "admin" },
-    { name: "bobmartin", active: false, role: "agent" },
-    { name: "evetorres", active: true, role: "agent" },
+    { name: "alicejohnson", active: true, role: "Admin"},
+    { name: "bobmartin", active: false, role: "Agent"},
+    { name: "evetorres", active: true, role: "Agent"},
+    { name: "evetorres", active: true, role: "Supervisor"},
   ]);
 
-  const roles = ["admin", "agent"];
+  const roles = ["Admin", "Agent", "Supervisor"];
 
   const toggleSidebar = () => setMobileSidebarOpen((prev) => !prev);
 
@@ -38,7 +39,7 @@ export default function ChangeRoles() {
           openDropdown={openDropdown}
         />
 
-        <main className="flex-1 bg-gray-100 p-6 overflow-hidden transition-colors duration-300 flex flex-col">
+        <main className="flex-1 bg-gray-100 p-15 overflow-hidden transition-colors duration-300 flex flex-col">
           <div className="bg-white p-4 rounded-lg flex flex-col flex-1 min-h-0">
             {/* Search bar */}
             <div className="flex justify-between items-center mb-4">
