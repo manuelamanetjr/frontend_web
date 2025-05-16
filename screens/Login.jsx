@@ -91,7 +91,7 @@ export default function Login() {
         </div>
 
         {/* Right side - Logo (appears on top on mobile) */}
-        <div className="w-full md:w-3/5 bg-gray-50 flex items-center justify-center p-20 sm:p-20">
+        <div className="w-full md:w-3/5 bg-gray-50 flex items-center justify-center p-20 sm:p-20 pt-28">
           <div className="flex flex-row items-center md:flex-row">
             <img
               src="src/assets/images/icon.png"
