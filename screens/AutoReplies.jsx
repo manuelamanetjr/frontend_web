@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 import { Edit3, Search, X } from "react-feather";
+import '../src/App.css';
 
 export default function AutoReplies() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -96,7 +97,7 @@ export default function AutoReplies() {
               </button>
             </div>
 
-            <div className="flex-1 min-h-0 overflow-x-auto overflow-y-auto">
+            <div className="flex-1 min-h-0 overflow-x-auto overflow-y-auto custom-scrollbar">
               <table className="w-full text-sm text-left">
               <thead className="text-gray-500 bg-white sticky top-0 z-20 shadow-[inset_0_-1px_0_0_#000000]">
               <tr>

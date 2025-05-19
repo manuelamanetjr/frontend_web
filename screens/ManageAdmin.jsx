@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 import { Edit3, Search, X, Eye, EyeOff } from "react-feather";
+import "../src/App.css";
 
 export default function ManageAgents() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -90,7 +91,7 @@ export default function ManageAgents() {
               </button>
             </div>
 
-            <div className="overflow-y-auto max-h-[65vh] w-full">
+            <div className="overflow-y-auto max-h-[65vh] w-full custom-scrollbar">
               <table className="w-full text-sm text-left">
                 <thead className="text-gray-500 bg-white sticky top-0 z-10 shadow-[inset_0_-1px_0_0_#000000]">
                   <tr>
