@@ -124,12 +124,12 @@ export default function ManageAgents() {
             <div className="overflow-x-auto flex-1">
               <div className="h-full overflow-y-auto custom-scrollbar">
                 <table className="min-w-full text-sm text-left border-separate border-spacing-0">
-                  <thead className="text-gray-500">
+                  <thead className="text-gray-500 sticky top-0 bg-white z-20 shadow-sm">
                     <tr>
                       <th className="sticky top-0 left-0 z-30 bg-white py-2 px-3 w-48 border-b border-gray-500">
                         Username
                       </th>
-                      <th className="sticky top-0 left-[12rem] z-30 bg-white py-2 px-3 text-center w-24 border-b border-gray-500">
+                      <th className="sticky left-48 z-30 bg-white py-2 px-3 text-center w-24 border-b border-gray-500">
                         Active Status
                       </th>
                       {allDepartments.map((dept, i) => (
@@ -145,8 +145,8 @@ export default function ManageAgents() {
                   <tbody className="divide-y divide-gray-200">
                     {filteredAgents.map((agent, idx) => (
                       <tr key={idx}>
-                        <td className="align-top sticky left-0 bg-white py-3 px-3 z-10">
-                          <div className="relative min-w-[180px] max-w-[180px] pr-6">
+                        <td className="sticky left-0 bg-white py-3 px-3 z-10 w-[192px] min-w-[192px] max-w-[192px]">
+                         <div className="relative w-full">
                             <span className="break-words whitespace-normal text-sm block">
                               {agent.username}
                             </span>
