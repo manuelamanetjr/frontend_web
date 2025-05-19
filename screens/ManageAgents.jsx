@@ -13,16 +13,6 @@ const initialAgents = [
   { username: "fionashrek", password: "fiona999", active: false, departments: ["Legal", "Finance"] },
   { username: "georgewashington", password: "gkim321", active: true, departments: ["Retention", "Marketing"] },
   { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
-  { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
-  { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
-  { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
-  { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
-  { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
-  { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
-  { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
-  { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
-  { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
-  { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
 
 ];
 

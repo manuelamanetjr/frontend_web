@@ -60,7 +60,7 @@ export default function AutoReplies() {
           openDropdown={openDropdown}
         />
 
-        <main className="flex-1 bg-gray-100 p-15 transition-colors duration-300 flex flex-col min-h-0">
+        <main className="flex-1 bg-gray-100 p-[60px] transition-colors duration-300 flex flex-col min-h-0 w-full overflow-auto">
           <div className="bg-white p-4 rounded-lg flex flex-col flex-1 min-h-0 transition-all duration-300">
             <div className="flex justify-between items-center mb-4">
               {/* Search bar with clear (X) icon */}
