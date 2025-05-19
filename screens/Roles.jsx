@@ -204,9 +204,10 @@ export default function ManageRoles() {
                     <th className="sticky left-0 z-30 bg-white py-2 px-3 w-48 border-b border-gray-500">
                       Role Name
                     </th>
-                    <th className="sticky left-[12rem] z-30 bg-white py-2 px-3 text-center w-24 border-b border-gray-500">
+                    <th className="sticky left-48 z-30 bg-white py-2 px-3 text-center w-24 border-b border-gray-500">
                       Active Status
                     </th>
+
                     {permissions.map((perm, i) => (
                       <th
                         key={i}
@@ -220,20 +221,20 @@ export default function ManageRoles() {
                 <tbody>
                   {filteredRoles.map((role, idx) => (
                     <tr key={idx}>
-                      <td className="align-top w-100 sticky left-0 bg-white py-3 px-3 z-10">
-                        <div className="relative min-w-[180px] max-w-[180px] pr-6">
+                      <td className="sticky left-0 bg-white py-3 px-3 z-10 w-[192px] min-w-[192px] max-w-[192px]">
+                        <div className="relative w-full">
                           <span className="break-words whitespace-normal text-sm block">
                             {role.name}
                           </span>
                           <Edit3
                             size={18}
                             strokeWidth={1}
-                            className="text-gray-500 cursor-pointer hover:text-purple-700 absolute top-1/2 right-1 -translate-y-1/2"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-purple-700 cursor-pointer"
                             onClick={() => handleOpenEditModal(idx)}
                           />
                         </div>
                       </td>
-                      <td className="sticky left-[12rem] bg-white py-3 px-3 z-10 text-center">
+                      <td className="sticky left-[192px] bg-white py-3 px-3 z-10 text-center w-[96px] min-w-[96px] max-w-[96px]">
                         <ToggleSwitch
                           checked={role.active}
                           onChange={() => handleToggleActive(idx)}
