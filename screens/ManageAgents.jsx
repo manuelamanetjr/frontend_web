@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Edit3, Search, X, Eye, EyeOff } from "react-feather";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
+import "../src/App.css";
 
 const initialAgents = [
   { username: "alicego", password: "password123", active: true, departments: ["CSR", "Billing"] },
@@ -12,6 +13,17 @@ const initialAgents = [
   { username: "fionashrek", password: "fiona999", active: false, departments: ["Legal", "Finance"] },
   { username: "georgewashington", password: "gkim321", active: true, departments: ["Retention", "Marketing"] },
   { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
+  { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
+  { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
+  { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
+  { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
+  { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
+  { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
+  { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
+  { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
+  { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
+  { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
+
 ];
 
 const allDepartments = [
@@ -120,7 +132,7 @@ export default function ManageAgents() {
             </div>
 
             <div className="overflow-x-auto flex-1">
-              <div className="h-full overflow-y-auto">
+              <div className="h-full overflow-y-auto custom-scrollbar">
                 <table className="min-w-full text-sm text-left border-separate border-spacing-0">
                   <thead className="text-gray-500">
                     <tr>

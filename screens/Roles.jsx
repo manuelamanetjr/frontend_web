@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Edit3, Search, X } from "react-feather";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
+import "../src/App.css";
 
 const initialRoles = [
   {
@@ -196,7 +197,7 @@ export default function ManageRoles() {
                 Add Role
               </button>
             </div>
-            <div className="overflow-x-auto max-h-[70vh] overflow-y-auto relative">
+            <div className="overflow-x-auto max-h-[70vh] overflow-y-auto relative custom-scrollbar">
               <table className="min-w-full text-sm text-left border-separate border-spacing-0">
                 <thead className="text-gray-500 sticky top-0 bg-white z-20 shadow-sm">
                   <tr>
