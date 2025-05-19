@@ -1,6 +1,5 @@
-// TopNavbar.jsx
-import React from "react";
 import { Menu } from "react-feather";
+import { Link } from "react-router-dom";
 
 export default function TopNavbar({ toggleSidebar }) {
   return (
@@ -22,14 +21,14 @@ export default function TopNavbar({ toggleSidebar }) {
         </span>
       </div>
 
-      <div className="flex items-center gap-3">
+      <Link to="/profile" className="flex items-center gap-3 hover:opacity-80">
         <img
           src="../src/assets/profile/av3.jpg"
           alt="Maria Dela Cruz"
           className="h-8 w-8 rounded-full object-cover"
         />
         <span className="text-sm font-medium text-gray-700">Maria Dela Cruz</span>
-      </div>
+      </Link>
     </header>
   );
 }

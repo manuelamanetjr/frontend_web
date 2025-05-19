@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Layers,
   User,
@@ -19,7 +18,6 @@ const navItems = [
   { to: "/queues", icon: Layers, label: "Queues" },
   { to: "/chats", icon: MessageSquare, label: "Chats" },
   { to: "/department", icon: Grid, label: "Department" },
-  { to: "/profile", icon: User, label: "Profile" },
   { to: "/auto-replies", icon: Repeat, label: "Auto-Replies" },
   { to: "/manage-admin", icon: UserCheck, label: "Manage Admin" },
   { to: "/roles", icon: Command, label: "Roles" },
