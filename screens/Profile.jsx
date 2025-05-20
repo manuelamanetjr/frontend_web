@@ -9,7 +9,9 @@ export default function Profile() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [fileName, setFileName] = useState("Upload Image");
-  const [profilePicture, setProfilePicture] = useState("../src/assets/profile/av3.jpg");
+  const [profilePicture, setProfilePicture] = useState(
+    "../src/assets/profile/av3.jpg"
+  );
 
   const [imageUploaded, setImageUploaded] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -164,15 +166,27 @@ export default function Profile() {
             </div>
           </div>
 
-          <div className="mt-10">
-            <button
-              onClick={() => navigate("/")} // ✅ Navigates on logout
-              className="text-purple-600 hover:underline flex items-center text-sm"
-            >
-              <FiLogOut className="w-4 h-4 mr-1" />
-              Logout
-            </button>
-          </div>
+{/* Keep both buttons but control their visibility with responsive classes */}
+<div className="mt-10">
+  {/* Desktop Logout - hidden on mobile */}
+  <button
+    onClick={() => navigate("/")}
+    className="hidden sm:flex items-center text-purple-600 hover:underline text-sm"
+  >
+    <FiLogOut className="w-4 h-4 mr-1" />
+    Logout
+  </button>
+</div>
+
+{/* Mobile Logout FAB - hidden on desktop */}
+<div className="sm:hidden fixed bottom-4 right-4">
+  <button
+    onClick={() => navigate("/")}
+    className="p-3 bg-purple-600 text-white rounded-full shadow-lg hover:bg-purple-700 transition"
+  >
+    <FiLogOut className="w-5 h-5" />
+  </button>
+</div>
         </main>
       </div>
 
