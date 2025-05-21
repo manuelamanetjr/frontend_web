@@ -80,12 +80,12 @@ export default function Login() {
                 <div className="text-right"></div>
               </div>
 
-<button
-  className="w-full bg-[#6237A0] hover:bg-[#5C2E90] text-white font-semibold py-2 px-4 rounded-md transition cursor-pointer"
-  onClick={handleLogin}
->
-  Login
-</button>
+              <button
+                className="w-full bg-[#6237A0] hover:bg-[#5C2E90] text-white font-semibold py-2 px-4 rounded-md transition cursor-pointer"
+                onClick={handleLogin}
+              >
+                Login
+              </button>
             </div>
           </div>
         </div>
