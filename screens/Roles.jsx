@@ -10,10 +10,7 @@ const initialRoles = [
     active: true,
     permissions: [
       "Can view Queues",
-      "Can Reply",
       "Can view Chats",
-      "Can End Chat",
-      "Can Transfer Department",
       "Can view Macros",
       "Can send Macros",
       "Can view Department",
@@ -37,7 +34,7 @@ const initialRoles = [
   {
     name: "Client",
     active: true,
-    permissions: ["Can view Queues", "Can view Chats", "Can View Auto-Replies"],
+    permissions: ["Can view Queues","Can End Chat", "Can Reply","Can view Chats", "Can View Auto-Replies"],
   },
   {
     name: "Agent",
@@ -59,7 +56,6 @@ const initialRoles = [
     active: true,
     permissions: [
       "Can view Queues",
-      "Can Reply",
       "Can view Chats",
       "Can End Chat",
       "Can Transfer Department",
