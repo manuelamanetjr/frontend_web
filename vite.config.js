@@ -12,7 +12,7 @@ export default defineConfig({
 })
 
 
-// for port forwarding with ngrok
+// for port forwarding with ngrok ::::: ngrok http 5173  :::
 // import { defineConfig } from 'vite'
 // import react from '@vitejs/plugin-react'
 // import tailwindcss from '@tailwindcss/vite'
