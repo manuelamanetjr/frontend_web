@@ -1,20 +1,39 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "react-feather";
+import axios from "axios";
 
 export default function Login() {
   const navigate = useNavigate();
 
-  const handleLogin = () => {
-    navigate("/queues");
-  };
-
   const [showPassword, setShowPassword] = useState(false); // Correctly imported and used
   const [password, setPassword] = useState(""); // Added state for password
+  const [username, setUsername] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
+
+   const handleLogin = async() => {
+    try{
+      const response = await axios.post("http://localhost:5000/profile/login", {
+        sys_user_username: username,
+        sys_user_password: password,
+      });
+
+      if (response.status === 200) {
+        console.log(response.data.message);
+        // Login successful, redirect to queues
+        navigate("/queues");
+      }
+    }
+    catch (error) {
+      console.error("Login error:", error);
+      setErrorMessage("Invalid username or password");
+    }
+  };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#6237A0] p-4">
@@ -39,6 +58,8 @@ export default function Login() {
                 <input
                   id="username"
                   type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)} //Capture username input
                   placeholder="Enter your username"
                   className="w-full border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
@@ -79,6 +100,10 @@ export default function Login() {
                 </div>
                 <div className="text-right"></div>
               </div>
+
+              {errorMessage && (
+                <p className="text-red-500 text-sm mt-2">{errorMessage}</p>
+              )}
 
               <button
                 className="w-full bg-[#6237A0] hover:bg-[#5C2E90] text-white font-semibold py-2 px-4 rounded-md transition"
