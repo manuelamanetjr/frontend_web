@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Edit3, Search, X } from "react-feather";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
+import "../src/App.css";
 
 const initialRoles = [
   {
@@ -9,10 +10,7 @@ const initialRoles = [
     active: true,
     permissions: [
       "Can view Queues",
-      "Can Reply",
       "Can view Chats",
-      "Can End Chat",
-      "Can Transfer Department",
       "Can view Macros",
       "Can send Macros",
       "Can view Department",
@@ -36,7 +34,7 @@ const initialRoles = [
   {
     name: "Client",
     active: true,
-    permissions: ["Can view Queues", "Can view Chats", "Can View Auto-Replies"],
+    permissions: ["Can view Queues","Can End Chat", "Can Reply","Can view Chats", "Can View Auto-Replies"],
   },
   {
     name: "Agent",
@@ -58,7 +56,6 @@ const initialRoles = [
     active: true,
     permissions: [
       "Can view Queues",
-      "Can Reply",
       "Can view Chats",
       "Can End Chat",
       "Can Transfer Department",
@@ -196,16 +193,17 @@ export default function ManageRoles() {
                 Add Role
               </button>
             </div>
-            <div className="overflow-x-auto max-h-[70vh] overflow-y-auto relative">
+            <div className="overflow-x-auto max-h-[70vh] overflow-y-auto relative custom-scrollbar">
               <table className="min-w-full text-sm text-left border-separate border-spacing-0">
                 <thead className="text-gray-500 sticky top-0 bg-white z-20 shadow-sm">
                   <tr>
                     <th className="sticky left-0 z-30 bg-white py-2 px-3 w-48 border-b border-gray-500">
                       Role Name
                     </th>
-                    <th className="sticky left-[12rem] z-30 bg-white py-2 px-3 text-center w-24 border-b border-gray-500">
+                    <th className="sticky left-48 z-30 bg-white py-2 px-3 text-center w-24 border-b border-gray-500">
                       Active Status
                     </th>
+
                     {permissions.map((perm, i) => (
                       <th
                         key={i}
@@ -219,20 +217,20 @@ export default function ManageRoles() {
                 <tbody>
                   {filteredRoles.map((role, idx) => (
                     <tr key={idx}>
-                      <td className="align-top w-100 sticky left-0 bg-white py-3 px-3 z-10">
-                        <div className="relative min-w-[180px] max-w-[180px] pr-6">
+                      <td className="sticky left-0 bg-white py-3 px-3 z-10 w-[192px] min-w-[192px] max-w-[192px]">
+                        <div className="relative w-full">
                           <span className="break-words whitespace-normal text-sm block">
                             {role.name}
                           </span>
                           <Edit3
                             size={18}
                             strokeWidth={1}
-                            className="text-gray-500 cursor-pointer hover:text-purple-700 absolute top-1/2 right-1 -translate-y-1/2"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-purple-700 cursor-pointer"
                             onClick={() => handleOpenEditModal(idx)}
                           />
                         </div>
                       </td>
-                      <td className="sticky left-[12rem] bg-white py-3 px-3 z-10 text-center">
+                      <td className="sticky left-[192px] bg-white py-3 px-3 z-10 text-center w-[96px] min-w-[96px] max-w-[96px]">
                         <ToggleSwitch
                           checked={role.active}
                           onChange={() => handleToggleActive(idx)}

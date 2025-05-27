@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 import { Edit3, Search, X, Eye, EyeOff } from "react-feather";
+import "../src/App.css";
 
 export default function ManageAgents() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -14,19 +15,16 @@ export default function ManageAgents() {
       username: "johndoe",
       password: "pass123",
       active: true,
-      Role: "Super Admin",
     },
-    { username: "janesmith", password: "secret", active: false, Role: "Admin" },
-    { username: "tomjohnson", password: "123456", active: true, Role: "Admin" },
+    { username: "janesmith", password: "secret", active: false },
+    { username: "tomjohnson", password: "123456", active: true },
   ]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentEditIndex, setCurrentEditIndex] = useState(null);
   const [editUsername, setEditUsername] = useState("");
   const [editPassword, setEditPassword] = useState("");
-  const [editRole, setEditRole] = useState("Admin");
 
-  const Role = ["Admin", "Super Admin"];
   const toggleSidebar = () => setMobileSidebarOpen((prev) => !prev);
 
   const filteredAgents = agents.filter((agent) =>
@@ -79,7 +77,6 @@ export default function ManageAgents() {
                 onClick={() => {
                   setEditUsername("");
                   setEditPassword("");
-                  setEditRole("Admin");
                   setCurrentEditIndex(null);
                   setShowPassword(false);
                   setIsModalOpen(true);
@@ -90,13 +87,12 @@ export default function ManageAgents() {
               </button>
             </div>
 
-            <div className="overflow-y-auto max-h-[65vh] w-full">
+            <div className="overflow-y-auto max-h-[65vh] w-full custom-scrollbar">
               <table className="w-full text-sm text-left">
                 <thead className="text-gray-500 bg-white sticky top-0 z-10 shadow-[inset_0_-1px_0_0_#000000]">
                   <tr>
                     <th className="py-2 px-3 pl-3">Username</th>
                     <th className="py-2 px-3 text-center">Active Status</th>
-                    <th className="py-2 px-3 text-center">Role</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -114,7 +110,6 @@ export default function ManageAgents() {
                             setCurrentEditIndex(idx);
                             setEditUsername(agent.username);
                             setEditPassword(agent.password);
-                            setEditRole(agent.Role);
                             setShowPassword(false);
                             setIsModalOpen(true);
                           }}
@@ -136,25 +131,6 @@ export default function ManageAgents() {
                           />
                           <div className="w-7 h-4 bg-gray-200 rounded-full peer peer-checked:bg-[#6237A0] transition-colors duration-300 relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-transform after:duration-300 peer-checked:after:translate-x-3" />
                         </label>
-                      </td>
-                      <td className="py-2 px-3 text-center">
-                        <select
-                          className="rounded-md px-2 py-1 text-sm text-gray-800 outline-none"
-                          value={agent.Role}
-                          onChange={(e) =>
-                            setAgents((prev) =>
-                              prev.map((a, i) =>
-                                i === idx ? { ...a, Role: e.target.value } : a
-                              )
-                            )
-                          }
-                        >
-                          {Role.map((roles, i) => (
-                            <option key={i} value={roles}>
-                              {roles}
-                            </option>
-                          ))}
-                        </select>
                       </td>
                     </tr>
                   ))}
@@ -199,25 +175,6 @@ export default function ManageAgents() {
                   </span>
                 </div>
 
-                {currentEditIndex === null && (
-                  <>
-                    <label className="text-sm text-gray-700 mb-1 block">
-                      Role
-                    </label>
-                    <select
-                      value={editRole}
-                      onChange={(e) => setEditRole(e.target.value)}
-                      className="w-full border rounded-md p-2 text-sm mb-4 focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all duration-300"
-                    >
-                      {Role.map((role, i) => (
-                        <option key={i} value={role}>
-                          {role}
-                        </option>
-                      ))}
-                    </select>
-                  </>
-                )}
-
                 <div className="flex justify-end gap-2 mt-2">
                   <button
                     onClick={() => setIsModalOpen(false)}
@@ -246,7 +203,6 @@ export default function ManageAgents() {
                             username: editUsername,
                             password: editPassword,
                             active: true,
-                            Role: editRole,
                           },
                         ]);
                       }

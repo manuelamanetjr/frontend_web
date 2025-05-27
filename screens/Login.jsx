@@ -36,7 +36,7 @@ export default function Login() {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#6237A0] p-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#FFFfFf] p-4">
       <div className="w-full max-w-[1200px] bg-white rounded-lg overflow-hidden shadow-xl flex flex-col-reverse md:flex-row min-h-[700px]">
         {/* Left side - Login form */}
         <div className="w-full md:w-2/5 p-8 sm:p-10 flex items-center justify-center">
@@ -106,7 +106,7 @@ export default function Login() {
               )}
 
               <button
-                className="w-full bg-[#6237A0] hover:bg-[#5C2E90] text-white font-semibold py-2 px-4 rounded-md transition"
+                className="w-full bg-[#6237A0] hover:bg-[#5C2E90] text-white font-semibold py-2 px-4 rounded-md transition cursor-pointer"
                 onClick={handleLogin}
               >
                 Login
@@ -116,14 +116,14 @@ export default function Login() {
         </div>
 
         {/* Right side - Logo (appears on top on mobile) */}
-        <div className="w-full md:w-3/5 bg-gray-50 flex items-center justify-center p-20 sm:p-20 pt-28">
-          <div className="flex flex-row items-center md:flex-row">
+        <div className="w-full md:w-3/5 bg-gray-50 flex items-center justify-center p-10 pt-28">
+          <div className="flex flex-col items-center md:flex-row">
             <img
               src="src/assets/images/icon.png"
               alt="Servana Logo"
-              className="w-32 h-32 sm:w-35 sm:h-35 md:w-50 md:h-50 mb-2 md:mb-0 md:mr-2"
+              className="w-24 h-24 md:w-32 md:h-32 mb-4 md:mb-0 md:mr-4"
             />
-            <span className="text-6xl sm:text-7xl font-medium text-[#6237A0] font-baloo text-center md:text-left">
+            <span className="text-5xl sm:text-6xl font-medium text-[#6237A0] font-baloo text-center md:text-left">
               servana
             </span>
           </div>

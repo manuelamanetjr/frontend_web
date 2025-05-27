@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 import { Edit3, Search, X } from "react-feather";
+import '../src/App.css';
 
 export default function AutoReplies() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -59,7 +60,7 @@ export default function AutoReplies() {
           openDropdown={openDropdown}
         />
 
-        <main className="flex-1 bg-gray-100 p-15 transition-colors duration-300 flex flex-col min-h-0">
+        <main className="flex-1 bg-gray-100 p-[60px] transition-colors duration-300 flex flex-col min-h-0 w-full overflow-auto">
           <div className="bg-white p-4 rounded-lg flex flex-col flex-1 min-h-0 transition-all duration-300">
             <div className="flex justify-between items-center mb-4">
               {/* Search bar with clear (X) icon */}
@@ -96,7 +97,7 @@ export default function AutoReplies() {
               </button>
             </div>
 
-            <div className="flex-1 min-h-0 overflow-x-auto overflow-y-auto">
+            <div className="flex-1 min-h-0 overflow-x-auto overflow-y-auto custom-scrollbar">
               <table className="w-full text-sm text-left">
               <thead className="text-gray-500 bg-white sticky top-0 z-20 shadow-[inset_0_-1px_0_0_#000000]">
               <tr>

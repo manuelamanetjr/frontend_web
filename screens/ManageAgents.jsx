@@ -1,17 +1,18 @@
-import React, { useState } from "react";
-import { Edit3, Search, X } from "react-feather";
+import React, { useState, useEffect, useRef } from "react";
+import { Edit3, Search, X, Eye, EyeOff, Filter } from "react-feather";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
+import "../src/App.css";
 
 const initialAgents = [
-  { name: "Alice Smith", active: true, departments: ["CSR", "Billing"] },
-  { name: "Bob Johnson", active: true, departments: ["Sales"] },
-  { name: "Charlie Nguyen", active: false, departments: ["Technical Support", "IT"] },
-  { name: "Dana Lee", active: true, departments: ["Customer Success", "Onboarding"] },
-  { name: "Evan Martinez", active: true, departments: ["Product", "Quality Assurance"] },
-  { name: "Fiona Patel", active: false, departments: ["Legal", "Finance"] },
-  { name: "George Kim", active: true, departments: ["Retention", "Marketing"] },
-  { name: "Hannah Wright", active: true, departments: ["Human Resources", "Billing"] },
+  { username: "alicego", password: "password123", active: true, departments: ["CSR", "Billing"] },
+  { username: "bobmarlie", password: "bobpass", active: true, departments: ["Sales"] },
+  { username: "charliechaplin", password: "charlie123", active: false, departments: ["Technical Support", "IT"] },
+  { username: "danabells", password: "dana456", active: true, departments: ["Customer Success", "Onboarding"] },
+  { username: "evanovich", password: "evan789", active: true, departments: ["Product", "Quality Assurance"] },
+  { username: "fionashrek", password: "fiona999", active: false, departments: ["Legal", "Finance"] },
+  { username: "georgewashington", password: "gkim321", active: true, departments: ["Retention", "Marketing"] },
+  { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
 ];
 
 const allDepartments = [
@@ -25,37 +26,79 @@ export default function ManageAgents() {
   const [searchQuery, setSearchQuery] = useState("");
   const [agents, setAgents] = useState(initialAgents);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [currentEditIndex, setCurrentEditIndex] = useState(null);
-  const [editForm, setEditForm] = useState({ name: "" });
+  const [editForm, setEditForm] = useState({ username: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
 
-  const filteredAgents = agents.filter((agent) =>
-    agent.name.toLowerCase().includes(searchQuery.toLowerCase())
+  // New states for filter dropdown and selected filters
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
+  const [selectedDepartmentsFilter, setSelectedDepartmentsFilter] = useState([]);
+
+  const filterRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (filterRef.current && !filterRef.current.contains(event.target)) {
+        setFilterDropdownOpen(false);
+      }
+    }
+    if (filterDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [filterDropdownOpen]);
+
+const filteredAgents = agents.filter((agent) => {
+  const matchesSearch = agent.username.toLowerCase().includes(searchQuery.toLowerCase());
+
+  // If no departments are selected, skip department filter
+  if (selectedDepartmentsFilter.length === 0) {
+    return matchesSearch;
+  }
+
+  // Agent must be in all selected departments (AND logic)
+  const hasAllDepartments = selectedDepartmentsFilter.every((dept) =>
+    agent.departments.includes(dept)
   );
+
+  return matchesSearch && hasAllDepartments;
+});
 
   const toggleSidebar = () => setMobileSidebarOpen((prev) => !prev);
 
   const handleOpenEditModal = (index = null) => {
     setCurrentEditIndex(index);
-    setEditForm({
-      name: index !== null ? agents[index].name : "",
-    });
+    setEditForm(
+      index !== null
+        ? { username: agents[index].username, password: agents[index].password }
+        : { username: "", password: "" }
+    );
+    setShowPassword(false);
     setIsModalOpen(true);
   };
 
   const handleSaveAgent = () => {
+    setIsConfirmModalOpen(true);
+  };
+
+  const confirmSaveAgent = () => {
     if (currentEditIndex !== null) {
       setAgents((prev) =>
         prev.map((agent, i) =>
-          i === currentEditIndex ? { ...agent, name: editForm.name } : agent
+          i === currentEditIndex ? { ...agent, username: editForm.username, password: editForm.password } : agent
         )
       );
     } else {
       setAgents((prev) => [
         ...prev,
-        { name: editForm.name, active: true, departments: [] },
+        { username: editForm.username, password: editForm.password, active: true, departments: [] },
       ]);
     }
     setIsModalOpen(false);
+    setIsConfirmModalOpen(false);
   };
 
   const handleToggleActive = (index) => {
@@ -93,14 +136,54 @@ export default function ManageAgents() {
           toggleDropdown={setOpenDropdown}
           openDropdown={openDropdown}
         />
-        <main className="flex-1 bg-gray-100 p-15 overflow-hidden">
+        <main className="flex-1 bg-gray-100 p-15 overflow-hidden relative">
           <div className="bg-white p-4 rounded-lg h-full flex flex-col">
-            <div className="flex justify-between items-center mb-4">
-              <SearchInput
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search agents..."
-              />
+            <div className="flex justify-between items-center mb-4 relative">
+              <div className="relative w-1/3" ref={filterRef}>
+                <SearchInput
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  placeholder="Search agents..."
+                  onFilterClick={() => setFilterDropdownOpen((prev) => !prev)}
+                  filterDropdownOpen={filterDropdownOpen}
+                  selectedFilters={selectedDepartmentsFilter}
+                />
+                {filterDropdownOpen && (
+                  <div
+                    className="absolute mt-1 bg-white border border-gray-300 rounded-md shadow-lg w-64 max-h-60 overflow-auto z-50"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="p-2">
+                      {allDepartments.map((dept) => (
+                        <label key={dept} className="flex items-center gap-2 mb-1 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={selectedDepartmentsFilter.includes(dept)}
+                            onChange={() => {
+                              setSelectedDepartmentsFilter((prev) =>
+                                prev.includes(dept)
+                                  ? prev.filter((d) => d !== dept)
+                                  : [...prev, dept]
+                              );
+                            }}
+                            className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                          />
+                          <span className="text-sm">{dept}</span>
+                        </label>
+                      ))}
+                      {selectedDepartmentsFilter.length > 0 && (
+                        <button
+                          onClick={() => setSelectedDepartmentsFilter([])}
+                          className="mt-2 text-sm text-purple-600 hover:underline"
+                        >
+                          Clear Filters
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <button
                 onClick={() => handleOpenEditModal()}
                 className="bg-[#6237A0] text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-800"
@@ -110,14 +193,14 @@ export default function ManageAgents() {
             </div>
 
             <div className="overflow-x-auto flex-1">
-              <div className="h-full overflow-y-auto">
+              <div className="h-full overflow-y-auto custom-scrollbar">
                 <table className="min-w-full text-sm text-left border-separate border-spacing-0">
-                  <thead className="text-gray-500">
+                  <thead className="text-gray-500 sticky top-0 bg-white z-20 shadow-sm">
                     <tr>
                       <th className="sticky top-0 left-0 z-30 bg-white py-2 px-3 w-48 border-b border-gray-500">
-                        Agent Name
+                        Username
                       </th>
-                      <th className="sticky top-0 left-[12rem] z-30 bg-white py-2 px-3 text-center w-24 border-b border-gray-500">
+                      <th className="sticky left-48 z-30 bg-white py-2 px-3 text-center w-24 border-b border-gray-500">
                         Active Status
                       </th>
                       {allDepartments.map((dept, i) => (
@@ -133,10 +216,10 @@ export default function ManageAgents() {
                   <tbody className="divide-y divide-gray-200">
                     {filteredAgents.map((agent, idx) => (
                       <tr key={idx}>
-                        <td className="align-top sticky left-0 bg-white py-3 px-3 z-10">
-                          <div className="relative min-w-[180px] max-w-[180px] pr-6">
+                        <td className="sticky left-0 bg-white py-3 px-3 z-10 w-[192px] min-w-[192px] max-w-[192px]">
+                          <div className="relative w-full">
                             <span className="break-words whitespace-normal text-sm block">
-                              {agent.name}
+                              {agent.username}
                             </span>
                             <Edit3
                               size={18}
@@ -158,7 +241,7 @@ export default function ManageAgents() {
                               type="checkbox"
                               checked={agent.departments.includes(dept)}
                               onChange={() => handleToggleDepartment(idx, dept)}
-                              className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                              className="w-5 h-5 cursor-pointer"
                             />
                           </td>
                         ))}
@@ -169,100 +252,144 @@ export default function ManageAgents() {
               </div>
             </div>
           </div>
-
-          {isModalOpen && (
-            <AgentModal
-              isEdit={currentEditIndex !== null}
-              formData={editForm}
-              onFormChange={setEditForm}
-              onClose={() => setIsModalOpen(false)}
-              onSave={handleSaveAgent}
-            />
-          )}
         </main>
+
+        {/* Edit Modal */}
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+            <div className="bg-white rounded-lg p-6 w-96 relative">
+              <h2 className="text-xl font-semibold mb-4">Edit Agent</h2>
+              <label className="block mb-2 text-sm font-medium text-gray-700">Username</label>
+              <input
+                type="text"
+                value={editForm.username}
+                onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
+                className="w-full mb-4 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600"
+              />
+              <label className="block mb-2 text-sm font-medium text-gray-700">Password</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={editForm.password}
+                  onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
+                  className="w-full mb-4 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600"
+                />
+                {showPassword ? (
+                  <EyeOff
+                    size={18}
+                    className="absolute top-3 right-3 cursor-pointer text-gray-500"
+                    onClick={() => setShowPassword(false)}
+                  />
+                ) : (
+                  <Eye
+                    size={18}
+                    className="absolute top-3 right-3 cursor-pointer text-gray-500"
+                    onClick={() => setShowPassword(true)}
+                  />
+                )}
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveAgent}
+                  className="px-4 py-2 rounded-md bg-purple-700 text-white hover:bg-purple-800"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Confirm Save Modal */}
+        {isConfirmModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-60 flex justify-center items-center">
+            <div className="bg-white rounded-lg p-6 w-80">
+              <h3 className="text-lg font-semibold mb-4">Confirm Save</h3>
+              <p className="mb-6">Are you sure you want to save these changes?</p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setIsConfirmModalOpen(false)}
+                  className="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmSaveAgent}
+                  className="px-4 py-2 rounded-md bg-purple-700 text-white hover:bg-purple-800"
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-function SearchInput({ value, onChange, placeholder }) {
+// ToggleSwitch component for active status
+function ToggleSwitch({ checked, onChange }) {
   return (
-    <div className="flex items-center bg-gray-100 px-3 py-2 rounded-md w-1/3 relative">
+    <label className="relative inline-flex items-center cursor-pointer">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        className="sr-only"
+      />
+      <div
+        className={`w-9 h-5 rounded-full transition-colors ${
+          checked ? "bg-purple-700" : "bg-gray-300"
+        }`}
+      ></div>
+      <span
+        className={`absolute left-0.5 top-0.5 w-4 h-4 rounded-full bg-white border border-gray-300 transition-transform ${
+          checked ? "translate-x-4" : "translate-x-0"
+        }`}
+      ></span>
+    </label>
+  );
+}
+
+// SearchInput component with filter icon and badge count
+function SearchInput({ value, onChange, placeholder, onFilterClick, filterDropdownOpen, selectedFilters }) {
+  return (
+    <div className="flex items-center bg-gray-100 px-3 py-2 rounded-md w-full relative">
       <Search size={18} strokeWidth={1} className="text-gray-500 mr-2" />
       <input
         type="text"
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="bg-transparent focus:outline-none text-sm w-full pr-6"
+        className="bg-transparent focus:outline-none text-sm w-full pr-12"
       />
       {value && (
         <X
           size={16}
           strokeWidth={1}
-          className="text-gray-500 cursor-pointer absolute right-3"
+          className="text-gray-500 cursor-pointer absolute right-7"
           onClick={() => onChange("")}
         />
       )}
-    </div>
-  );
-}
-
-function ToggleSwitch({ checked, onChange }) {
-  return (
-    <label className="inline-flex relative items-center cursor-pointer">
-      <input
-        type="checkbox"
-        className="sr-only peer"
-        checked={checked}
-        onChange={onChange}
+      <Filter
+        size={16}
+        strokeWidth={1}
+        className={`text-gray-500 cursor-pointer absolute right-3 ${filterDropdownOpen ? "text-purple-700" : ""}`}
+        onClick={onFilterClick}
       />
-      <div className="w-7 h-4 bg-gray-200 rounded-full peer peer-checked:bg-[#6237A0] transition-colors duration-300 relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-transform peer-checked:after:translate-x-3" />
-    </label>
-  );
-}
-
-function AgentModal({ isEdit, formData, onFormChange, onClose, onSave }) {
-  return (
-    <div className="fixed inset-0 bg-gray-400/50 flex justify-center items-center z-50">
-      <div className="bg-white rounded-lg shadow-xl p-6 w-96">
-        <h2 className="text-md font-semibold mb-4">
-          {isEdit ? "Edit Agent" : "Add Agent"}
-        </h2>
-        <FormField
-          label="Agent Name"
-          value={formData.name}
-          onChange={(value) => onFormChange({ ...formData, name: value })}
-        />
-        <div className="flex justify-end gap-2 mt-4">
-          <button
-            onClick={onClose}
-            className="bg-gray-300 text-gray-800 px-4 py-1 rounded-lg text-sm hover:bg-gray-400"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onSave}
-            className="bg-purple-700 text-white px-4 py-1 rounded-lg text-sm hover:bg-purple-800"
-          >
-            Save
-          </button>
+      {selectedFilters.length > 0 && (
+        <div className="absolute right-8 top-1 text-xs bg-purple-600 text-white rounded-full px-1.5 select-none">
+          {selectedFilters.length}
         </div>
-      </div>
-    </div>
-  );
-}
-
-function FormField({ label, value, onChange }) {
-  return (
-    <div>
-      <label className="text-sm text-gray-700 mb-1 block">{label}</label>
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full border rounded-md p-2 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none"
-      />
+      )}
     </div>
   );
 }

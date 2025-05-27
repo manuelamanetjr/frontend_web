@@ -2,18 +2,19 @@ import React, { useState } from "react";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 import { Search, X } from "react-feather";
+import "../src/App.css";
 
 export default function ChangeRoles() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [users, setUsers] = useState([
-    { name: "alicejohnson", active: true, role: "admin" },
-    { name: "bobmartin", active: false, role: "agent" },
-    { name: "evetorres", active: true, role: "agent" },
+    { name: "alicejohnson", active: true, role: "Admin"},
+    { name: "bobmartin", active: false, role: "Agent"},
+    { name: "evetorres", active: true, role: "Agent"},
   ]);
 
-  const roles = ["admin", "agent"];
+  const roles = ["Admin", "Agent", "Supervisor"];
 
   const toggleSidebar = () => setMobileSidebarOpen((prev) => !prev);
 
@@ -38,7 +39,7 @@ export default function ChangeRoles() {
           openDropdown={openDropdown}
         />
 
-        <main className="flex-1 bg-gray-100 p-6 overflow-hidden transition-colors duration-300 flex flex-col">
+        <main className="flex-1 bg-gray-100 p-15 overflow-hidden transition-colors duration-300 flex flex-col">
           <div className="bg-white p-4 rounded-lg flex flex-col flex-1 min-h-0">
             {/* Search bar */}
             <div className="flex justify-between items-center mb-4">
@@ -62,7 +63,7 @@ export default function ChangeRoles() {
             </div>
 
             {/* Table section */}
-            <div className="flex-1 overflow-y-auto min-h-0">
+            <div className="flex-1 overflow-y-auto min-h-0 custom-scrollbar">
               <table className="w-full text-sm text-left">
                 <thead className="text-gray-500 bg-white sticky top-0 z-10 shadow-[inset_0_-1px_0_0_#000000]">
                   <tr>
