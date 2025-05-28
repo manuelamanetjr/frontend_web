@@ -5,6 +5,8 @@ import { Edit3, Search, X } from "react-feather";
 import axios from "axios";
 import '../src/App.css';
 
+const API_BASE = "http://localhost:5000/departments";
+
 export default function Departments() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -30,7 +32,7 @@ export default function Departments() {
 
   const fetchDepartments = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/departments");
+      const res = await axios.get(API_BASE);
       setDepartments(res.data);
     } catch (error) {
       console.error("Failed to fetch departments:", error);
@@ -46,13 +48,13 @@ export default function Departments() {
     try {
       if (currentEditId) {
         // Update existing department - send dept_updated_by
-        await axios.put(`http://localhost:5000/departments/${currentEditId}`, {
+        await axios.put(`${API_BASE}/${currentEditId}`, {
           dept_name: editText.trim(),
           dept_updated_by: CURRENT_USER_ID,
         });
       } else {
         // Add new department - send dept_created_by
-        await axios.post("http://localhost:5000/departments", {
+        await axios.post(API_BASE, {
           dept_name: editText.trim(),
           dept_created_by: CURRENT_USER_ID,
         });
@@ -70,7 +72,7 @@ export default function Departments() {
 
   const toggleActive = async (dept_id, currentStatus) => {
     try {
-      await axios.put(`http://localhost:5000/departments/${dept_id}/toggle`, {
+      await axios.put(`${API_BASE}/${dept_id}/toggle`, {
         dept_is_active: !currentStatus,
         dept_updated_by: CURRENT_USER_ID,
       });
