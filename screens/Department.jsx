@@ -1,40 +1,85 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 import { Edit3, Search, X } from "react-feather";
+import axios from "axios";
 import '../src/App.css';
 
 export default function Departments() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentEditIndex, setCurrentEditIndex] = useState(null);
+  const [currentEditId, setCurrentEditId] = useState(null);
   const [editText, setEditText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [departments, setDepartments] = useState([]);
 
-const [departments, setDepartments] = useState([
-  { name: "CSR", active: true },
-  { name: "Billing", active: true },
-  { name: "Sales", active: true },
-  { name: "Technical Support", active: true },
-  { name: "Customer Success", active: true },
-  { name: "Retention", active: true },
-  { name: "Onboarding", active: true },
-  { name: "Product", active: true },
-  { name: "Quality Assurance", active: true },
-  { name: "IT", active: true },
-  { name: "Logistics", active: true },
-  { name: "Marketing", active: true },
-  { name: "Legal", active: true },
-  { name: "Finance", active: true },
-  { name: "Human Resources", active: true },
-]);
+  // TODO: Replace this with your actual logged-in user ID from context/auth
+  const CURRENT_USER_ID = 1;
 
   const toggleSidebar = () => setMobileSidebarOpen((prev) => !prev);
 
   const filteredDepartments = departments.filter((dept) =>
-    dept.name.toLowerCase().includes(searchQuery.toLowerCase())
+    dept.dept_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Fetch departments on mount
+  useEffect(() => {
+    fetchDepartments();
+  }, []);
+
+  const fetchDepartments = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/departments");
+      setDepartments(res.data);
+    } catch (error) {
+      console.error("Failed to fetch departments:", error);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!editText.trim()) {
+      alert("Department name cannot be empty");
+      return;
+    }
+
+    try {
+      if (currentEditId) {
+        // Update existing department - send dept_updated_by
+        await axios.put(`http://localhost:5000/departments/${currentEditId}`, {
+          dept_name: editText.trim(),
+          dept_updated_by: CURRENT_USER_ID,
+        });
+      } else {
+        // Add new department - send dept_created_by
+        await axios.post("http://localhost:5000/departments", {
+          dept_name: editText.trim(),
+          dept_created_by: CURRENT_USER_ID,
+        });
+      }
+
+      setIsModalOpen(false);
+      setEditText("");
+      setCurrentEditId(null);
+      fetchDepartments();
+    } catch (error) {
+      console.error("Failed to save department:", error);
+      alert("Failed to save department");
+    }
+  };
+
+  const toggleActive = async (dept_id, currentStatus) => {
+    try {
+      await axios.put(`http://localhost:5000/departments/${dept_id}/toggle`, {
+        dept_is_active: !currentStatus,
+        dept_updated_by: CURRENT_USER_ID,
+      });
+      fetchDepartments();
+    } catch (error) {
+      console.error("Failed to toggle status:", error);
+      alert("Failed to toggle active status");
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
@@ -56,12 +101,8 @@ const [departments, setDepartments] = useState([
         <main className="flex-1 bg-gray-100 p-15 overflow-hidden transition-colors duration-300">
           <div className="bg-white p-4 rounded-lg min-h-[80vh] transition-all duration-300">
             <div className="flex justify-between items-center mb-4">
-              {/* Search bar */}
               <div className="flex items-center bg-gray-100 px-3 py-2 rounded-md w-1/3 relative">
-                <Search
-                  size={18}
-                  className="text-gray-500 mr-2 flex-shrink-0"
-                />
+                <Search size={18} className="text-gray-500 mr-2 flex-shrink-0" />
                 <input
                   type="text"
                   placeholder="Search..."
@@ -81,7 +122,7 @@ const [departments, setDepartments] = useState([
               <button
                 onClick={() => {
                   setEditText("");
-                  setCurrentEditIndex(null);
+                  setCurrentEditId(null);
                   setIsModalOpen(true);
                 }}
                 className="bg-[#6237A0] text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-800 transition-colors duration-300"
@@ -99,20 +140,20 @@ const [departments, setDepartments] = useState([
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredDepartments.map((dept, idx) => (
-                    <tr key={idx} className="transition-colors duration-200 hover:bg-gray-100">
+                  {filteredDepartments.map((dept) => (
+                    <tr key={dept.dept_id} className="transition-colors duration-200 hover:bg-gray-100">
                       <td className="py-2 px-3 align-top">
                         <div className="flex items-center gap-2">
                           <p className="text-sm break-words max-w-[200px] whitespace-pre-wrap">
-                            {dept.name}
+                            {dept.dept_name}
                           </p>
                           <Edit3
                             size={18}
                             strokeWidth={1}
                             className="text-gray-500 cursor-pointer flex-shrink-0 transition-colors duration-200 hover:text-purple-700"
                             onClick={() => {
-                              setCurrentEditIndex(idx);
-                              setEditText(dept.name);
+                              setCurrentEditId(dept.dept_id);
+                              setEditText(dept.dept_name);
                               setIsModalOpen(true);
                             }}
                           />
@@ -124,14 +165,8 @@ const [departments, setDepartments] = useState([
                           <input
                             type="checkbox"
                             className="sr-only peer"
-                            checked={dept.active}
-                            onChange={() =>
-                              setDepartments((prev) =>
-                                prev.map((d, i) =>
-                                  i === idx ? { ...d, active: !d.active } : d
-                                )
-                              )
-                            }
+                            checked={dept.dept_is_active}
+                            onChange={() => toggleActive(dept.dept_id, dept.dept_is_active)}
                           />
                           <div className="w-7 h-4 bg-gray-200 rounded-full peer peer-checked:bg-[#6237A0] transition-colors duration-300 relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-transform after:duration-300 peer-checked:after:translate-x-3" />
                         </label>
@@ -148,9 +183,7 @@ const [departments, setDepartments] = useState([
             <div className="fixed inset-0 bg-gray-400/50 flex justify-center items-center z-50 transition-opacity duration-300">
               <div className="bg-white rounded-lg shadow-xl p-6 w-96 transform scale-95 animate-fadeIn transition-transform duration-300 ease-out">
                 <h2 className="text-md font-semibold mb-2">
-                  {currentEditIndex !== null
-                    ? "Edit Department"
-                    : "Add Department"}
+                  {currentEditId ? "Edit Department" : "Add Department"}
                 </h2>
                 <label className="text-sm text-gray-700 mb-1 block">
                   Department Name
@@ -170,23 +203,7 @@ const [departments, setDepartments] = useState([
                     Cancel
                   </button>
                   <button
-                    onClick={() => {
-                      if (currentEditIndex !== null) {
-                        setDepartments((prev) =>
-                          prev.map((d, i) =>
-                            i === currentEditIndex
-                              ? { ...d, name: editText }
-                              : d
-                          )
-                        );
-                      } else {
-                        setDepartments((prev) => [
-                          ...prev,
-                          { name: editText, active: true },
-                        ]);
-                      }
-                      setIsModalOpen(false);
-                    }}
+                    onClick={handleSave}
                     className="bg-purple-700 text-white px-4 py-1 rounded-lg text-sm hover:bg-purple-800 transition-colors duration-300"
                   >
                     Save
