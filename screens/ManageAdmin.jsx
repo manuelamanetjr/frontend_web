@@ -1,8 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 import { Edit3, Search, X, Eye, EyeOff } from "react-feather";
 import "../src/App.css";
+
+const API_BASE = "http://localhost:5000/admins";
 
 export default function ManageAgents() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -10,26 +13,110 @@ export default function ManageAgents() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const [agents, setAgents] = useState([
-    {
-      username: "johndoe",
-      password: "pass123",
-      active: true,
-    },
-    { username: "janesmith", password: "secret", active: false },
-    { username: "tomjohnson", password: "123456", active: true },
-  ]);
+  const [agents, setAgents] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentEditIndex, setCurrentEditIndex] = useState(null);
+  const [currentEditId, setCurrentEditId] = useState(null);
   const [editUsername, setEditUsername] = useState("");
   const [editPassword, setEditPassword] = useState("");
+  const [editActive, setEditActive] = useState(true);
 
   const toggleSidebar = () => setMobileSidebarOpen((prev) => !prev);
+
+  const fetchAdmins = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data } = await axios.get(API_BASE);
+      setAgents(
+        data.map((a) => ({
+          sys_user_id: a.sys_user_id,
+          username: a.sys_user_username,
+          password: a.sys_user_password,
+          active: a.sys_user_is_active,
+        }))
+      );
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to fetch admins");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAdmins();
+  }, []);
 
   const filteredAgents = agents.filter((agent) =>
     agent.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const saveAdmin = async () => {
+    setError(null);
+
+    if (!editUsername || !editPassword) {
+      setError("Username and password are required");
+      return;
+    }
+
+    const updatedBy = 1;
+
+    try {
+      if (currentEditId !== null) {
+        await axios.put(`${API_BASE}/${currentEditId}`, {
+          sys_user_username: editUsername,
+          sys_user_password: editPassword,
+          sys_user_is_active: editActive,
+          sys_user_updated_by: updatedBy,
+        });
+      } else {
+        await axios.post(API_BASE, {
+          sys_user_username: editUsername,
+          sys_user_password: editPassword,
+          sys_user_is_active: true,
+          sys_user_created_by: updatedBy,
+        });
+      }
+      await fetchAdmins();
+      setIsModalOpen(false);
+      setCurrentEditId(null);
+      setEditUsername("");
+      setEditPassword("");
+      setEditActive(true);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to save admin");
+    }
+  };
+
+  const toggleActiveStatus = async (sys_user_id) => {
+    const idx = agents.findIndex((a) => a.sys_user_id === sys_user_id);
+    if (idx === -1) return;
+
+    const admin = agents[idx];
+    const updatedBy = 1;
+
+    try {
+      setAgents((prev) =>
+        prev.map((a) =>
+          a.sys_user_id === sys_user_id ? { ...a, active: !a.active } : a
+        )
+      );
+
+      await axios.put(`${API_BASE}/${sys_user_id}/toggle`, {
+        sys_user_is_active: !admin.active,
+        sys_user_updated_by: updatedBy,
+      });
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to toggle active status");
+      setAgents((prev) =>
+        prev.map((a) =>
+          a.sys_user_id === sys_user_id ? { ...a, active: admin.active } : a
+        )
+      );
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
@@ -77,15 +164,22 @@ export default function ManageAgents() {
                 onClick={() => {
                   setEditUsername("");
                   setEditPassword("");
-                  setCurrentEditIndex(null);
+                  setEditActive(true);
+                  setCurrentEditId(null);
                   setShowPassword(false);
                   setIsModalOpen(true);
+                  setError(null);
                 }}
                 className="bg-[#6237A0] text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-800 transition-colors duration-300"
               >
                 Add Account
               </button>
             </div>
+
+            {loading && <p className="text-center text-gray-600">Loading...</p>}
+            {error && (
+              <p className="text-center text-red-600 mb-2 font-semibold">{error}</p>
+            )}
 
             <div className="overflow-y-auto max-h-[65vh] w-full custom-scrollbar">
               <table className="w-full text-sm text-left">
@@ -96,8 +190,11 @@ export default function ManageAgents() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredAgents.map((agent, idx) => (
-                    <tr key={idx} className="transition-colors duration-200 hover:bg-gray-100">
+                  {filteredAgents.map((agent) => (
+                    <tr
+                      key={agent.sys_user_id}
+                      className="transition-colors duration-200 hover:bg-gray-100"
+                    >
                       <td className="py-2 px-3 flex items-center gap-2">
                         <p className="text-sm break-words max-w-[200px] whitespace-pre-wrap">
                           {agent.username}
@@ -107,11 +204,13 @@ export default function ManageAgents() {
                           strokeWidth={1}
                           className="text-gray-500 cursor-pointer w-[18px] h-[18px] flex-shrink-0 transition-colors duration-200 hover:text-purple-700"
                           onClick={() => {
-                            setCurrentEditIndex(idx);
+                            setCurrentEditId(agent.sys_user_id);
                             setEditUsername(agent.username);
                             setEditPassword(agent.password);
+                            setEditActive(agent.active);
                             setShowPassword(false);
                             setIsModalOpen(true);
+                            setError(null);
                           }}
                         />
                       </td>
@@ -121,13 +220,7 @@ export default function ManageAgents() {
                             type="checkbox"
                             className="sr-only peer"
                             checked={agent.active}
-                            onChange={() =>
-                              setAgents((prev) =>
-                                prev.map((a, i) =>
-                                  i === idx ? { ...a, active: !a.active } : a
-                                )
-                              )
-                            }
+                            onChange={() => toggleActiveStatus(agent.sys_user_id)}
                           />
                           <div className="w-7 h-4 bg-gray-200 rounded-full peer peer-checked:bg-[#6237A0] transition-colors duration-300 relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-transform after:duration-300 peer-checked:after:translate-x-3" />
                         </label>
@@ -139,76 +232,67 @@ export default function ManageAgents() {
             </div>
           </div>
 
-          {/* Modal for Add/Edit */}
           {isModalOpen && (
             <div className="fixed inset-0 bg-gray-400/50 flex justify-center items-center z-50 transition-opacity duration-300">
-              <div className="bg-white rounded-lg shadow-xl p-6 w-96 transform scale-95 animate-fadeIn transition-transform duration-300 ease-out">
-                <h2 className="text-md font-semibold mb-4">
-                  {currentEditIndex !== null ? "Edit Admin" : "Add Admin"}
-                </h2>
-
-                <label className="text-sm text-gray-700 mb-1 block">
-                  Username
-                </label>
-                <input
-                  type="text"
-                  value={editUsername}
-                  onChange={(e) => setEditUsername(e.target.value)}
-                  className="w-full border rounded-md p-2 text-sm mb-3 focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all duration-300"
-                />
-
-                <label className="text-sm text-gray-700 mb-1 block">
-                  Password
-                </label>
-                <div className="relative mb-3">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={editPassword}
-                    onChange={(e) => setEditPassword(e.target.value)}
-                    className="w-full border rounded-md p-2 text-sm pr-10 focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all duration-300"
-                  />
-                  <span
-                    className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-500 hover:text-gray-700"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </span>
-                </div>
-
-                <div className="flex justify-end gap-2 mt-2">
+              <div className="bg-white rounded-lg shadow-xl p-6 w-96 transform scale-95 animate-fade-in">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-semibold text-xl">
+                    {currentEditId !== null ? "Edit Admin" : "Add Admin"}
+                  </h3>
                   <button
                     onClick={() => setIsModalOpen(false)}
-                    className="bg-gray-300 text-gray-800 px-4 py-1 rounded-lg text-sm hover:bg-gray-400 transition-colors duration-200"
+                    className="text-gray-700 hover:text-gray-900"
+                  >
+                    <X size={24} strokeWidth={2} />
+                  </button>
+                </div>
+
+                {error && (
+                  <p className="text-red-600 mb-3 font-semibold">{error}</p>
+                )}
+
+                <label className="block mb-3">
+                  <span className="block text-sm font-medium text-gray-700">Username</span>
+                  <input
+                    type="text"
+                    className="mt-1 w-full rounded-md border border-gray-300 p-2 focus:border-purple-700 focus:outline-none focus:ring-1 focus:ring-purple-700"
+                    value={editUsername}
+                    onChange={(e) => setEditUsername(e.target.value)}
+                  />
+                </label>
+
+                <label className="block mb-3 relative">
+                  <span className="block text-sm font-medium text-gray-700">Password</span>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    className="mt-1 w-full rounded-md border border-gray-300 p-2 pr-10 focus:border-purple-700 focus:outline-none focus:ring-1 focus:ring-purple-700"
+                    value={editPassword}
+                    onChange={(e) => setEditPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-2 top-8 text-gray-500 hover:text-gray-700"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </label>
+
+                <div className="flex justify-end gap-4 mt-4">
+                  <button
+                    onClick={() => {
+                      setIsModalOpen(false);
+                      setError(null);
+                    }}
+                    className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
                   >
                     Cancel
                   </button>
+
                   <button
-                    onClick={() => {
-                      if (currentEditIndex !== null) {
-                        setAgents((prev) =>
-                          prev.map((a, i) =>
-                            i === currentEditIndex
-                              ? {
-                                  ...a,
-                                  username: editUsername,
-                                  password: editPassword,
-                                }
-                              : a
-                          )
-                        );
-                      } else {
-                        setAgents((prev) => [
-                          ...prev,
-                          {
-                            username: editUsername,
-                            password: editPassword,
-                            active: true,
-                          },
-                        ]);
-                      }
-                      setIsModalOpen(false);
-                    }}
-                    className="bg-purple-700 text-white px-4 py-1 rounded-lg text-sm hover:bg-purple-800 transition-colors duration-300"
+                    onClick={saveAdmin}
+                    className="bg-[#6237A0] text-white px-4 py-2 rounded-md hover:bg-purple-800 transition"
                   >
                     Save
                   </button>
