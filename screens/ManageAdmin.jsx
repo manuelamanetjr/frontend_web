@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../src/api";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 import { Edit3, Search, X, Eye, EyeOff } from "react-feather";
 import "../src/App.css";
 
-const API_BASE = "http://localhost:5000/admins";
 
 export default function ManageAgents() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -29,7 +28,7 @@ export default function ManageAgents() {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await axios.get(API_BASE);
+      const { data } = await api.get("/admins");
       setAgents(
         data.map((a) => ({
           sys_user_id: a.sys_user_id,
@@ -65,14 +64,14 @@ export default function ManageAgents() {
 
     try {
       if (currentEditId !== null) {
-        await axios.put(`${API_BASE}/${currentEditId}`, {
+        await api.put(`admins/${currentEditId}`, {
           sys_user_username: editUsername,
           sys_user_password: editPassword,
           sys_user_is_active: editActive,
           sys_user_updated_by: updatedBy,
         });
       } else {
-        await axios.post(API_BASE, {
+        await api.post("/admins", {
           sys_user_username: editUsername,
           sys_user_password: editPassword,
           sys_user_is_active: true,
@@ -104,7 +103,7 @@ export default function ManageAgents() {
         )
       );
 
-      await axios.put(`${API_BASE}/${sys_user_id}/toggle`, {
+      await api.put(`admins/${sys_user_id}/toggle`, {
         sys_user_is_active: !admin.active,
         sys_user_updated_by: updatedBy,
       });

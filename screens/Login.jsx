@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "react-feather";
-import axios from "axios";
+import api from "../src/api"; 
 
 export default function Login() {
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ export default function Login() {
 
    const handleLogin = async() => {
     try{
-      const response = await axios.post("http://localhost:5000/profile/login", {
+      const response = await api.post("/profile/login", {
         sys_user_username: username,
         sys_user_password: password,
       });

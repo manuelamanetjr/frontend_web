@@ -2,10 +2,9 @@ import React, { useEffect, useState } from "react";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 import { Edit3, Search, X } from "react-feather";
-import axios from "axios";
+import api from "../src/api";
 import '../src/App.css';
 
-const API_BASE = "http://localhost:5000/departments";
 
 export default function Departments() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -32,7 +31,7 @@ export default function Departments() {
 
   const fetchDepartments = async () => {
     try {
-      const res = await axios.get(API_BASE);
+      const res = await api.get("/departments");
       setDepartments(res.data);
     } catch (error) {
       console.error("Failed to fetch departments:", error);
@@ -48,13 +47,13 @@ export default function Departments() {
     try {
       if (currentEditId) {
         // Update existing department - send dept_updated_by
-        await axios.put(`${API_BASE}/${currentEditId}`, {
+        await api.put(`departments/${currentEditId}`, {
           dept_name: editText.trim(),
           dept_updated_by: CURRENT_USER_ID,
         });
       } else {
         // Add new department - send dept_created_by
-        await axios.post(API_BASE, {
+        await api.post("departments", {
           dept_name: editText.trim(),
           dept_created_by: CURRENT_USER_ID,
         });
@@ -72,7 +71,7 @@ export default function Departments() {
 
   const toggleActive = async (dept_id, currentStatus) => {
     try {
-      await axios.put(`${API_BASE}/${dept_id}/toggle`, {
+      await api.put(`departments/${dept_id}/toggle`, {
         dept_is_active: !currentStatus,
         dept_updated_by: CURRENT_USER_ID,
       });
