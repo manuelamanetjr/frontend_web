@@ -175,11 +175,6 @@ export default function ManageAgents() {
               </button>
             </div>
 
-            {loading && <p className="text-center text-gray-600">Loading...</p>}
-            {error && (
-              <p className="text-center text-red-600 mb-2 font-semibold">{error}</p>
-            )}
-
             <div className="overflow-y-auto max-h-[65vh] w-full custom-scrollbar">
               <table className="w-full text-sm text-left">
                 <thead className="text-gray-500 bg-white sticky top-0 z-10 shadow-[inset_0_-1px_0_0_#000000]">
@@ -228,6 +223,12 @@ export default function ManageAgents() {
                   ))}
                 </tbody>
               </table>
+
+              {loading && <p className="pt-15 text-center text-gray-600">Loading...</p>}
+            {error && (
+              <p className="pt-15 text-center text-red-600 mb-2 font-semibold">{error}</p>
+            )}
+
             </div>
           </div>
 

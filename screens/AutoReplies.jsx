@@ -19,16 +19,14 @@ export default function AutoReplies() {
   const [editingReplyId, setEditingReplyId] = useState(null);
   const [currentUserId] = useState(1); // Replace with real user ID from auth
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
   const toggleSidebar = () => setMobileSidebarOpen((prev) => !prev);
 
   const filteredReplies = replies.filter((reply) =>
     reply.auto_reply_message?.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const isDepartmentActive = (deptId) => {
-    const dept = allDepartments.find((d) => d.dept_id === deptId);
-    return dept ? dept.dept_is_active : false;
-  };
 
   useEffect(() => {
     fetchReplies();
@@ -36,11 +34,16 @@ export default function AutoReplies() {
   }, []);
 
   const fetchReplies = async () => {
+    setLoading(true);
+    setError("");
     try {
       const { data } = await api.get("/auto-replies");
       setReplies(data);
     } catch (err) {
       console.error("Failed to fetch auto replies:", err);
+      setError("Failed to fetch auto replies.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -259,6 +262,16 @@ export default function AutoReplies() {
                   ))}
                 </tbody>
               </table>
+
+                  {loading && (
+              <p className="pt-15 text-center text-gray-600 py-4">Loading...</p>
+            )}
+            {error && (
+              <p className="pt-15 text-center text-red-600 mb-2 font-semibold">
+                {error}
+              </p>
+            )}
+
             </div>
           </div>
 
