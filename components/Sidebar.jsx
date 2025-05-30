@@ -36,8 +36,8 @@ const dropdownItems = [
     id: "macros",
     icon: List,
     items: [
-      { to: "/macros-agents", label: "Agents" },
-      { to: "/macros-clients", label: "Clients" },
+      { to: "/macros-agents", label: "Macros Agents" },
+      { to: "/macros-clients", label: "Macros Clients" },
     ],
   },
 ];
