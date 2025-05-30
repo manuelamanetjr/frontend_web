@@ -3,8 +3,7 @@ import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 import { Edit3, Search, X } from "react-feather";
 import api from "../src/api";
-import '../src/App.css';
-
+import "../src/App.css";
 
 export default function Departments() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -14,6 +13,8 @@ export default function Departments() {
   const [editText, setEditText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [departments, setDepartments] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   // TODO: Replace this with your actual logged-in user ID from context/auth
   const CURRENT_USER_ID = 1;
@@ -30,14 +31,18 @@ export default function Departments() {
   }, []);
 
   const fetchDepartments = async () => {
+    setLoading(true);
+    setError("");
     try {
       const res = await api.get("/departments");
       setDepartments(res.data);
     } catch (error) {
       console.error("Failed to fetch departments:", error);
+      setError("Failed to fetch departments.");
+    } finally {
+      setLoading(false);
     }
   };
-
   const handleSave = async () => {
     if (!editText.trim()) {
       alert("Department name cannot be empty");
@@ -70,17 +75,26 @@ export default function Departments() {
   };
 
   const toggleActive = async (dept_id, currentStatus) => {
-    try {
-      await api.put(`departments/${dept_id}/toggle`, {
-        dept_is_active: !currentStatus,
-        dept_updated_by: CURRENT_USER_ID,
-      });
-      fetchDepartments();
-    } catch (error) {
-      console.error("Failed to toggle status:", error);
-      alert("Failed to toggle active status");
-    }
-  };
+  try {
+    await api.put(`departments/${dept_id}/toggle`, {
+      dept_is_active: !currentStatus,
+      dept_updated_by: CURRENT_USER_ID,
+    });
+
+    // Optimistically update the local state
+    setDepartments((prevDepartments) =>
+      prevDepartments.map((dept) =>
+        dept.dept_id === dept_id
+          ? { ...dept, dept_is_active: !currentStatus }
+          : dept
+      )
+    );
+  } catch (error) {
+    console.error("Failed to toggle status:", error);
+    alert("Failed to toggle active status");
+  }
+};
+
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
@@ -103,7 +117,10 @@ export default function Departments() {
           <div className="bg-white p-4 rounded-lg min-h-[80vh] transition-all duration-300">
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center bg-gray-100 px-3 py-2 rounded-md w-1/3 relative">
-                <Search size={18} className="text-gray-500 mr-2 flex-shrink-0" />
+                <Search
+                  size={18}
+                  className="text-gray-500 mr-2 flex-shrink-0"
+                />
                 <input
                   type="text"
                   placeholder="Search..."
@@ -132,6 +149,8 @@ export default function Departments() {
               </button>
             </div>
 
+            
+
             <div className="overflow-y-auto max-h-[65vh] w-full custom-scrollbar">
               <table className="w-full text-sm text-left">
                 <thead className="text-gray-500 bg-white sticky top-0 z-10 shadow-[inset_0_-1px_0_0_#000000]">
@@ -142,7 +161,10 @@ export default function Departments() {
                 </thead>
                 <tbody>
                   {filteredDepartments.map((dept) => (
-                    <tr key={dept.dept_id} className="transition-colors duration-200 hover:bg-gray-100">
+                    <tr
+                      key={dept.dept_id}
+                      className="transition-colors duration-200 hover:bg-gray-100"
+                    >
                       <td className="py-2 px-3 align-top">
                         <div className="flex items-center gap-2">
                           <p className="text-sm break-words max-w-[200px] whitespace-pre-wrap">
@@ -167,7 +189,9 @@ export default function Departments() {
                             type="checkbox"
                             className="sr-only peer"
                             checked={dept.dept_is_active}
-                            onChange={() => toggleActive(dept.dept_id, dept.dept_is_active)}
+                            onChange={() =>
+                              toggleActive(dept.dept_id, dept.dept_is_active)
+                            }
                           />
                           <div className="w-7 h-4 bg-gray-200 rounded-full peer peer-checked:bg-[#6237A0] transition-colors duration-300 relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-transform after:duration-300 peer-checked:after:translate-x-3" />
                         </label>
@@ -176,6 +200,15 @@ export default function Departments() {
                   ))}
                 </tbody>
               </table>
+              {loading && (
+              <p className="pt-15 text-center text-gray-600 py-4">Loading...</p>
+            )}
+
+            {error && (
+              <p className="pt-15 text-center text-red-600 mb-4 font-semibold">
+                {error}
+              </p>
+            )}
             </div>
           </div>
 

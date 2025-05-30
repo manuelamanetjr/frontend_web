@@ -241,7 +241,7 @@ const filteredAgents = agents.filter((agent) => {
                               type="checkbox"
                               checked={agent.departments.includes(dept)}
                               onChange={() => handleToggleDepartment(idx, dept)}
-                              className="w-5 h-5 cursor-pointer"
+className="w-4 h-4 cursor-pointer"
                             />
                           </td>
                         ))}
@@ -338,26 +338,18 @@ const filteredAgents = agents.filter((agent) => {
 // ToggleSwitch component for active status
 function ToggleSwitch({ checked, onChange }) {
   return (
-    <label className="relative inline-flex items-center cursor-pointer">
+    <label className="inline-flex relative items-center cursor-pointer">
       <input
         type="checkbox"
+        className="sr-only peer"
         checked={checked}
         onChange={onChange}
-        className="sr-only"
       />
-      <div
-        className={`w-9 h-5 rounded-full transition-colors ${
-          checked ? "bg-purple-700" : "bg-gray-300"
-        }`}
-      ></div>
-      <span
-        className={`absolute left-0.5 top-0.5 w-4 h-4 rounded-full bg-white border border-gray-300 transition-transform ${
-          checked ? "translate-x-4" : "translate-x-0"
-        }`}
-      ></span>
+      <div className="w-7 h-4 bg-gray-200 rounded-full peer peer-checked:bg-[#6237A0] transition-colors duration-300 relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-transform peer-checked:after:translate-x-3" />
     </label>
   );
 }
+
 
 // SearchInput component with filter icon and badge count
 function SearchInput({ value, onChange, placeholder, onFilterClick, filterDropdownOpen, selectedFilters }) {

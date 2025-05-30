@@ -13,10 +13,14 @@ export default function AutoReplies() {
   const [editText, setEditText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [replies, setReplies] = useState([]);
-  const [departments, setDepartments] = useState([]);
+  const [activeDepartments, setActiveDepartments] = useState([]);
+  const [allDepartments, setAllDepartments] = useState([]);
   const [selectedDeptId, setSelectedDeptId] = useState(null);
   const [editingReplyId, setEditingReplyId] = useState(null);
   const [currentUserId] = useState(1); // Replace with real user ID from auth
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const toggleSidebar = () => setMobileSidebarOpen((prev) => !prev);
 
@@ -30,18 +34,27 @@ export default function AutoReplies() {
   }, []);
 
   const fetchReplies = async () => {
+    setLoading(true);
+    setError("");
     try {
       const { data } = await api.get("/auto-replies");
       setReplies(data);
     } catch (err) {
       console.error("Failed to fetch auto replies:", err);
+      setError("Failed to fetch auto replies.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchDepartments = async () => {
     try {
-      const { data } = await api.get("/auto-replies/departments");
-      setDepartments(data);
+      const [{ data: active }, { data: all }] = await Promise.all([
+        api.get("/auto-replies/departments/active"),
+        api.get("/auto-replies/departments/all"),
+      ]);
+      setActiveDepartments(active);
+      setAllDepartments(all);
     } catch (err) {
       console.error("Failed to fetch departments:", err);
     }
@@ -129,7 +142,7 @@ export default function AutoReplies() {
 
   const openAddModal = () => {
     setEditText("");
-    setSelectedDeptId(departments[0]?.dept_id || null);
+    setSelectedDeptId(activeDepartments[0]?.dept_id || null);
     setIsAddModalOpen(true);
   };
 
@@ -230,9 +243,17 @@ export default function AutoReplies() {
                           }
                           className="rounded-md px-2 py-1 text-sm text-gray-800 border-none text-center"
                         >
-                          {departments.map((dept) => (
-                            <option key={dept.dept_id} value={dept.dept_id}>
-                              {dept.dept_name}
+                          {allDepartments.map((dept) => (
+                            <option
+                              key={dept.dept_id}
+                              value={dept.dept_id}
+                              disabled={!dept.dept_is_active}
+                              className={
+                                !dept.dept_is_active ? "text-red-400" : ""
+                              }
+                            >
+                              {dept.dept_name}{" "}
+                              {!dept.dept_is_active && "(Inactive)"}
                             </option>
                           ))}
                         </select>
@@ -241,6 +262,16 @@ export default function AutoReplies() {
                   ))}
                 </tbody>
               </table>
+
+                  {loading && (
+              <p className="pt-15 text-center text-gray-600 py-4">Loading...</p>
+            )}
+            {error && (
+              <p className="pt-15 text-center text-red-600 mb-2 font-semibold">
+                {error}
+              </p>
+            )}
+
             </div>
           </div>
 
@@ -299,7 +330,7 @@ export default function AutoReplies() {
                   <option value="" disabled>
                     Select Department
                   </option>
-                  {departments.map((dept) => (
+                  {activeDepartments.map((dept) => (
                     <option key={dept.dept_id} value={dept.dept_id}>
                       {dept.dept_name}
                     </option>
