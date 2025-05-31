@@ -256,7 +256,7 @@ className="w-4 h-4 cursor-pointer"
 
         {/* Edit Modal */}
         {isModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+          <div className="fixed inset-0 bg-gray-400/50 z-50 flex justify-center items-center">
             <div className="bg-white rounded-lg p-6 w-96 relative">
               <h2 className="text-xl font-semibold mb-4">Edit Agent</h2>
               <label className="block mb-2 text-sm font-medium text-gray-700">Username</label>
