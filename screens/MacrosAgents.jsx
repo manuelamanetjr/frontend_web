@@ -9,15 +9,11 @@ export default function MacrosAgents() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentEditIndex, setCurrentEditIndex] = useState(null);
+  const [currentEditId, setCurrentEditId] = useState(null);
   const [editText, setEditText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [replies, setReplies] = useState([]);
   const [departments, setDepartments] = useState([]);
-
-  const filteredReplies = replies.filter((reply) =>
-    reply.text.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   useEffect(() => {
     api
@@ -29,14 +25,22 @@ export default function MacrosAgents() {
       .catch((err) => console.error("Failed to fetch macros:", err));
   }, []);
 
+  const filteredReplies = replies.filter((reply) =>
+    reply.text.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const handleSaveMacro = () => {
-    if (currentEditIndex !== null) {
-      const updated = { ...replies[currentEditIndex], text: editText };
+    if (currentEditId !== null) {
+      const updated = replies.find((r) => r.id === currentEditId);
+      if (!updated) return;
+
+      const updatedMacro = { ...updated, text: editText };
+
       api
-        .put(`/agents/${updated.id}`, updated)
+        .put(`/agents/${currentEditId}`, updatedMacro)
         .then(() => {
           setReplies((prev) =>
-            prev.map((r, i) => (i === currentEditIndex ? updated : r))
+            prev.map((r) => (r.id === currentEditId ? updatedMacro : r))
           );
           setIsModalOpen(false);
         })
@@ -53,31 +57,32 @@ export default function MacrosAgents() {
     }
   };
 
-  const handleToggleActive = (idx) => {
-    const updated = {
-      ...replies[idx],
-      active: !replies[idx].active,
-    };
-    api
-      .put(`/agents/${updated.id}`, updated)
-      .then(() => {
-        setReplies((prev) =>
-          prev.map((r, i) => (i === idx ? updated : r))
-        );
-      })
-      .catch((err) => console.error("Failed to toggle active:", err));
+  const handleToggleActive = (id) => {
+    setReplies((prev) => {
+      const idx = prev.findIndex((r) => r.id === id);
+      if (idx === -1) return prev;
+
+      const updated = { ...prev[idx], active: !prev[idx].active };
+      api
+        .put(`/agents/${id}`, updated)
+        .catch((err) => console.error("Failed to toggle active:", err));
+
+      return prev.map((r, i) => (i === idx ? updated : r));
+    });
   };
 
-  const handleChangeDepartment = (idx, department) => {
-    const updated = { ...replies[idx], department };
-    api
-      .put(`/agents/${updated.id}`, updated)
-      .then(() => {
-        setReplies((prev) =>
-          prev.map((r, i) => (i === idx ? updated : r))
-        );
-      })
-      .catch((err) => console.error("Failed to update department:", err));
+  const handleChangeDepartment = (id, department) => {
+    setReplies((prev) => {
+      const idx = prev.findIndex((r) => r.id === id);
+      if (idx === -1) return prev;
+
+      const updated = { ...prev[idx], department };
+      api
+        .put(`/agents/${id}`, updated)
+        .catch((err) => console.error("Failed to update department:", err));
+
+      return prev.map((r, i) => (i === idx ? updated : r));
+    });
   };
 
   const toggleDropdown = (name) => {
@@ -130,7 +135,7 @@ export default function MacrosAgents() {
               <button
                 onClick={() => {
                   setEditText("");
-                  setCurrentEditIndex(null);
+                  setCurrentEditId(null);
                   setIsModalOpen(true);
                 }}
                 className="bg-[#6237A0] text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-800 transition-colors duration-300"
@@ -149,8 +154,8 @@ export default function MacrosAgents() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredReplies.map((reply, idx) => (
-                    <tr key={reply.id || idx} className="hover:bg-gray-100">
+                  {filteredReplies.map((reply) => (
+                    <tr key={reply.id} className="hover:bg-gray-100">
                       <td className="py-2 px-3 align-top">
                         <div className="max-w-xs break-words text-gray-800 relative pr-6">
                           <span>{reply.text}</span>
@@ -160,7 +165,7 @@ export default function MacrosAgents() {
                               strokeWidth={1}
                               className="text-gray-500 cursor-pointer hover:text-purple-700"
                               onClick={() => {
-                                setCurrentEditIndex(idx);
+                                setCurrentEditId(reply.id);
                                 setEditText(reply.text);
                                 setIsModalOpen(true);
                               }}
@@ -174,9 +179,9 @@ export default function MacrosAgents() {
                             type="checkbox"
                             className="sr-only peer"
                             checked={reply.active}
-                            onChange={() => handleToggleActive(idx)}
+                            onChange={() => handleToggleActive(reply.id)}
                           />
-                          <div className="w-7 h-4 bg-gray-200 rounded-full peer peer-checked:bg-[#6237A0] relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-3 after:w-3 peer-checked:after:translate-x-3" />
+                          <div className="w-7 h-4 bg-gray-200 rounded-full peer peer-checked:bg-[#6237A0] transition-colors duration-300 relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-transform peer-checked:after:translate-x-3" />
                         </label>
                       </td>
                       <td className="py-2 px-3 text-center">
@@ -184,7 +189,7 @@ export default function MacrosAgents() {
                           className="rounded-md px-2 py-1 text-sm text-gray-800 border-none text-center"
                           value={reply.department}
                           onChange={(e) =>
-                            handleChangeDepartment(idx, e.target.value)
+                            handleChangeDepartment(reply.id, e.target.value)
                           }
                         >
                           {departments.map((dept, i) => (
@@ -205,9 +210,11 @@ export default function MacrosAgents() {
             <div className="fixed inset-0 bg-gray-400/50 flex justify-center items-center z-50">
               <div className="bg-white rounded-lg shadow-xl p-6 w-96">
                 <h2 className="text-md font-semibold mb-2">
-                  {currentEditIndex !== null ? "Edit Macro" : "Add Macro"}
+                  {currentEditId ? "Edit Macro" : "Add Macro"}
                 </h2>
-                <label className="text-sm text-gray-700 mb-1 block">Message</label>
+                <label className="text-sm text-gray-700 mb-1 block">
+                  Message
+                </label>
                 <textarea
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
