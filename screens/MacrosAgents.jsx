@@ -9,40 +9,80 @@ export default function MacrosAgents() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentEditIndex, setCurrentEditIndex] = useState(null);
+  const [currentEditId, setCurrentEditId] = useState(null);
   const [editText, setEditText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [replies, setReplies] = useState([]);
   const [departments, setDepartments] = useState([]);
-
-  const filteredReplies = replies.filter((reply) =>
-    reply.text.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const [selectedDepartment, setSelectedDepartment] = useState("All");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [currentUserId] = useState(1); // authenticated user ID
 
   useEffect(() => {
+    setLoading(true);
+    setError("");
+
     api
       .get("/agents")
       .then((res) => {
-        setReplies(res.data.macros || []);
-        setDepartments(res.data.departments || []);
+        setReplies(
+          res.data.macros.map((macro) => ({
+            id: macro.canned_id,
+            text: macro.canned_message,
+            active: macro.canned_is_active,
+            dept_id: macro.dept_id,
+            department: macro.department?.dept_name || "All",
+          }))
+        );
+        setDepartments(res.data.departments);
       })
-      .catch((err) => console.error("Failed to fetch macros:", err));
+      .catch((err) => {
+        console.error("Failed to fetch macros:", err);
+        setError("Failed to fetch Agent's canned messages.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
+  const filteredReplies = replies.filter((reply) => {
+    const matchesSearch = reply.text.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesDepartment = 
+      selectedDepartment === "All" || 
+      reply.dept_id === (departments.find((d) => d.dept_name === selectedDepartment)?.dept_id);
+    return matchesSearch && matchesDepartment;
+  });
+
   const handleSaveMacro = () => {
-    if (currentEditIndex !== null) {
-      const updated = { ...replies[currentEditIndex], text: editText };
+    if (currentEditId !== null) {
+      const updated = replies.find((r) => r.id === currentEditId);
+      if (!updated) return;
+
+      const updatedMacro = {
+        text: editText,
+        active: updated.active,
+        dept_id: updated.dept_id,
+        updated_by: currentUserId,
+      };
+
       api
-        .put(`/agents/${updated.id}`, updated)
-        .then(() => {
+        .put(`/agents/${currentEditId}`, updatedMacro)
+        .then((res) => {
           setReplies((prev) =>
-            prev.map((r, i) => (i === currentEditIndex ? updated : r))
+            prev.map((r) => (r.id === currentEditId ? res.data : r))
           );
           setIsModalOpen(false);
         })
         .catch((err) => console.error("Failed to update macro:", err));
     } else {
-      const newMacro = { text: editText, active: true, department: "All" };
+      const newMacro = {
+        text: editText,
+        active: true,
+        dept_id: departments.find((d) => d.dept_name === selectedDepartment)?.dept_id || null,
+        created_by: currentUserId,
+      };
+
       api
         .post("/agents", newMacro)
         .then((res) => {
@@ -53,28 +93,41 @@ export default function MacrosAgents() {
     }
   };
 
-  const handleToggleActive = (idx) => {
+  const handleToggleActive = (id) => {
+    const reply = replies.find((r) => r.id === id);
+    if (!reply) return;
+
     const updated = {
-      ...replies[idx],
-      active: !replies[idx].active,
+      ...reply,
+      active: !reply.active,
+      updated_by: currentUserId,
     };
+
     api
-      .put(`/agents/${updated.id}`, updated)
-      .then(() => {
+      .put(`/agents/${id}`, updated)
+      .then((res) => {
         setReplies((prev) =>
-          prev.map((r, i) => (i === idx ? updated : r))
+          prev.map((r) => (r.id === id ? res.data : r))
         );
       })
       .catch((err) => console.error("Failed to toggle active:", err));
   };
 
-  const handleChangeDepartment = (idx, department) => {
-    const updated = { ...replies[idx], department };
+  const handleChangeDepartment = (id, dept_id) => {
+    const reply = replies.find((r) => r.id === id);
+    if (!reply) return;
+
+    const updated = {
+      ...reply,
+      dept_id: dept_id,
+      updated_by: currentUserId,
+    };
+
     api
-      .put(`/agents/${updated.id}`, updated)
-      .then(() => {
+      .put(`/agents/${id}`, updated)
+      .then((res) => {
         setReplies((prev) =>
-          prev.map((r, i) => (i === idx ? updated : r))
+          prev.map((r) => (r.id === id ? res.data : r))
         );
       })
       .catch((err) => console.error("Failed to update department:", err));
@@ -130,7 +183,8 @@ export default function MacrosAgents() {
               <button
                 onClick={() => {
                   setEditText("");
-                  setCurrentEditIndex(null);
+                  setSelectedDepartment("All");
+                  setCurrentEditId(null);
                   setIsModalOpen(true);
                 }}
                 className="bg-[#6237A0] text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-800 transition-colors duration-300"
@@ -149,8 +203,8 @@ export default function MacrosAgents() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredReplies.map((reply, idx) => (
-                    <tr key={reply.id || idx} className="hover:bg-gray-100">
+                  {filteredReplies.map((reply) => (
+                    <tr key={reply.id} className="hover:bg-gray-100">
                       <td className="py-2 px-3 align-top">
                         <div className="max-w-xs break-words text-gray-800 relative pr-6">
                           <span>{reply.text}</span>
@@ -160,7 +214,7 @@ export default function MacrosAgents() {
                               strokeWidth={1}
                               className="text-gray-500 cursor-pointer hover:text-purple-700"
                               onClick={() => {
-                                setCurrentEditIndex(idx);
+                                setCurrentEditId(reply.id);
                                 setEditText(reply.text);
                                 setIsModalOpen(true);
                               }}
@@ -174,22 +228,32 @@ export default function MacrosAgents() {
                             type="checkbox"
                             className="sr-only peer"
                             checked={reply.active}
-                            onChange={() => handleToggleActive(idx)}
+                            onChange={() => handleToggleActive(reply.id)}
                           />
-                          <div className="w-7 h-4 bg-gray-200 rounded-full peer peer-checked:bg-[#6237A0] relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-3 after:w-3 peer-checked:after:translate-x-3" />
+                          <div className="w-7 h-4 bg-gray-200 rounded-full peer peer-checked:bg-[#6237A0] transition-colors duration-300 relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-transform peer-checked:after:translate-x-3" />
                         </label>
                       </td>
                       <td className="py-2 px-3 text-center">
                         <select
                           className="rounded-md px-2 py-1 text-sm text-gray-800 border-none text-center"
-                          value={reply.department}
+                          value={reply.dept_id ?? ""}
                           onChange={(e) =>
-                            handleChangeDepartment(idx, e.target.value)
+                            handleChangeDepartment(
+                              reply.id,
+                              e.target.value ? parseInt(e.target.value) : null
+                            )
                           }
                         >
-                          {departments.map((dept, i) => (
-                            <option key={i} value={dept}>
-                              {dept}
+                          <option value="">All</option>
+                          {departments.map((dept) => (
+                            <option
+                              key={dept.dept_id}
+                              value={dept.dept_id}
+                              disabled={!dept.dept_is_active && dept.dept_id !== reply.dept_id}
+                              className={!dept.dept_is_active ? "text-red-400" : ""}
+                            >
+                              {dept.dept_name}
+                              {!dept.dept_is_active && " (Inactive)"}
                             </option>
                           ))}
                         </select>
@@ -198,6 +262,14 @@ export default function MacrosAgents() {
                   ))}
                 </tbody>
               </table>
+
+              {loading && (
+                <p className="pt-15 text-center text-gray-600 py-4">Loading...</p>
+              )}
+
+              {error && (
+                <p className="pt-15 text-center text-red-600 mb-4 font-semibold">{error}</p>
+              )}
             </div>
           </div>
 
@@ -205,14 +277,40 @@ export default function MacrosAgents() {
             <div className="fixed inset-0 bg-gray-400/50 flex justify-center items-center z-50">
               <div className="bg-white rounded-lg shadow-xl p-6 w-96">
                 <h2 className="text-md font-semibold mb-2">
-                  {currentEditIndex !== null ? "Edit Macro" : "Add Macro"}
+                  {currentEditId ? "Edit Macro" : "Add Macro"}
                 </h2>
+
                 <label className="text-sm text-gray-700 mb-1 block">Message</label>
                 <textarea
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
                   className="w-full border rounded-md p-2 text-sm mb-4 h-24 focus:ring-2 focus:ring-purple-500"
                 />
+
+                {!currentEditId && (
+                  <div className="mb-4">
+                    <label className="text-sm text-gray-700 mb-1 block">Department</label>
+                    <select
+                      className="w-full border rounded-md p-2 text-sm"
+                      value={selectedDepartment}
+                      onChange={(e) => setSelectedDepartment(e.target.value)}
+                    >
+                      <option value="All">All</option>
+                      {departments.map((dept) => (
+                        <option
+                          key={dept.dept_id}
+                          value={dept.dept_name}
+                          disabled={!dept.dept_is_active}
+                          className={!dept.dept_is_active ? "text-red-400" : ""}
+                        >
+                          {dept.dept_name}
+                          {!dept.dept_is_active && " (Inactive)"}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
                 <div className="flex justify-end gap-2">
                   <button
                     onClick={() => setIsModalOpen(false)}
