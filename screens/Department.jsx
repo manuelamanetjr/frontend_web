@@ -75,26 +75,25 @@ export default function Departments() {
   };
 
   const toggleActive = async (dept_id, currentStatus) => {
-  try {
-    await api.put(`departments/${dept_id}/toggle`, {
-      dept_is_active: !currentStatus,
-      dept_updated_by: CURRENT_USER_ID,
-    });
+    try {
+      await api.put(`departments/${dept_id}/toggle`, {
+        dept_is_active: !currentStatus,
+        dept_updated_by: CURRENT_USER_ID,
+      });
 
-    // Optimistically update the local state
-    setDepartments((prevDepartments) =>
-      prevDepartments.map((dept) =>
-        dept.dept_id === dept_id
-          ? { ...dept, dept_is_active: !currentStatus }
-          : dept
-      )
-    );
-  } catch (error) {
-    console.error("Failed to toggle status:", error);
-    alert("Failed to toggle active status");
-  }
-};
-
+      // Optimistically update the local state
+      setDepartments((prevDepartments) =>
+        prevDepartments.map((dept) =>
+          dept.dept_id === dept_id
+            ? { ...dept, dept_is_active: !currentStatus }
+            : dept
+        )
+      );
+    } catch (error) {
+      console.error("Failed to toggle status:", error);
+      alert("Failed to toggle active status");
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
@@ -149,8 +148,6 @@ export default function Departments() {
               </button>
             </div>
 
-            
-
             <div className="overflow-y-auto max-h-[65vh] w-full custom-scrollbar">
               <table className="w-full text-sm text-left">
                 <thead className="text-gray-500 bg-white sticky top-0 z-10 shadow-[inset_0_-1px_0_0_#000000]">
@@ -200,15 +197,19 @@ export default function Departments() {
                   ))}
                 </tbody>
               </table>
-              {loading && (
-              <p className="pt-15 text-center text-gray-600 py-4">Loading...</p>
-            )}
 
-            {error && (
-              <p className="pt-15 text-center text-red-600 mb-4 font-semibold">
-                {error}
-              </p>
-            )}
+              {loading && (
+                <p className="pt-15 text-center text-gray-600 py-4">
+                  Loading...
+                </p>
+              )}
+
+              {error && (
+                <p className="pt-15 text-center text-red-600 mb-4 font-semibold">
+                  {error}
+                </p>
+              )}
+              
             </div>
           </div>
 

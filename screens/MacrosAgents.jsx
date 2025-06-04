@@ -14,16 +14,29 @@ export default function MacrosAgents() {
   const [searchQuery, setSearchQuery] = useState("");
   const [replies, setReplies] = useState([]);
   const [departments, setDepartments] = useState([]);
+  const [selectedDepartment, setSelectedDepartment] = useState("All");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    api
-      .get("/agents")
-      .then((res) => {
-        setReplies(res.data.macros || []);
-        setDepartments(res.data.departments || []);
-      })
-      .catch((err) => console.error("Failed to fetch macros:", err));
-  }, []);
+useEffect(() => {
+  setLoading(true);
+  setError("");
+
+  api
+    .get("/agents")
+    .then((res) => {
+      setReplies(res.data.macros || []);
+      setDepartments(res.data.departments || []);
+    })
+    .catch((err) => {
+      console.error("Failed to fetch macros:", err);
+      setError("Failed to fetch Agent's canned messages.");
+    })
+    .finally(() => {
+      setLoading(false);
+    });
+}, []);
+
 
   const filteredReplies = replies.filter((reply) =>
     reply.text.toLowerCase().includes(searchQuery.toLowerCase())
@@ -46,7 +59,11 @@ export default function MacrosAgents() {
         })
         .catch((err) => console.error("Failed to update macro:", err));
     } else {
-      const newMacro = { text: editText, active: true, department: "All" };
+      const newMacro = {
+        text: editText,
+        active: true,
+        department: selectedDepartment,
+      };
       api
         .post("/agents", newMacro)
         .then((res) => {
@@ -71,12 +88,12 @@ export default function MacrosAgents() {
     });
   };
 
-  const handleChangeDepartment = (id, department) => {
+  const handleChangeDepartment = (id, dept_id) => {
     setReplies((prev) => {
       const idx = prev.findIndex((r) => r.id === id);
       if (idx === -1) return prev;
 
-      const updated = { ...prev[idx], department };
+      const updated = { ...prev[idx], dept_id };
       api
         .put(`/agents/${id}`, updated)
         .catch((err) => console.error("Failed to update department:", err));
@@ -135,6 +152,7 @@ export default function MacrosAgents() {
               <button
                 onClick={() => {
                   setEditText("");
+                  setSelectedDepartment("All");
                   setCurrentEditId(null);
                   setIsModalOpen(true);
                 }}
@@ -187,14 +205,20 @@ export default function MacrosAgents() {
                       <td className="py-2 px-3 text-center">
                         <select
                           className="rounded-md px-2 py-1 text-sm text-gray-800 border-none text-center"
-                          value={reply.department}
+                          value={reply.dept_id ?? ""}
                           onChange={(e) =>
-                            handleChangeDepartment(reply.id, e.target.value)
+                            handleChangeDepartment(reply.id, parseInt(e.target.value))
                           }
                         >
-                          {departments.map((dept, i) => (
-                            <option key={i} value={dept}>
-                              {dept}
+                          {departments.map((dept) => (
+                            <option
+                              key={dept.dept_id}
+                              value={dept.dept_id}
+                              disabled={!dept.dept_is_active && dept.dept_id !== reply.dept_id}
+                              className={!dept.dept_is_active ? "text-red-400" : ""}
+                            >
+                              {dept.dept_name}
+                              {!dept.dept_is_active && " (Inactive)"}
                             </option>
                           ))}
                         </select>
@@ -203,6 +227,19 @@ export default function MacrosAgents() {
                   ))}
                 </tbody>
               </table>
+
+              {loading && (
+                <p className="pt-15 text-center text-gray-600 py-4">
+                  Loading...
+                </p>
+              )}
+
+              {error && (
+                <p className="pt-15 text-center text-red-600 mb-4 font-semibold">
+                  {error}
+                </p>
+              )}
+
             </div>
           </div>
 
@@ -212,14 +249,38 @@ export default function MacrosAgents() {
                 <h2 className="text-md font-semibold mb-2">
                   {currentEditId ? "Edit Macro" : "Add Macro"}
                 </h2>
-                <label className="text-sm text-gray-700 mb-1 block">
-                  Message
-                </label>
+
+                <label className="text-sm text-gray-700 mb-1 block">Message</label>
                 <textarea
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
                   className="w-full border rounded-md p-2 text-sm mb-4 h-24 focus:ring-2 focus:ring-purple-500"
                 />
+
+                {!currentEditId && (
+                  <div className="mb-4">
+                    <label className="text-sm text-gray-700 mb-1 block">Department</label>
+                    <select
+                      className="w-full border rounded-md p-2 text-sm"
+                      value={selectedDepartment}
+                      onChange={(e) => setSelectedDepartment(e.target.value)}
+                    >
+                      <option value="All">All</option>
+                      {departments.map((dept) => (
+                        <option
+                          key={dept.dept_id}
+                          value={dept.dept_name}
+                          disabled={!dept.dept_is_active}
+                          className={!dept.dept_is_active ? "text-red-400" : ""}
+                        >
+                          {dept.dept_name}
+                          {!dept.dept_is_active && " (Inactive)"}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
                 <div className="flex justify-end gap-2">
                   <button
                     onClick={() => setIsModalOpen(false)}
