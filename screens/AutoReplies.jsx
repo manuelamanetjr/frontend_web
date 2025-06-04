@@ -263,15 +263,16 @@ export default function AutoReplies() {
                 </tbody>
               </table>
 
-                  {loading && (
-              <p className="pt-15 text-center text-gray-600 py-4">Loading...</p>
-            )}
-            {error && (
-              <p className="pt-15 text-center text-red-600 mb-2 font-semibold">
-                {error}
-              </p>
-            )}
-
+              {loading && (
+                <p className="pt-15 text-center text-gray-600 py-4">
+                  Loading...
+                </p>
+              )}
+              {error && (
+                <p className="pt-15 text-center text-red-600 mb-2 font-semibold">
+                  {error}
+                </p>
+              )}
             </div>
           </div>
 

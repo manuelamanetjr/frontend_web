@@ -17,57 +17,99 @@ export default function MacrosClients() {
   const [selectedDepartment, setSelectedDepartment] = useState("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  
+  const [currentUserId] = useState(1); // Temporary authenticated user
 
   useEffect(() => {
-  setLoading(true);
-  setError(null);
+    setLoading(true);
+    setError(null);
 
-  api.get("/clients")
-    .then((res) => {
-      setReplies(res.data.macros || []);
-      setDepartments(res.data.departments || []);
-    })
-    .catch((err) => {
-      console.error("Failed to fetch macros:", err);
-      setError("Failed to fetch Client's Canned messages.");
-    })
-    .finally(() => {
-      setLoading(false);
-    });
-}, []);
+    api
+      .get("/clients")
+      .then((res) => {
+        const mappedReplies = (res.data.macros || []).map((m) => ({
+          id: m.canned_id,
+          text: m.canned_message,
+          active: m.canned_is_active,
+          dept_id: m.dept_id,
+          department: m.department?.dept_name || "All",
+        }));
+        setReplies(mappedReplies);
+        setDepartments(res.data.departments || []);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch macros:", err);
+        setError("Failed to fetch Client's Canned messages.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
 
-
-  const filteredReplies = replies.filter((reply) =>
-    reply.text.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredReplies = replies.filter((reply) => {
+    const matchesSearch = reply.text
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesDepartment =
+      selectedDepartment === "All" ||
+      reply.dept_id ===
+        departments.find((d) => d.dept_name === selectedDepartment)?.dept_id;
+    return matchesSearch && matchesDepartment;
+  });
 
   const handleSaveMacro = () => {
     if (currentEditId !== null) {
       const updated = replies.find((r) => r.id === currentEditId);
       if (!updated) return;
 
-      const updatedMacro = { ...updated, text: editText };
+      const updatedMacro = {
+        id: currentEditId,
+        text: editText,
+        active: updated.active,
+        dept_id: updated.dept_id,
+        updated_by: currentUserId,
+      };
 
-      api.put(`/clients/${currentEditId}`, updatedMacro)
-        .then(() => {
+      api
+        .put(`/clients/${currentEditId}`, updatedMacro)
+        .then((res) => {
+          const updatedReply = {
+            id: res.data.id,
+            text: res.data.text,
+            active: res.data.active,
+            dept_id: res.data.dept_id,
+            department: res.data.department,
+          };
           setReplies((prev) =>
-            prev.map((r) => (r.id === currentEditId ? updatedMacro : r))
+            prev.map((r) => (r.id === currentEditId ? updatedReply : r))
           );
           setIsModalOpen(false);
         })
         .catch((err) => console.error("Failed to update macro:", err));
     } else {
+      const selectedDept = departments.find(
+        (dept) => dept.dept_name === selectedDepartment
+      );
+      const dept_id =
+        selectedDepartment === "All" ? null : selectedDept?.dept_id;
+
       const newMacro = {
         text: editText,
         active: true,
-        department: selectedDepartment,
+        dept_id,
+        created_by: currentUserId,
       };
 
-      api.post("/clients", newMacro)
+      api
+        .post("/clients", newMacro)
         .then((res) => {
-          setReplies((prev) => [...prev, res.data]);
+          const newReply = {
+            id: res.data.id,
+            text: res.data.text,
+            active: res.data.active,
+            dept_id: res.data.dept_id,
+            department: res.data.department,
+          };
+          setReplies((prev) => [...prev, newReply]);
           setIsModalOpen(false);
         })
         .catch((err) => console.error("Failed to add macro:", err));
@@ -79,9 +121,17 @@ export default function MacrosClients() {
       const idx = prev.findIndex((r) => r.id === id);
       if (idx === -1) return prev;
 
-      const updated = { ...prev[idx], active: !prev[idx].active };
-      api.put(`/clients/${id}`, updated).catch((err) => console.error("Failed to toggle active:", err));
-      return prev.map((r, i) => (i === idx ? updated : r));
+      const updated = {
+        ...prev[idx],
+        active: !prev[idx].active,
+        updated_by: currentUserId,
+      };
+
+      api
+        .put(`/clients/${id}`, updated)
+        .catch((err) => console.error("Failed to toggle active:", err));
+
+      return prev.map((r, i) => (i === idx ? { ...updated } : r));
     });
   };
 
@@ -90,13 +140,22 @@ export default function MacrosClients() {
       const idx = prev.findIndex((r) => r.id === id);
       if (idx === -1) return prev;
 
-      const updated = { ...prev[idx], dept_id };
-      api.put(`/clients/${id}`, updated).catch((err) => console.error("Failed to update department:", err));
-      return prev.map((r, i) => (i === idx ? updated : r));
+      const updated = {
+        ...prev[idx],
+        dept_id,
+        updated_by: currentUserId,
+      };
+
+      api
+        .put(`/clients/${id}`, updated)
+        .catch((err) => console.error("Failed to update department:", err));
+
+      return prev.map((r, i) => (i === idx ? { ...updated } : r));
     });
   };
 
-  const toggleDropdown = (name) => setOpenDropdown((prev) => (prev === name ? null : name));
+  const toggleDropdown = (name) =>
+    setOpenDropdown((prev) => (prev === name ? null : name));
   const toggleSidebar = () => setMobileSidebarOpen((prev) => !prev);
 
   return (
@@ -104,8 +163,17 @@ export default function MacrosClients() {
       <TopNavbar toggleSidebar={toggleSidebar} />
 
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar isMobile={true} isOpen={mobileSidebarOpen} toggleDropdown={toggleDropdown} openDropdown={openDropdown} />
-        <Sidebar isMobile={false} toggleDropdown={toggleDropdown} openDropdown={openDropdown} />
+        <Sidebar
+          isMobile={true}
+          isOpen={mobileSidebarOpen}
+          toggleDropdown={toggleDropdown}
+          openDropdown={openDropdown}
+        />
+        <Sidebar
+          isMobile={false}
+          toggleDropdown={toggleDropdown}
+          openDropdown={openDropdown}
+        />
 
         <main className="flex-1 bg-gray-100 p-15 overflow-y-auto transition-colors duration-300">
           <div className="bg-white p-4 rounded-lg min-h-[80vh] transition-all duration-300">
@@ -120,7 +188,11 @@ export default function MacrosClients() {
                   className="bg-transparent focus:outline-none text-sm w-full pr-6"
                 />
                 {searchQuery && (
-                  <X size={16} className="text-gray-500 cursor-pointer absolute right-3" onClick={() => setSearchQuery("")} />
+                  <X
+                    size={16}
+                    className="text-gray-500 cursor-pointer absolute right-3"
+                    onClick={() => setSearchQuery("")}
+                  />
                 )}
               </div>
 
@@ -182,15 +254,24 @@ export default function MacrosClients() {
                           className="rounded-md px-2 py-1 text-sm text-gray-800 border-none text-center"
                           value={reply.dept_id ?? ""}
                           onChange={(e) =>
-                            handleChangeDepartment(reply.id, parseInt(e.target.value))
+                            handleChangeDepartment(
+                              reply.id,
+                              e.target.value ? parseInt(e.target.value) : null
+                            )
                           }
                         >
+                          <option value="">All</option>
                           {departments.map((dept) => (
                             <option
                               key={dept.dept_id}
                               value={dept.dept_id}
-                              disabled={!dept.dept_is_active && dept.dept_id !== reply.dept_id}
-                              className={!dept.dept_is_active ? "text-red-400" : ""}
+                              disabled={
+                                !dept.dept_is_active &&
+                                dept.dept_id !== reply.dept_id
+                              }
+                              className={
+                                !dept.dept_is_active ? "text-red-400" : ""
+                              }
                             >
                               {dept.dept_name}
                               {!dept.dept_is_active && " (Inactive)"}
@@ -214,7 +295,6 @@ export default function MacrosClients() {
                   {error}
                 </p>
               )}
-
             </div>
           </div>
 
@@ -225,7 +305,9 @@ export default function MacrosClients() {
                   {currentEditId ? "Edit Macro" : "Add Macro"}
                 </h2>
 
-                <label className="text-sm text-gray-700 mb-1 block">Message</label>
+                <label className="text-sm text-gray-700 mb-1 block">
+                  Message
+                </label>
                 <textarea
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
@@ -234,7 +316,9 @@ export default function MacrosClients() {
 
                 {!currentEditId && (
                   <div className="mb-4">
-                    <label className="text-sm text-gray-700 mb-1 block">Department</label>
+                    <label className="text-sm text-gray-700 mb-1 block">
+                      Department
+                    </label>
                     <select
                       className="w-full border rounded-md p-2 text-sm"
                       value={selectedDepartment}

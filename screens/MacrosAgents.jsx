@@ -17,43 +17,60 @@ export default function MacrosAgents() {
   const [selectedDepartment, setSelectedDepartment] = useState("All");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [currentUserId] = useState(1); // authenticated user ID
 
-useEffect(() => {
-  setLoading(true);
-  setError("");
+  useEffect(() => {
+    setLoading(true);
+    setError("");
 
-  api
-    .get("/agents")
-    .then((res) => {
-      setReplies(res.data.macros || []);
-      setDepartments(res.data.departments || []);
-    })
-    .catch((err) => {
-      console.error("Failed to fetch macros:", err);
-      setError("Failed to fetch Agent's canned messages.");
-    })
-    .finally(() => {
-      setLoading(false);
-    });
-}, []);
+    api
+      .get("/agents")
+      .then((res) => {
+        setReplies(
+          res.data.macros.map((macro) => ({
+            id: macro.canned_id,
+            text: macro.canned_message,
+            active: macro.canned_is_active,
+            dept_id: macro.dept_id,
+            department: macro.department?.dept_name || "All",
+          }))
+        );
+        setDepartments(res.data.departments);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch macros:", err);
+        setError("Failed to fetch Agent's canned messages.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
 
-
-  const filteredReplies = replies.filter((reply) =>
-    reply.text.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredReplies = replies.filter((reply) => {
+    const matchesSearch = reply.text.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesDepartment = 
+      selectedDepartment === "All" || 
+      reply.dept_id === (departments.find((d) => d.dept_name === selectedDepartment)?.dept_id);
+    return matchesSearch && matchesDepartment;
+  });
 
   const handleSaveMacro = () => {
     if (currentEditId !== null) {
       const updated = replies.find((r) => r.id === currentEditId);
       if (!updated) return;
 
-      const updatedMacro = { ...updated, text: editText };
+      const updatedMacro = {
+        text: editText,
+        active: updated.active,
+        dept_id: updated.dept_id,
+        updated_by: currentUserId,
+      };
 
       api
         .put(`/agents/${currentEditId}`, updatedMacro)
-        .then(() => {
+        .then((res) => {
           setReplies((prev) =>
-            prev.map((r) => (r.id === currentEditId ? updatedMacro : r))
+            prev.map((r) => (r.id === currentEditId ? res.data : r))
           );
           setIsModalOpen(false);
         })
@@ -62,8 +79,10 @@ useEffect(() => {
       const newMacro = {
         text: editText,
         active: true,
-        department: selectedDepartment,
+        dept_id: departments.find((d) => d.dept_name === selectedDepartment)?.dept_id || null,
+        created_by: currentUserId,
       };
+
       api
         .post("/agents", newMacro)
         .then((res) => {
@@ -75,31 +94,43 @@ useEffect(() => {
   };
 
   const handleToggleActive = (id) => {
-    setReplies((prev) => {
-      const idx = prev.findIndex((r) => r.id === id);
-      if (idx === -1) return prev;
+    const reply = replies.find((r) => r.id === id);
+    if (!reply) return;
 
-      const updated = { ...prev[idx], active: !prev[idx].active };
-      api
-        .put(`/agents/${id}`, updated)
-        .catch((err) => console.error("Failed to toggle active:", err));
+    const updated = {
+      ...reply,
+      active: !reply.active,
+      updated_by: currentUserId,
+    };
 
-      return prev.map((r, i) => (i === idx ? updated : r));
-    });
+    api
+      .put(`/agents/${id}`, updated)
+      .then((res) => {
+        setReplies((prev) =>
+          prev.map((r) => (r.id === id ? res.data : r))
+        );
+      })
+      .catch((err) => console.error("Failed to toggle active:", err));
   };
 
   const handleChangeDepartment = (id, dept_id) => {
-    setReplies((prev) => {
-      const idx = prev.findIndex((r) => r.id === id);
-      if (idx === -1) return prev;
+    const reply = replies.find((r) => r.id === id);
+    if (!reply) return;
 
-      const updated = { ...prev[idx], dept_id };
-      api
-        .put(`/agents/${id}`, updated)
-        .catch((err) => console.error("Failed to update department:", err));
+    const updated = {
+      ...reply,
+      dept_id: dept_id,
+      updated_by: currentUserId,
+    };
 
-      return prev.map((r, i) => (i === idx ? updated : r));
-    });
+    api
+      .put(`/agents/${id}`, updated)
+      .then((res) => {
+        setReplies((prev) =>
+          prev.map((r) => (r.id === id ? res.data : r))
+        );
+      })
+      .catch((err) => console.error("Failed to update department:", err));
   };
 
   const toggleDropdown = (name) => {
@@ -207,9 +238,13 @@ useEffect(() => {
                           className="rounded-md px-2 py-1 text-sm text-gray-800 border-none text-center"
                           value={reply.dept_id ?? ""}
                           onChange={(e) =>
-                            handleChangeDepartment(reply.id, parseInt(e.target.value))
+                            handleChangeDepartment(
+                              reply.id,
+                              e.target.value ? parseInt(e.target.value) : null
+                            )
                           }
                         >
+                          <option value="">All</option>
                           {departments.map((dept) => (
                             <option
                               key={dept.dept_id}
@@ -229,17 +264,12 @@ useEffect(() => {
               </table>
 
               {loading && (
-                <p className="pt-15 text-center text-gray-600 py-4">
-                  Loading...
-                </p>
+                <p className="pt-15 text-center text-gray-600 py-4">Loading...</p>
               )}
 
               {error && (
-                <p className="pt-15 text-center text-red-600 mb-4 font-semibold">
-                  {error}
-                </p>
+                <p className="pt-15 text-center text-red-600 mb-4 font-semibold">{error}</p>
               )}
-
             </div>
           </div>
 

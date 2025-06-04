@@ -5,7 +5,6 @@ import Sidebar from "../components/Sidebar";
 import { Edit3, Search, X, Eye, EyeOff } from "react-feather";
 import "../src/App.css";
 
-
 export default function ManageAgents() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -21,6 +20,7 @@ export default function ManageAgents() {
   const [editUsername, setEditUsername] = useState("");
   const [editPassword, setEditPassword] = useState("");
   const [editActive, setEditActive] = useState(true);
+  const [modalError, setModalError] = useState(null);
 
   const toggleSidebar = () => setMobileSidebarOpen((prev) => !prev);
 
@@ -53,10 +53,10 @@ export default function ManageAgents() {
   );
 
   const saveAdmin = async () => {
-    setError(null);
+    setModalError(null); // reset modal error
 
     if (!editUsername || !editPassword) {
-      setError("Username and password are required");
+      setModalError("Username and password are required");
       return;
     }
 
@@ -84,8 +84,9 @@ export default function ManageAgents() {
       setEditUsername("");
       setEditPassword("");
       setEditActive(true);
+      setModalError(null); // clear on success
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to save admin");
+      setModalError(err.response?.data?.message || "Failed to save admin");
     }
   };
 
@@ -167,7 +168,7 @@ export default function ManageAgents() {
                   setCurrentEditId(null);
                   setShowPassword(false);
                   setIsModalOpen(true);
-                  setError(null);
+                  setModalError(null);
                 }}
                 className="bg-[#6237A0] text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-800 transition-colors duration-300"
               >
@@ -214,7 +215,9 @@ export default function ManageAgents() {
                             type="checkbox"
                             className="sr-only peer"
                             checked={agent.active}
-                            onChange={() => toggleActiveStatus(agent.sys_user_id)}
+                            onChange={() =>
+                              toggleActiveStatus(agent.sys_user_id)
+                            }
                           />
                           <div className="w-7 h-4 bg-gray-200 rounded-full peer peer-checked:bg-[#6237A0] transition-colors duration-300 relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-transform after:duration-300 peer-checked:after:translate-x-3" />
                         </label>
@@ -224,11 +227,14 @@ export default function ManageAgents() {
                 </tbody>
               </table>
 
-              {loading && <p className="pt-15 text-center text-gray-600">Loading...</p>}
-            {error && (
-              <p className="pt-15 text-center text-red-600 mb-2 font-semibold">{error}</p>
-            )}
-
+              {loading && (
+                <p className="pt-15 text-center text-gray-600">Loading...</p>
+              )}
+              {error && (
+                <p className="pt-15 text-center text-red-600 mb-2 font-semibold">
+                  {error}
+                </p>
+              )}
             </div>
           </div>
 
@@ -247,12 +253,16 @@ export default function ManageAgents() {
                   </button>
                 </div>
 
-                {error && (
-                  <p className="text-red-600 mb-3 font-semibold">{error}</p>
+                {modalError && (
+                  <p className="text-red-600 mb-3 font-semibold">
+                    {modalError}
+                  </p>
                 )}
 
                 <label className="block mb-3">
-                  <span className="block text-sm font-medium text-gray-700">Username</span>
+                  <span className="block text-sm font-medium text-gray-700">
+                    Username
+                  </span>
                   <input
                     type="text"
                     className="mt-1 w-full rounded-md border border-gray-300 p-2 focus:border-purple-700 focus:outline-none focus:ring-1 focus:ring-purple-700"
@@ -262,7 +272,9 @@ export default function ManageAgents() {
                 </label>
 
                 <label className="block mb-3 relative">
-                  <span className="block text-sm font-medium text-gray-700">Password</span>
+                  <span className="block text-sm font-medium text-gray-700">
+                    Password
+                  </span>
                   <input
                     type={showPassword ? "text" : "password"}
                     className="mt-1 w-full rounded-md border border-gray-300 p-2 pr-10 focus:border-purple-700 focus:outline-none focus:ring-1 focus:ring-purple-700"
@@ -283,7 +295,7 @@ export default function ManageAgents() {
                   <button
                     onClick={() => {
                       setIsModalOpen(false);
-                      setError(null);
+                      setModalError(null);
                     }}
                     className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
                   >
