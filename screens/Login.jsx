@@ -119,7 +119,7 @@ export default function Login() {
         <div className="w-full md:w-3/5 bg-gray-50 flex items-center justify-center p-10 pt-28">
           <div className="flex flex-col items-center md:flex-row">
             <img
-              src="src/assets/images/icon.png"
+              src="images/icon.png"
               alt="Servana Logo"
               className="w-24 h-24 md:w-32 md:h-32 mb-4 md:mb-0 md:mr-4"
             />
