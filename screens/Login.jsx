@@ -8,7 +8,7 @@ export default function Login() {
 
   const [showPassword, setShowPassword] = useState(false); // Correctly imported and used
   const [password, setPassword] = useState(""); // Added state for password
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
   const togglePasswordVisibility = () => {
@@ -18,7 +18,7 @@ export default function Login() {
    const handleLogin = async() => {
     try{
       const response = await api.post("/profile/login", {
-        sys_user_username: username,
+        sys_user_email: email,
         sys_user_password: password,
       });
 
@@ -30,7 +30,7 @@ export default function Login() {
     }
     catch (error) {
       console.error("Login error:", error);
-      setErrorMessage("Invalid username or password");
+      setErrorMessage("Invalid email or password");
     }
   };
 
@@ -53,14 +53,14 @@ export default function Login() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-black">
-                  Username
+                  email
                 </label>
                 <input
-                  id="username"
+                  id="email"
                   type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)} //Capture username input
-                  placeholder="Enter your username"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)} //Capture email input
+                  placeholder="Enter your email"
                   className="w-full border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>

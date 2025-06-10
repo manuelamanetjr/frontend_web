@@ -59,7 +59,7 @@ export default function ChangeRoles() {
   };
 
   const filteredUsers = users.filter((user) =>
-    user.sys_user_username.toLowerCase().includes(searchQuery.toLowerCase())
+    user.sys_user_email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -114,7 +114,7 @@ export default function ChangeRoles() {
                 <tbody>
                   {filteredUsers.map((user) => (
                     <tr key={user.sys_user_id} className="transition-colors duration-200 hover:bg-gray-50">
-                      <td className="py-2 px-3">{user.sys_user_username}</td>
+                      <td className="py-2 px-3">{user.sys_user_email}</td>
                       <td className="py-2 px-3 text-center">
                         <label className="inline-flex relative items-center cursor-pointer">
                           <input
