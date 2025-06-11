@@ -32,7 +32,7 @@ export default function ManageAgents() {
       setAgents(
         data.map((a) => ({
           sys_user_id: a.sys_user_id,
-          username: a.sys_user_username,
+          username: a.sys_user_email,
           password: a.sys_user_password,
           active: a.sys_user_is_active,
         }))
@@ -65,14 +65,14 @@ export default function ManageAgents() {
     try {
       if (currentEditId !== null) {
         await api.put(`admins/${currentEditId}`, {
-          sys_user_username: editUsername,
+          sys_user_email: editUsername,
           sys_user_password: editPassword,
           sys_user_is_active: editActive,
           sys_user_updated_by: updatedBy,
         });
       } else {
         await api.post("/admins", {
-          sys_user_username: editUsername,
+          sys_user_email: editUsername,
           sys_user_password: editPassword,
           sys_user_is_active: true,
           sys_user_created_by: updatedBy,

@@ -12,7 +12,7 @@ export default function TopNavbar({ toggleSidebar }) {
       </button>
 
       <div className="flex items-center gap-3">
-        <img src="src/assets/images/icon.png" alt="Servana Logo" className="h-10 w-10" />
+        <img src="images/icon.png" alt="Servana Logo" className="h-10 w-10" />
         <span
           className="text-xl font-semibold text-purple-800 relative"
           style={{ top: "-1px" }}
