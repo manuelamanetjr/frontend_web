@@ -3,6 +3,7 @@ import { Filter, Send, Menu, MoreVertical } from "react-feather";
 import Select from "react-select";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
+import api from "../src/api";
 
 export default function Queues() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -304,13 +305,31 @@ export default function Queues() {
     };
   }, []);
 
-  const handleChatClick = (customer) => {
+  const handleChatClick = async (customer) => {
     setSelectedCustomer(customer);
     setChatEnded(endedChats.some((chat) => chat.id === customer.id));
-    if (isMobile) {
-      setView("conversation");
+    setMessages([]); // Clear previous messages
+
+    if (isMobile) setView("conversation");
+
+    try {
+      const response = await api.get(`chat/${customer.id}`);
+      const messagesFromApi = response.data.map((msg, index) => ({
+        id: msg.chat_id || index,
+        sender: msg.sys_user_id ? "user" : "system",
+        content: msg.chat_body,
+        timestamp: msg.chat_created_at,
+        displayTime: new Date(msg.chat_created_at).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      }));
+      setMessages(messagesFromApi);
+    } catch (error) {
+      console.error("Failed to load messages:", error);
     }
   };
+
 
   const handleBackClick = () => {
     setView("chatList");
@@ -654,59 +673,8 @@ export default function Queues() {
      }}>
                     <div className="flex flex-col justify-end min-h-full gap-4 pt-4">
                       <>
-                        <div className="text-[10px] text-gray-400 text-center flex items-center gap-2 my-2">
-                          <div className="flex-grow h-px bg-gray-200" />
-                          Today
-                          <div className="flex-grow h-px bg-gray-200" />
-                        </div>
-
-                        <div className="flex items-end justify-end gap-2">
-                          <div className="text-sm text-gray-800 px-4 py-2 rounded-xl self-start max-w-[320px]">
-                            To connect you with the right support team, please
-                            select one of the following options:
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col items-start gap-1">
-                          <img
-                            src={selectedCustomer.profile}
-                            alt="avatar"
-                            className="w-8 h-8 rounded-full object-cover"
-                          />
-                          <div className="relative bg-[#6237A0] text-white px-4 py-2 ml-7 rounded-br-xl rounded-tr-xl rounded-bl-xl text-sm max-w-[300px]">
-                            {selectedDepartment}
-                            <div className="text-[10px] text-light text-gray-300 text-right mt-1 ml-2">
-                              1:20 PM
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-end justify-end gap-2">
-                          <div className="text-sm text-gray-800 px-4 py-2 rounded-xl self-start max-w-[320px]">
-                            We will be with you in a moment!
-                          </div>
-                        </div>
-
-                        <div className="text-[10px] text-gray-400 text-center flex items-center gap-2 my-2">
-                          <div className="flex-grow h-px bg-gray-200" />
-                          You are now chatting with {selectedDepartment} agent
-                          <div className="flex-grow h-px bg-gray-200" />
-                        </div>
-
-                        <div className="flex flex-col items-end gap-1 self-end">
-                          <img
-                            src="../src/assets/profile/av3.jpg"
-                            alt="agent"
-                            className="w-8 h-8 rounded-full"
-                          /> 
-                          <div className="relative bg-[#f5f5f5] px-3 py-2 rounded-bl-xl rounded-tl-xl rounded-br-xl text-sm max-w-[300px] mr-7 break-words whitespace-pre-wrap">
-                            Hi, I'm Maria. How may I help you?
-                            <div className="text-[10px] text-right text-gray-400 mt-1">
-                              1:20 PM
-                            </div>
-                            
-                          </div>
-                        </div>
+                        
+                        
                       </>
                       
                       {/* Existing messages */}

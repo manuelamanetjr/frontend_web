@@ -118,6 +118,7 @@ export default function Departments() {
               <div className="flex items-center bg-gray-100 px-3 py-2 rounded-md w-1/3 relative">
                 <Search
                   size={18}
+                  strokeWidth={1}
                   className="text-gray-500 mr-2 flex-shrink-0"
                 />
                 <input

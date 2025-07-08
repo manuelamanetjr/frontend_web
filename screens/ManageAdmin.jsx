@@ -145,7 +145,7 @@ export default function ManageAgents() {
                 />
                 <input
                   type="text"
-                  placeholder="Search usernames..."
+                  placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="bg-transparent focus:outline-none text-sm w-full pr-6"

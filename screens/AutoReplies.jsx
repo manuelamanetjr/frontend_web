@@ -167,7 +167,7 @@ export default function AutoReplies() {
           <div className="bg-white p-4 rounded-lg flex flex-col flex-1 min-h-0 transition-all duration-300">
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center bg-gray-100 px-3 py-2 rounded-md w-1/3 relative">
-                <Search size={18} className="text-gray-500 mr-2" />
+                <Search size={18} strokeWidth={1} className="text-gray-500 mr-2" />
                 <input
                   type="text"
                   placeholder="Search..."
