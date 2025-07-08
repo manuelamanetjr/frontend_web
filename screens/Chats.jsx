@@ -25,75 +25,34 @@ export default function Queues() {
   const [selectedDepartment, setSelectedDepartment] = useState("Billing");
   const [showDeptDropdown, setShowDeptDropdown] = useState(false);
   const [transferDepartment, setTransferDepartment] = useState(null);
+  const [departments, setDepartments] = useState([]);
+  const [departmentCustomers, setDepartmentCustomers] = useState({});
 
-  const departmentCustomers = {
-    Billing: [
-      {
-        id: 1,
-        name: "Customer 1",
-        number: "09123456789",
-        time: "9:00 AM",
-        profile: "../src/assets/profile/client.jpg",
-      },
-      {
-        id: 2,
-        name: "Customer 2",
-        number: "09123456780",
-        time: "10:00 AM",
-        profile: "../src/assets/profile/character.jpg",
-      },
-      {
-        id: 3,
-        name: "Customer 3",
-        number: "09123456781",
-        time: "11:11 AM",
-        profile: "../src/assets/profile/download.jpg",
-      },
-    ],
-    "Technical Support": [
-      {
-        id: 4,
-        name: "Customer 4",
-        number: "09123456782",
-        time: "9:30 AM",
-        profile: "../src/assets/profile/tech1.jpg",
-      },
-      {
-        id: 5,
-        name: "Customer 5",
-        number: "09123456782",
-        time: "9:30 AM",
-        profile: "../src/assets/profile/tech2.jpg",
-      },
-    ],
-    Sales: [
-      {
-        id: 6,
-        name: "Customer 6",
-        number: "09123456782",
-        time: "9:30 AM",
-        profile: "../src/assets/profile/sales.jpg",
-      },
-      {
-        id: 7,
-        name: "Customer 7",
-        number: "09123456782",
-        time: "9:30 AM",
-        profile: "../src/assets/profile/sales2.jpg",
-      },
-    ],
-    "Customer Service": [
-      {
-        id: 8,
-        name: "Customer 8",
-        number: "09123456782",
-        time: "9:30 AM",
-        profile: "../src/assets/profile/sales3.jpg",
-      },
-    ],
-  };
+  useEffect(() => {
+    const fetchChatGroups = async () => {
+      try {
+        const response = await api.get('/chat/chatgroups');
+        const chatGroups = response.data;
 
-  const departments = Object.keys(departmentCustomers);
+        const deptMap = {};
+        chatGroups.forEach(group => {
+          const dept = group.department;
+          if (!deptMap[dept]) deptMap[dept] = [];
+          deptMap[dept].push(group.customer);
+        });
+
+        setDepartmentCustomers(deptMap);
+        setDepartments(Object.keys(deptMap)); // <-- This line was missing
+        setSelectedDepartment(Object.keys(deptMap)[0] || ""); // optional: auto-select first
+      } catch (err) {
+        console.error("Failed to load chat groups:", err);
+      }
+    };
+
+    fetchChatGroups();
+  }, []);
+
+
   const departmentOptions = departments.map((dept) => ({
     value: dept,
     label: dept,
