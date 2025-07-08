@@ -234,26 +234,30 @@ export default function AutoReplies() {
                       </td>
                       <td className="py-2 px-3 text-center">
                         <select
-                          value={reply.dept_id}
+                          value={reply.dept_id ?? ""}
                           onChange={(e) =>
                             handleDeptChange(
                               reply.auto_reply_id,
-                              parseInt(e.target.value)
+                              e.target.value ? parseInt(e.target.value) : null
                             )
                           }
                           className="rounded-md px-2 py-1 text-sm text-gray-800 border-none text-center"
                         >
+                          <option value="">All</option>
                           {allDepartments.map((dept) => (
                             <option
                               key={dept.dept_id}
                               value={dept.dept_id}
-                              disabled={!dept.dept_is_active}
+                              disabled={
+                                !dept.dept_is_active &&
+                                dept.dept_id !== reply.dept_id
+                              }
                               className={
                                 !dept.dept_is_active ? "text-red-400" : ""
                               }
                             >
-                              {dept.dept_name}{" "}
-                              {!dept.dept_is_active && "(Inactive)"}
+                              {dept.dept_name}
+                              {!dept.dept_is_active && " (Inactive)"}
                             </option>
                           ))}
                         </select>
@@ -324,19 +328,22 @@ export default function AutoReplies() {
                   Department
                 </label>
                 <select
-                  value={selectedDeptId || ""}
-                  onChange={(e) => setSelectedDeptId(parseInt(e.target.value))}
+                  value={selectedDeptId ?? ""}
+                  onChange={(e) =>
+                    setSelectedDeptId(
+                      e.target.value ? parseInt(e.target.value) : null
+                    )
+                  }
                   className="w-full border rounded-md p-2 text-sm mb-4 focus:ring-2 focus:ring-purple-500 focus:outline-none"
                 >
-                  <option value="" disabled>
-                    Select Department
-                  </option>
+                  <option value="">All</option>
                   {activeDepartments.map((dept) => (
                     <option key={dept.dept_id} value={dept.dept_id}>
                       {dept.dept_name}
                     </option>
                   ))}
                 </select>
+
                 <div className="flex justify-end gap-2">
                   <button
                     onClick={() => setIsAddModalOpen(false)}
