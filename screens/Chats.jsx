@@ -4,6 +4,7 @@ import Select from "react-select";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 import api from "../src/api";
+import socket from "../src/socket";
 
 export default function Queues() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -33,24 +34,63 @@ export default function Queues() {
       try {
         const response = await api.get('/chat/chatgroups');
         const chatGroups = response.data;
-
         const deptMap = {};
         chatGroups.forEach(group => {
           const dept = group.department;
           if (!deptMap[dept]) deptMap[dept] = [];
           deptMap[dept].push(group.customer);
         });
-
         setDepartmentCustomers(deptMap);
-        setDepartments(Object.keys(deptMap)); // <-- This line was missing
-        setSelectedDepartment(Object.keys(deptMap)[0] || ""); // optional: auto-select first
+        setDepartments(Object.keys(deptMap));
+        setSelectedDepartment(prev => prev || Object.keys(deptMap)[0] || "");
       } catch (err) {
         console.error("Failed to load chat groups:", err);
       }
     };
 
-    fetchChatGroups();
+    fetchChatGroups(); // Initial load
+
+    socket.on('updateChatGroups', () => {
+      console.log(" Received updateChatGroups from server");
+      fetchChatGroups();
+    });
+
+
+    return () => {
+      socket.off('updateChatGroups', fetchChatGroups);
+    };
   }, []);
+
+
+  useEffect(() => {
+    if (selectedCustomer) {
+      socket.emit('joinChatGroup', selectedCustomer.chat_group_id);
+
+      socket.on('receiveMessage', (msg) => {
+        console.log('Received real-time message:', msg); // ✅
+        // This should trigger when a message is received
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: msg.chat_id,
+            sender: msg.sys_user_id ? "user" : "system",
+            content: msg.chat_body,
+            timestamp: msg.chat_created_at,
+            displayTime: new Date(msg.chat_created_at).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          },
+        ]);
+      });
+
+      return () => {
+        socket.off('receiveMessage'); // cleanup
+      };
+    }
+  }, [selectedCustomer]);
+
+
 
 
   const departmentOptions = departments.map((dept) => ({
@@ -188,7 +228,19 @@ export default function Queues() {
 
     setMessages((prev) => [...prev, newMessage]);
     setInputMessage("");
+
+    // Emit via socket
+    if (selectedCustomer) {
+      console.log("Sending to group:", selectedCustomer.chat_group_id); // 👈 log this
+      socket.emit("sendMessage", {
+        chat_body: trimmedMessage,
+        chat_group_id: selectedCustomer.chat_group_id,
+        sys_user_id: 1,
+        client_id: null,
+      });
+    }
   };
+
 
   const toggleSidebar = () => {
     setMobileSidebarOpen((prev) => !prev);
