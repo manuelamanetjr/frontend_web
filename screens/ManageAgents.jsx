@@ -82,6 +82,7 @@ const filteredAgents = agents.filter((agent) => {
 
   const handleSaveAgent = () => {
     setIsConfirmModalOpen(true);
+    setIsModalOpen(false);
   };
 
   const confirmSaveAgent = () => {
@@ -258,7 +259,10 @@ className="w-4 h-4 cursor-pointer"
         {isModalOpen && (
           <div className="fixed inset-0 bg-gray-400/50 z-50 flex justify-center items-center">
             <div className="bg-white rounded-lg p-6 w-96 relative">
-              <h2 className="text-xl font-semibold mb-4">Edit Agent</h2>
+<h2 className="text-xl font-semibold mb-4">
+  {currentEditIndex !== null ? "Edit Agent" : "Add Agent"}
+</h2>
+
               <label className="block mb-2 text-sm font-medium text-gray-700">Username</label>
               <input
                 type="text"
@@ -309,13 +313,14 @@ className="w-4 h-4 cursor-pointer"
 
         {/* Confirm Save Modal */}
         {isConfirmModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-60 flex justify-center items-center">
+<div className="fixed inset-0 bg-gray-200/40 z-60 flex justify-center items-center">
+
             <div className="bg-white rounded-lg p-6 w-80">
               <h3 className="text-lg font-semibold mb-4">Confirm Save</h3>
               <p className="mb-6">Are you sure you want to save these changes?</p>
               <div className="flex justify-end gap-3">
                 <button
-                  onClick={() => setIsConfirmModalOpen(false)}
+                  onClick={() => {setIsConfirmModalOpen(false); setIsModalOpen(true)}}
                   className="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300"
                 >
                   Cancel
