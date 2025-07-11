@@ -23,7 +23,7 @@ export default function Queues() {
   const [endedChats, setEndedChats] = useState([]);
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [showTransferConfirmModal, setShowTransferConfirmModal] = useState(false);
-  const [selectedDepartment, setSelectedDepartment] = useState("Billing");
+  const [selectedDepartment, setSelectedDepartment] = useState("All");
   const [showDeptDropdown, setShowDeptDropdown] = useState(false);
   const [transferDepartment, setTransferDepartment] = useState(null);
   const [departments, setDepartments] = useState([]);
@@ -32,17 +32,22 @@ export default function Queues() {
   useEffect(() => {
     const fetchChatGroups = async () => {
       try {
-        const response = await api.get('/chat/chatgroups');
+        const response = await api.get("/chat/chatgroups");
         const chatGroups = response.data;
         const deptMap = {};
-        chatGroups.forEach(group => {
+
+        chatGroups.forEach((group) => {
           const dept = group.department;
           if (!deptMap[dept]) deptMap[dept] = [];
-          deptMap[dept].push(group.customer);
+          const customerWithDept = { ...group.customer, department: dept }; // ✅ attach department
+          deptMap[dept].push(customerWithDept);
         });
+
+
         setDepartmentCustomers(deptMap);
-        setDepartments(Object.keys(deptMap));
-        setSelectedDepartment(prev => prev || Object.keys(deptMap)[0] || "");
+        const departmentList = ["All", ...Object.keys(deptMap)];
+        setDepartments(departmentList);
+        setSelectedDepartment((prev) => prev || "All");
       } catch (err) {
         console.error("Failed to load chat groups:", err);
       }
@@ -50,24 +55,22 @@ export default function Queues() {
 
     fetchChatGroups(); // Initial load
 
-    socket.on('updateChatGroups', () => {
+    socket.on("updateChatGroups", () => {
       console.log(" Received updateChatGroups from server");
       fetchChatGroups();
     });
 
-
     return () => {
-      socket.off('updateChatGroups', fetchChatGroups);
+      socket.off("updateChatGroups", fetchChatGroups);
     };
   }, []);
 
-
   useEffect(() => {
     if (selectedCustomer) {
-      socket.emit('joinChatGroup', selectedCustomer.chat_group_id);
+      socket.emit("joinChatGroup", selectedCustomer.chat_group_id);
 
-      socket.on('receiveMessage', (msg) => {
-        console.log('Received real-time message:', msg); // ✅
+      socket.on("receiveMessage", (msg) => {
+        console.log("Received real-time message:", msg); // ✅
         // This should trigger when a message is received
         setMessages((prev) => [
           ...prev,
@@ -85,13 +88,10 @@ export default function Queues() {
       });
 
       return () => {
-        socket.off('receiveMessage'); // cleanup
+        socket.off("receiveMessage"); // cleanup
       };
     }
   }, [selectedCustomer]);
-
-
-
 
   const departmentOptions = departments.map((dept) => ({
     value: dept,
@@ -144,7 +144,7 @@ export default function Queues() {
   };
 
   const confirmEndChat = () => {
-    setShowEndChatModal(false); 
+    setShowEndChatModal(false);
     setChatEnded(true);
 
     const now = new Date();
@@ -160,7 +160,7 @@ export default function Queues() {
     };
 
     setMessages((prev) => [...prev, endMessage]);
- 
+
     if (selectedCustomer) {
       setEndedChats((prev) => [
         ...prev,
@@ -240,7 +240,6 @@ export default function Queues() {
       });
     }
   };
-
 
   const toggleSidebar = () => {
     setMobileSidebarOpen((prev) => !prev);
@@ -341,11 +340,15 @@ export default function Queues() {
     }
   };
 
-
   const handleBackClick = () => {
     setView("chatList");
     setSelectedCustomer(null);
   };
+
+  const allCustomers = Object.values(departmentCustomers).flat();
+  const filteredCustomers = selectedDepartment === "All"
+  ? allCustomers
+  : departmentCustomers[selectedDepartment] || [];
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
@@ -398,7 +401,11 @@ export default function Queues() {
                   setTransferDepartment(selected?.value || null);
                   console.log("Selected Department:", selected?.value);
                 }}
-                value={departmentOptions.find((option) => option.value === transferDepartment) || null}
+                value={
+                  departmentOptions.find(
+                    (option) => option.value === transferDepartment
+                  ) || null
+                }
                 classNamePrefix="select"
                 placeholder="Select a department"
                 styles={{
@@ -436,15 +443,22 @@ export default function Queues() {
               </button>
               <button
                 onClick={(e) => {
-                  if (!transferDepartment || transferDepartment === selectedDepartment) {
+                  if (
+                    !transferDepartment ||
+                    transferDepartment === selectedDepartment
+                  ) {
                     e.preventDefault();
                     return;
                   }
                   handleDepartmentSelect();
                 }}
-                disabled={!transferDepartment || transferDepartment === selectedDepartment}
+                disabled={
+                  !transferDepartment ||
+                  transferDepartment === selectedDepartment
+                }
                 className={`px-5 py-2 text-white rounded-lg transition-colors ${
-                  transferDepartment && transferDepartment !== selectedDepartment
+                  transferDepartment &&
+                  transferDepartment !== selectedDepartment
                     ? "bg-[#6237A0] hover:bg-[#4c2b7d]"
                     : "bg-[#6237A0]/50 cursor-not-allowed"
                 }`}
@@ -463,7 +477,8 @@ export default function Queues() {
               Confirm Transfer
             </h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to transfer this customer to {transferDepartment}?
+              Are you sure you want to transfer this customer to{" "}
+              {transferDepartment}?
             </p>
             <div className="flex justify-center gap-20">
               <button
@@ -501,7 +516,11 @@ export default function Queues() {
         <main className="flex-1 bg-white">
           <div className="flex flex-col md:flex-row h-full">
             {/* Queues list */}
-            <div className={`${view === "chatList" ? "block" : "hidden md:block"} w-full md:w-[320px] bg-[#F5F5F5] overflow-y-auto`}>
+            <div
+              className={`${
+                view === "chatList" ? "block" : "hidden md:block"
+              } w-full md:w-[320px] bg-[#F5F5F5] overflow-y-auto`}
+            >
               <div className="relative p-4 flex text-center justify-between rounded-xl py-2 px-4 items-center m-4 shadow-sm bg-[#E6DCF7]">
                 <button
                   className="text-sm text-[#6237A0] w-full text-left focus:outline-none"
@@ -540,7 +559,7 @@ export default function Queues() {
 
               {/* Chat list */}
               <div className="chat-list overflow-auto">
-                {(departmentCustomers[selectedDepartment] || []).map(
+                {filteredCustomers.map(
                   (customer) => (
                     <div
                       key={customer.id}
@@ -563,7 +582,7 @@ export default function Queues() {
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-end mb-1">
                             <span className="text-[10px] font-semibold text-purple-600 bg-purple-100 px-2 py-[2px] rounded-full whitespace-nowrap">
-                              {selectedDepartment}
+                              {customer.department}
                             </span>
                           </div>
                           <p
@@ -585,7 +604,7 @@ export default function Queues() {
                                 selectedCustomer?.id === customer.id
                                   ? "text-[#6237A0]"
                                   : endedChats.some(
-                                      (chat) => chat.id === customer.id       
+                                      (chat) => chat.id === customer.id
                                     )
                                   ? "text-gray-400"
                                   : "text-gray-500"
@@ -606,10 +625,14 @@ export default function Queues() {
             </div>
 
             {/* Chat area */}
-            <div className={`${view === "conversation" ? "block" : "hidden md:flex"} flex-1 flex flex-col`}>
+            <div
+              className={`${
+                view === "conversation" ? "block" : "hidden md:flex"
+              } flex-1 flex flex-col`}
+            >
               {selectedCustomer ? (
                 <>
-                {/* Sticky Header */}
+                  {/* Sticky Header */}
                   <div className="sticky top-0 z-10 bg-white border-b border-gray-200 p-4">
                     <div className="flex items-center">
                       {isMobile && (
@@ -677,17 +700,16 @@ export default function Queues() {
                   </div>
 
                   {/* Chat messages */}
-                  <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 pb-2 auto-hide-scrollbar"
-                    style={{ 
-       maxHeight: isMobile ? 'calc(100vh - 200px)' : 'none',
-       height: isMobile ? 'auto' : '100%'
-     }}>
+                  <div
+                    className="flex-1 overflow-y-auto overflow-x-hidden px-4 pb-2 auto-hide-scrollbar"
+                    style={{
+                      maxHeight: isMobile ? "calc(100vh - 200px)" : "none",
+                      height: isMobile ? "auto" : "100%",
+                    }}
+                  >
                     <div className="flex flex-col justify-end min-h-full gap-4 pt-4">
-                      <>
-                        
-                        
-                      </>
-                      
+                      <></>
+
                       {/* Existing messages */}
                       {groupedMessages.map((item, index) => {
                         if (item.type === "date") {
@@ -787,7 +809,7 @@ export default function Queues() {
                             }
                           }}
                           className="flex-1 bg-[#F2F0F0] rounded-xl px-4 py-2 leading-tight focus:outline-none text-gray-800 resize-none overflow-y-auto"
-                          style={{maxHeight: "100px"}}
+                          style={{ maxHeight: "100px" }}
                         />
                         <button
                           className="p-2 text-[#5C2E90] hover:bg-gray-100 rounded-full"
@@ -796,7 +818,7 @@ export default function Queues() {
                           <Send size={20} className="transform rotate-45" />
                         </button>
                       </div>
-                      
+
                       {/* CANNED MESSAGES */}
                       <div className="px-4 pt-3">
                         <div className="grid grid-cols-1 gap-2 pb-3 max-h-[200px] overflow-y-auto">
@@ -819,10 +841,11 @@ export default function Queues() {
                     <div className="mt-4 flex items-center gap-2 border-t border-gray-200 pt-4 px-4">
                       <button
                         className={`p-2 mb-4 text-[#5C2E90] hover:bg-gray-100 rounded-full
-                           ${chatEnded
-                            ? "text-gray-400 cursor-not-allowed"
-                            : "text-[#5C2E90] hover:bg-gray-100"
-                          }`}
+                           ${
+                             chatEnded
+                               ? "text-gray-400 cursor-not-allowed"
+                               : "text-[#5C2E90] hover:bg-gray-100"
+                           }`}
                         onClick={() => setShowCannedMessages(true)}
                         disabled={chatEnded}
                       >
@@ -841,18 +864,20 @@ export default function Queues() {
                           }
                         }}
                         className={`flex-1 bg-[#F2F0F0] rounded-xl px-4 py-2 mb-4 leading-tight focus:outline-none text-gray-800 resize-none overflow-y-auto
-                        ${chatEnded
-                          ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                          : "bg-[#F2F0F0] text-gray-800"
+                        ${
+                          chatEnded
+                            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                            : "bg-[#F2F0F0] text-gray-800"
                         }`}
                         style={{ maxHeight: "100px" }}
                         disabled={chatEnded}
                       />
                       <button
                         className={`p-2 mb-4 text-[#5C2E90] hover:bg-gray-100 rounded-full
-                          ${chatEnded
-                            ? "text-gray-400 cursor-not-allowed"
-                            : "text-[#5C2E90] hover:bg-gray-100"
+                          ${
+                            chatEnded
+                              ? "text-gray-400 cursor-not-allowed"
+                              : "text-[#5C2E90] hover:bg-gray-100"
                           }`}
                         onClick={sendMessage}
                         disabled={chatEnded}
