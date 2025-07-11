@@ -22,12 +22,17 @@ export default function Queues() {
   const [inputMessage, setInputMessage] = useState("");
   const [endedChats, setEndedChats] = useState([]);
   const [showTransferModal, setShowTransferModal] = useState(false);
-  const [showTransferConfirmModal, setShowTransferConfirmModal] = useState(false);
+  const [showTransferConfirmModal, setShowTransferConfirmModal] =
+    useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState("All");
   const [showDeptDropdown, setShowDeptDropdown] = useState(false);
   const [transferDepartment, setTransferDepartment] = useState(null);
   const [departments, setDepartments] = useState([]);
   const [departmentCustomers, setDepartmentCustomers] = useState({});
+  const [messageOffset, setMessageOffset] = useState(0);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const scrollContainerRef = useRef(null);
+  const [earliestMessageTime, setEarliestMessageTime] = useState(null);
 
   useEffect(() => {
     const fetchChatGroups = async () => {
@@ -42,7 +47,6 @@ export default function Queues() {
           const customerWithDept = { ...group.customer, department: dept }; // ✅ attach department
           deptMap[dept].push(customerWithDept);
         });
-
 
         setDepartmentCustomers(deptMap);
         const departmentList = ["All", ...Object.keys(deptMap)];
@@ -64,6 +68,27 @@ export default function Queues() {
       socket.off("updateChatGroups", fetchChatGroups);
     };
   }, []);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = async () => {
+      if (container.scrollTop === 0 && hasMoreMessages && selectedCustomer) {
+        const prevHeight = container.scrollHeight;
+
+        await loadMessages(selectedCustomer.id, earliestMessageTime, true);
+
+        // Maintain scroll position
+        setTimeout(() => {
+          container.scrollTop = container.scrollHeight - prevHeight;
+        }, 50);
+      }
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [earliestMessageTime, hasMoreMessages, selectedCustomer]);
 
   useEffect(() => {
     if (selectedCustomer) {
@@ -318,13 +343,25 @@ export default function Queues() {
   const handleChatClick = async (customer) => {
     setSelectedCustomer(customer);
     setChatEnded(endedChats.some((chat) => chat.id === customer.id));
-    setMessages([]); // Clear previous messages
+    setMessages([]);
+    setEarliestMessageTime(null);
+    setHasMoreMessages(true);
 
     if (isMobile) setView("conversation");
 
+    await loadMessages(customer.id); // initial 10
+  };
+
+  const loadMessages = async (clientId, before = null, append = false) => {
     try {
-      const response = await api.get(`chat/${customer.id}`);
-      const messagesFromApi = response.data.map((msg, index) => ({
+      const response = await api.get(`chat/${clientId}`, {
+        params: {
+          before,
+          limit: 10,
+        },
+      });
+
+      const newMessages = response.data.messages.map((msg, index) => ({
         id: msg.chat_id || index,
         sender: msg.sys_user_id ? "user" : "system",
         content: msg.chat_body,
@@ -334,9 +371,22 @@ export default function Queues() {
           minute: "2-digit",
         }),
       }));
-      setMessages(messagesFromApi);
-    } catch (error) {
-      console.error("Failed to load messages:", error);
+
+      if (append) {
+        setMessages((prev) => [...newMessages, ...prev]);
+      } else {
+        setMessages(newMessages);
+      }
+
+      if (newMessages.length > 0) {
+        setEarliestMessageTime(newMessages[0].timestamp);
+      }
+
+      if (newMessages.length < 10) {
+        setHasMoreMessages(false); // no more to load
+      }
+    } catch (err) {
+      console.error("Error loading messages:", err);
     }
   };
 
@@ -346,9 +396,10 @@ export default function Queues() {
   };
 
   const allCustomers = Object.values(departmentCustomers).flat();
-  const filteredCustomers = selectedDepartment === "All"
-  ? allCustomers
-  : departmentCustomers[selectedDepartment] || [];
+  const filteredCustomers =
+    selectedDepartment === "All"
+      ? allCustomers
+      : departmentCustomers[selectedDepartment] || [];
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
@@ -559,68 +610,66 @@ export default function Queues() {
 
               {/* Chat list */}
               <div className="chat-list overflow-auto">
-                {filteredCustomers.map(
-                  (customer) => (
-                    <div
-                      key={customer.id}
-                      onClick={() => handleChatClick(customer)}
-                      className={`flex items-center justify-between px-4 py-3 border-2 ${
-                        selectedCustomer?.id === customer.id
-                          ? "bg-[#E6DCF7]"
-                          : endedChats.some((chat) => chat.id === customer.id)
-                          ? "bg-gray-100 opacity-70"
-                          : "bg-[#f5f5f5]"
-                      } border-[#E6DCF7] rounded-xl hover:bg-[#E6DCF7] cursor-pointer transition m-2 min-h-[100px]`}
-                    >
-                      <div className="flex items-center gap-2 flex-1">
-                        <img
-                          src={customer.profile}
-                          alt="profile"
-                          className="w-15 h-15 rounded-full object-cover"
-                        />
+                {filteredCustomers.map((customer) => (
+                  <div
+                    key={customer.id}
+                    onClick={() => handleChatClick(customer)}
+                    className={`flex items-center justify-between px-4 py-3 border-2 ${
+                      selectedCustomer?.id === customer.id
+                        ? "bg-[#E6DCF7]"
+                        : endedChats.some((chat) => chat.id === customer.id)
+                        ? "bg-gray-100 opacity-70"
+                        : "bg-[#f5f5f5]"
+                    } border-[#E6DCF7] rounded-xl hover:bg-[#E6DCF7] cursor-pointer transition m-2 min-h-[100px]`}
+                  >
+                    <div className="flex items-center gap-2 flex-1">
+                      <img
+                        src={customer.profile}
+                        alt="profile"
+                        className="w-15 h-15 rounded-full object-cover"
+                      />
 
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-end mb-1">
-                            <span className="text-[10px] font-semibold text-purple-600 bg-purple-100 px-2 py-[2px] rounded-full whitespace-nowrap">
-                              {customer.department}
-                            </span>
-                          </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-end mb-1">
+                          <span className="text-[10px] font-semibold text-purple-600 bg-purple-100 px-2 py-[2px] rounded-full whitespace-nowrap">
+                            {customer.department}
+                          </span>
+                        </div>
+                        <p
+                          className={`text-sm font-medium truncate ${
+                            selectedCustomer?.id === customer.id
+                              ? "text-[#6237A0]"
+                              : endedChats.some(
+                                  (chat) => chat.id === customer.id
+                                )
+                              ? "text-gray-500"
+                              : "text-gray-800"
+                          }`}
+                        >
+                          {customer.name}
+                        </p>
+                        <div className="flex justify-between items-center">
                           <p
-                            className={`text-sm font-medium truncate ${
+                            className={`text-xs truncate ${
                               selectedCustomer?.id === customer.id
                                 ? "text-[#6237A0]"
                                 : endedChats.some(
                                     (chat) => chat.id === customer.id
                                   )
-                                ? "text-gray-500"
-                                : "text-gray-800"
+                                ? "text-gray-400"
+                                : "text-gray-500"
                             }`}
                           >
-                            {customer.name}
+                            {customer.number}
                           </p>
-                          <div className="flex justify-between items-center">
-                            <p
-                              className={`text-xs truncate ${
-                                selectedCustomer?.id === customer.id
-                                  ? "text-[#6237A0]"
-                                  : endedChats.some(
-                                      (chat) => chat.id === customer.id
-                                    )
-                                  ? "text-gray-400"
-                                  : "text-gray-500"
-                              }`}
-                            >
-                              {customer.number}
-                            </p>
-                            <span className="text-[10px] text-gray-400 ml-2 whitespace-nowrap mt-5">
-                              {customer.time}
-                            </span>
-                          </div>
+                          <span className="text-[10px] text-gray-400 ml-2 whitespace-nowrap mt-5">
+                            {customer.time}
+                          </span>
                         </div>
                       </div>
                     </div>
-                  )
-                )}
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -701,6 +750,7 @@ export default function Queues() {
 
                   {/* Chat messages */}
                   <div
+                    ref={scrollContainerRef}
                     className="flex-1 overflow-y-auto overflow-x-hidden px-4 pb-2 auto-hide-scrollbar"
                     style={{
                       maxHeight: isMobile ? "calc(100vh - 200px)" : "none",
