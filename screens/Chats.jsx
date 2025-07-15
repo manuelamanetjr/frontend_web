@@ -3,6 +3,8 @@ import { Filter, Send, Menu, MoreVertical } from "react-feather";
 import Select from "react-select";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
+import api from "../src/api";
+import socket from "../src/socket";
 
 export default function Queues() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -20,79 +22,102 @@ export default function Queues() {
   const [inputMessage, setInputMessage] = useState("");
   const [endedChats, setEndedChats] = useState([]);
   const [showTransferModal, setShowTransferModal] = useState(false);
-  const [showTransferConfirmModal, setShowTransferConfirmModal] = useState(false);
-  const [selectedDepartment, setSelectedDepartment] = useState("Billing");
+  const [showTransferConfirmModal, setShowTransferConfirmModal] =
+    useState(false);
+  const [selectedDepartment, setSelectedDepartment] = useState("All");
   const [showDeptDropdown, setShowDeptDropdown] = useState(false);
   const [transferDepartment, setTransferDepartment] = useState(null);
+  const [departments, setDepartments] = useState([]);
+  const [departmentCustomers, setDepartmentCustomers] = useState({});
+  const [messageOffset, setMessageOffset] = useState(0);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const scrollContainerRef = useRef(null);
+  const [earliestMessageTime, setEarliestMessageTime] = useState(null);
 
-  const departmentCustomers = {
-    Billing: [
-      {
-        id: 1,
-        name: "Customer 1",
-        number: "09123456789",
-        time: "9:00 AM",
-        profile: "../src/assets/profile/client.jpg",
-      },
-      {
-        id: 2,
-        name: "Customer 2",
-        number: "09123456780",
-        time: "10:00 AM",
-        profile: "../src/assets/profile/character.jpg",
-      },
-      {
-        id: 3,
-        name: "Customer 3",
-        number: "09123456781",
-        time: "11:11 AM",
-        profile: "../src/assets/profile/download.jpg",
-      },
-    ],
-    "Technical Support": [
-      {
-        id: 4,
-        name: "Customer 4",
-        number: "09123456782",
-        time: "9:30 AM",
-        profile: "../src/assets/profile/tech1.jpg",
-      },
-      {
-        id: 5,
-        name: "Customer 5",
-        number: "09123456782",
-        time: "9:30 AM",
-        profile: "../src/assets/profile/tech2.jpg",
-      },
-    ],
-    Sales: [
-      {
-        id: 6,
-        name: "Customer 6",
-        number: "09123456782",
-        time: "9:30 AM",
-        profile: "../src/assets/profile/sales.jpg",
-      },
-      {
-        id: 7,
-        name: "Customer 7",
-        number: "09123456782",
-        time: "9:30 AM",
-        profile: "../src/assets/profile/sales2.jpg",
-      },
-    ],
-    "Customer Service": [
-      {
-        id: 8,
-        name: "Customer 8",
-        number: "09123456782",
-        time: "9:30 AM",
-        profile: "../src/assets/profile/sales3.jpg",
-      },
-    ],
-  };
+  useEffect(() => {
+    const fetchChatGroups = async () => {
+      try {
+        const response = await api.get("/chat/chatgroups");
+        const chatGroups = response.data;
+        const deptMap = {};
 
-  const departments = Object.keys(departmentCustomers);
+        chatGroups.forEach((group) => {
+          const dept = group.department;
+          if (!deptMap[dept]) deptMap[dept] = [];
+          const customerWithDept = { ...group.customer, department: dept }; // ✅ attach department
+          deptMap[dept].push(customerWithDept);
+        });
+
+        setDepartmentCustomers(deptMap);
+        const departmentList = ["All", ...Object.keys(deptMap)];
+        setDepartments(departmentList);
+        setSelectedDepartment((prev) => prev || "All");
+      } catch (err) {
+        console.error("Failed to load chat groups:", err);
+      }
+    };
+
+    fetchChatGroups(); // Initial load
+
+    socket.on("updateChatGroups", () => {
+      console.log(" Received updateChatGroups from server");
+      fetchChatGroups();
+    });
+
+    return () => {
+      socket.off("updateChatGroups", fetchChatGroups);
+    };
+  }, []);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = async () => {
+      if (container.scrollTop === 0 && hasMoreMessages && selectedCustomer) {
+        const prevHeight = container.scrollHeight;
+
+        await loadMessages(selectedCustomer.id, earliestMessageTime, true);
+
+        // Maintain scroll position
+        setTimeout(() => {
+          container.scrollTop = container.scrollHeight - prevHeight;
+        }, 50);
+      }
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [earliestMessageTime, hasMoreMessages, selectedCustomer]);
+
+  useEffect(() => {
+    if (selectedCustomer) {
+      socket.emit("joinChatGroup", selectedCustomer.chat_group_id);
+
+      socket.on("receiveMessage", (msg) => {
+        console.log("Received real-time message:", msg); // ✅
+        // This should trigger when a message is received
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: msg.chat_id,
+            sender: msg.sys_user_id ? "user" : "system",
+            content: msg.chat_body,
+            timestamp: msg.chat_created_at,
+            displayTime: new Date(msg.chat_created_at).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          },
+        ]);
+      });
+
+      return () => {
+        socket.off("receiveMessage"); // cleanup
+      };
+    }
+  }, [selectedCustomer]);
+
   const departmentOptions = departments.map((dept) => ({
     value: dept,
     label: dept,
@@ -144,7 +169,7 @@ export default function Queues() {
   };
 
   const confirmEndChat = () => {
-    setShowEndChatModal(false); 
+    setShowEndChatModal(false);
     setChatEnded(true);
 
     const now = new Date();
@@ -160,7 +185,7 @@ export default function Queues() {
     };
 
     setMessages((prev) => [...prev, endMessage]);
- 
+
     if (selectedCustomer) {
       setEndedChats((prev) => [
         ...prev,
@@ -228,6 +253,17 @@ export default function Queues() {
 
     setMessages((prev) => [...prev, newMessage]);
     setInputMessage("");
+
+    // Emit via socket
+    if (selectedCustomer) {
+      console.log("Sending to group:", selectedCustomer.chat_group_id); // 👈 log this
+      socket.emit("sendMessage", {
+        chat_body: trimmedMessage,
+        chat_group_id: selectedCustomer.chat_group_id,
+        sys_user_id: 1,
+        client_id: null,
+      });
+    }
   };
 
   const toggleSidebar = () => {
@@ -304,11 +340,53 @@ export default function Queues() {
     };
   }, []);
 
-  const handleChatClick = (customer) => {
+  const handleChatClick = async (customer) => {
     setSelectedCustomer(customer);
     setChatEnded(endedChats.some((chat) => chat.id === customer.id));
-    if (isMobile) {
-      setView("conversation");
+    setMessages([]);
+    setEarliestMessageTime(null);
+    setHasMoreMessages(true);
+
+    if (isMobile) setView("conversation");
+
+    await loadMessages(customer.id); // initial 10
+  };
+
+  const loadMessages = async (clientId, before = null, append = false) => {
+    try {
+      const response = await api.get(`chat/${clientId}`, {
+        params: {
+          before,
+          limit: 10,
+        },
+      });
+
+      const newMessages = response.data.messages.map((msg, index) => ({
+        id: msg.chat_id || index,
+        sender: msg.sys_user_id ? "user" : "system",
+        content: msg.chat_body,
+        timestamp: msg.chat_created_at,
+        displayTime: new Date(msg.chat_created_at).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      }));
+
+      if (append) {
+        setMessages((prev) => [...newMessages, ...prev]);
+      } else {
+        setMessages(newMessages);
+      }
+
+      if (newMessages.length > 0) {
+        setEarliestMessageTime(newMessages[0].timestamp);
+      }
+
+      if (newMessages.length < 10) {
+        setHasMoreMessages(false); // no more to load
+      }
+    } catch (err) {
+      console.error("Error loading messages:", err);
     }
   };
 
@@ -316,6 +394,12 @@ export default function Queues() {
     setView("chatList");
     setSelectedCustomer(null);
   };
+
+  const allCustomers = Object.values(departmentCustomers).flat();
+  const filteredCustomers =
+    selectedDepartment === "All"
+      ? allCustomers
+      : departmentCustomers[selectedDepartment] || [];
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
@@ -368,7 +452,11 @@ export default function Queues() {
                   setTransferDepartment(selected?.value || null);
                   console.log("Selected Department:", selected?.value);
                 }}
-                value={departmentOptions.find((option) => option.value === transferDepartment) || null}
+                value={
+                  departmentOptions.find(
+                    (option) => option.value === transferDepartment
+                  ) || null
+                }
                 classNamePrefix="select"
                 placeholder="Select a department"
                 styles={{
@@ -406,15 +494,22 @@ export default function Queues() {
               </button>
               <button
                 onClick={(e) => {
-                  if (!transferDepartment || transferDepartment === selectedDepartment) {
+                  if (
+                    !transferDepartment ||
+                    transferDepartment === selectedDepartment
+                  ) {
                     e.preventDefault();
                     return;
                   }
                   handleDepartmentSelect();
                 }}
-                disabled={!transferDepartment || transferDepartment === selectedDepartment}
+                disabled={
+                  !transferDepartment ||
+                  transferDepartment === selectedDepartment
+                }
                 className={`px-5 py-2 text-white rounded-lg transition-colors ${
-                  transferDepartment && transferDepartment !== selectedDepartment
+                  transferDepartment &&
+                  transferDepartment !== selectedDepartment
                     ? "bg-[#6237A0] hover:bg-[#4c2b7d]"
                     : "bg-[#6237A0]/50 cursor-not-allowed"
                 }`}
@@ -433,7 +528,8 @@ export default function Queues() {
               Confirm Transfer
             </h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to transfer this customer to {transferDepartment}?
+              Are you sure you want to transfer this customer to{" "}
+              {transferDepartment}?
             </p>
             <div className="flex justify-center gap-20">
               <button
@@ -471,7 +567,11 @@ export default function Queues() {
         <main className="flex-1 bg-white">
           <div className="flex flex-col md:flex-row h-full">
             {/* Queues list */}
-            <div className={`${view === "chatList" ? "block" : "hidden md:block"} w-full md:w-[320px] bg-[#F5F5F5] overflow-y-auto`}>
+            <div
+              className={`${
+                view === "chatList" ? "block" : "hidden md:block"
+              } w-full md:w-[320px] bg-[#F5F5F5] overflow-y-auto`}
+            >
               <div className="relative p-4 flex text-center justify-between rounded-xl py-2 px-4 items-center m-4 shadow-sm bg-[#E6DCF7]">
                 <button
                   className="text-sm text-[#6237A0] w-full text-left focus:outline-none"
@@ -510,76 +610,78 @@ export default function Queues() {
 
               {/* Chat list */}
               <div className="chat-list overflow-auto">
-                {(departmentCustomers[selectedDepartment] || []).map(
-                  (customer) => (
-                    <div
-                      key={customer.id}
-                      onClick={() => handleChatClick(customer)}
-                      className={`flex items-center justify-between px-4 py-3 border-2 ${
-                        selectedCustomer?.id === customer.id
-                          ? "bg-[#E6DCF7]"
-                          : endedChats.some((chat) => chat.id === customer.id)
-                          ? "bg-gray-100 opacity-70"
-                          : "bg-[#f5f5f5]"
-                      } border-[#E6DCF7] rounded-xl hover:bg-[#E6DCF7] cursor-pointer transition m-2 min-h-[100px]`}
-                    >
-                      <div className="flex items-center gap-2 flex-1">
-                        <img
-                          src={customer.profile}
-                          alt="profile"
-                          className="w-15 h-15 rounded-full object-cover"
-                        />
+                {filteredCustomers.map((customer) => (
+                  <div
+                    key={customer.id}
+                    onClick={() => handleChatClick(customer)}
+                    className={`flex items-center justify-between px-4 py-3 border-2 ${
+                      selectedCustomer?.id === customer.id
+                        ? "bg-[#E6DCF7]"
+                        : endedChats.some((chat) => chat.id === customer.id)
+                        ? "bg-gray-100 opacity-70"
+                        : "bg-[#f5f5f5]"
+                    } border-[#E6DCF7] rounded-xl hover:bg-[#E6DCF7] cursor-pointer transition m-2 min-h-[100px]`}
+                  >
+                    <div className="flex items-center gap-2 flex-1">
+                      <img
+                        src={customer.profile}
+                        alt="profile"
+                        className="w-15 h-15 rounded-full object-cover"
+                      />
 
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-end mb-1">
-                            <span className="text-[10px] font-semibold text-purple-600 bg-purple-100 px-2 py-[2px] rounded-full whitespace-nowrap">
-                              {selectedDepartment}
-                            </span>
-                          </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-end mb-1">
+                          <span className="text-[10px] font-semibold text-purple-600 bg-purple-100 px-2 py-[2px] rounded-full whitespace-nowrap">
+                            {customer.department}
+                          </span>
+                        </div>
+                        <p
+                          className={`text-sm font-medium truncate ${
+                            selectedCustomer?.id === customer.id
+                              ? "text-[#6237A0]"
+                              : endedChats.some(
+                                  (chat) => chat.id === customer.id
+                                )
+                              ? "text-gray-500"
+                              : "text-gray-800"
+                          }`}
+                        >
+                          {customer.name}
+                        </p>
+                        <div className="flex justify-between items-center">
                           <p
-                            className={`text-sm font-medium truncate ${
+                            className={`text-xs truncate ${
                               selectedCustomer?.id === customer.id
                                 ? "text-[#6237A0]"
                                 : endedChats.some(
                                     (chat) => chat.id === customer.id
                                   )
-                                ? "text-gray-500"
-                                : "text-gray-800"
+                                ? "text-gray-400"
+                                : "text-gray-500"
                             }`}
                           >
-                            {customer.name}
+                            {customer.number}
                           </p>
-                          <div className="flex justify-between items-center">
-                            <p
-                              className={`text-xs truncate ${
-                                selectedCustomer?.id === customer.id
-                                  ? "text-[#6237A0]"
-                                  : endedChats.some(
-                                      (chat) => chat.id === customer.id       
-                                    )
-                                  ? "text-gray-400"
-                                  : "text-gray-500"
-                              }`}
-                            >
-                              {customer.number}
-                            </p>
-                            <span className="text-[10px] text-gray-400 ml-2 whitespace-nowrap mt-5">
-                              {customer.time}
-                            </span>
-                          </div>
+                          <span className="text-[10px] text-gray-400 ml-2 whitespace-nowrap mt-5">
+                            {customer.time}
+                          </span>
                         </div>
                       </div>
                     </div>
-                  )
-                )}
+                  </div>
+                ))}
               </div>
             </div>
 
             {/* Chat area */}
-            <div className={`${view === "conversation" ? "block" : "hidden md:flex"} flex-1 flex flex-col`}>
+            <div
+              className={`${
+                view === "conversation" ? "block" : "hidden md:flex"
+              } flex-1 flex flex-col`}
+            >
               {selectedCustomer ? (
                 <>
-                {/* Sticky Header */}
+                  {/* Sticky Header */}
                   <div className="sticky top-0 z-10 bg-white border-b border-gray-200 p-4">
                     <div className="flex items-center">
                       {isMobile && (
@@ -647,68 +749,17 @@ export default function Queues() {
                   </div>
 
                   {/* Chat messages */}
-                  <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 pb-2 auto-hide-scrollbar"
-                    style={{ 
-       maxHeight: isMobile ? 'calc(100vh - 200px)' : 'none',
-       height: isMobile ? 'auto' : '100%'
-     }}>
+                  <div
+                    ref={scrollContainerRef}
+                    className="flex-1 overflow-y-auto overflow-x-hidden px-4 pb-2 auto-hide-scrollbar"
+                    style={{
+                      maxHeight: isMobile ? "calc(100vh - 200px)" : "none",
+                      height: isMobile ? "auto" : "100%",
+                    }}
+                  >
                     <div className="flex flex-col justify-end min-h-full gap-4 pt-4">
-                      <>
-                        <div className="text-[10px] text-gray-400 text-center flex items-center gap-2 my-2">
-                          <div className="flex-grow h-px bg-gray-200" />
-                          Today
-                          <div className="flex-grow h-px bg-gray-200" />
-                        </div>
+                      <></>
 
-                        <div className="flex items-end justify-end gap-2">
-                          <div className="text-sm text-gray-800 px-4 py-2 rounded-xl self-start max-w-[320px]">
-                            To connect you with the right support team, please
-                            select one of the following options:
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col items-start gap-1">
-                          <img
-                            src={selectedCustomer.profile}
-                            alt="avatar"
-                            className="w-8 h-8 rounded-full object-cover"
-                          />
-                          <div className="relative bg-[#6237A0] text-white px-4 py-2 ml-7 rounded-br-xl rounded-tr-xl rounded-bl-xl text-sm max-w-[300px]">
-                            {selectedDepartment}
-                            <div className="text-[10px] text-light text-gray-300 text-right mt-1 ml-2">
-                              1:20 PM
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-end justify-end gap-2">
-                          <div className="text-sm text-gray-800 px-4 py-2 rounded-xl self-start max-w-[320px]">
-                            We will be with you in a moment!
-                          </div>
-                        </div>
-
-                        <div className="text-[10px] text-gray-400 text-center flex items-center gap-2 my-2">
-                          <div className="flex-grow h-px bg-gray-200" />
-                          You are now chatting with {selectedDepartment} agent
-                          <div className="flex-grow h-px bg-gray-200" />
-                        </div>
-
-                        <div className="flex flex-col items-end gap-1 self-end">
-                          <img
-                            src="../src/assets/profile/av3.jpg"
-                            alt="agent"
-                            className="w-8 h-8 rounded-full"
-                          /> 
-                          <div className="relative bg-[#f5f5f5] px-3 py-2 rounded-bl-xl rounded-tl-xl rounded-br-xl text-sm max-w-[300px] mr-7 break-words whitespace-pre-wrap">
-                            Hi, I'm Maria. How may I help you?
-                            <div className="text-[10px] text-right text-gray-400 mt-1">
-                              1:20 PM
-                            </div>
-                            
-                          </div>
-                        </div>
-                      </>
-                      
                       {/* Existing messages */}
                       {groupedMessages.map((item, index) => {
                         if (item.type === "date") {
@@ -808,7 +859,7 @@ export default function Queues() {
                             }
                           }}
                           className="flex-1 bg-[#F2F0F0] rounded-xl px-4 py-2 leading-tight focus:outline-none text-gray-800 resize-none overflow-y-auto"
-                          style={{maxHeight: "100px"}}
+                          style={{ maxHeight: "100px" }}
                         />
                         <button
                           className="p-2 text-[#5C2E90] hover:bg-gray-100 rounded-full"
@@ -817,7 +868,7 @@ export default function Queues() {
                           <Send size={20} className="transform rotate-45" />
                         </button>
                       </div>
-                      
+
                       {/* CANNED MESSAGES */}
                       <div className="px-4 pt-3">
                         <div className="grid grid-cols-1 gap-2 pb-3 max-h-[200px] overflow-y-auto">
@@ -840,10 +891,11 @@ export default function Queues() {
                     <div className="mt-4 flex items-center gap-2 border-t border-gray-200 pt-4 px-4">
                       <button
                         className={`p-2 mb-4 text-[#5C2E90] hover:bg-gray-100 rounded-full
-                           ${chatEnded
-                            ? "text-gray-400 cursor-not-allowed"
-                            : "text-[#5C2E90] hover:bg-gray-100"
-                          }`}
+                           ${
+                             chatEnded
+                               ? "text-gray-400 cursor-not-allowed"
+                               : "text-[#5C2E90] hover:bg-gray-100"
+                           }`}
                         onClick={() => setShowCannedMessages(true)}
                         disabled={chatEnded}
                       >
@@ -862,18 +914,20 @@ export default function Queues() {
                           }
                         }}
                         className={`flex-1 bg-[#F2F0F0] rounded-xl px-4 py-2 mb-4 leading-tight focus:outline-none text-gray-800 resize-none overflow-y-auto
-                        ${chatEnded
-                          ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                          : "bg-[#F2F0F0] text-gray-800"
+                        ${
+                          chatEnded
+                            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                            : "bg-[#F2F0F0] text-gray-800"
                         }`}
                         style={{ maxHeight: "100px" }}
                         disabled={chatEnded}
                       />
                       <button
                         className={`p-2 mb-4 text-[#5C2E90] hover:bg-gray-100 rounded-full
-                          ${chatEnded
-                            ? "text-gray-400 cursor-not-allowed"
-                            : "text-[#5C2E90] hover:bg-gray-100"
+                          ${
+                            chatEnded
+                              ? "text-gray-400 cursor-not-allowed"
+                              : "text-[#5C2E90] hover:bg-gray-100"
                           }`}
                         onClick={sendMessage}
                         disabled={chatEnded}

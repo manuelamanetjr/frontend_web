@@ -11,50 +11,57 @@ export default function ChangeRoles() {
   const [searchQuery, setSearchQuery] = useState("");
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
-
   const toggleSidebar = () => setMobileSidebarOpen((prev) => !prev);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetchUsersAndRoles();
   }, []);
 
   const fetchUsersAndRoles = async () => {
+    setLoading(true);
+    setError("");
     try {
       // Fetch users and roles in parallel
       const [usersResponse, rolesResponse] = await Promise.all([
         api.get("change-role"),
-        api.get("change-role/roles")
+        api.get("change-role/roles"),
       ]);
-      
+
       setUsers(usersResponse.data);
       setRoles(rolesResponse.data);
     } catch (err) {
-      console.error("Failed to fetch data", err);
+      console.error("Failed to fetch Accounts", err);
+      setError("Failed to fetch Accounts.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const updateUser = async (userId, updatedFields) => {
     try {
-      await api.put(`/api/users/${userId}`, updatedFields);
+      await api.put(`change-role/${userId}`, updatedFields);
       // Update local state to avoid full refresh
-      setUsers(users.map(user => 
-        user.sys_user_id === userId ? { ...user, ...updatedFields } : user
-      ));
+      setUsers(
+        users.map((user) =>
+          user.sys_user_id === userId ? { ...user, ...updatedFields } : user
+        )
+      );
     } catch (err) {
       console.error("Failed to update user", err);
-      alert("Failed to update user. Please try again.");
     }
   };
 
   const handleToggleActive = (user) => {
-    updateUser(user.sys_user_id, { 
-      sys_user_is_active: !user.sys_user_is_active 
+    updateUser(user.sys_user_id, {
+      sys_user_is_active: !user.sys_user_is_active,
     });
   };
 
   const handleChangeRole = (user, newRoleId) => {
-    updateUser(user.sys_user_id, { 
-      role_id: parseInt(newRoleId) 
+    updateUser(user.sys_user_id, {
+      role_id: parseInt(newRoleId),
     });
   };
 
@@ -83,7 +90,10 @@ export default function ChangeRoles() {
             {/* Search */}
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center bg-gray-100 px-3 py-2 rounded-md w-1/3 relative">
-                <Search size={18} className="text-gray-500 mr-2 flex-shrink-0" />
+                <Search
+                  size={18}
+                  className="text-gray-500 mr-2 flex-shrink-0"
+                />
                 <input
                   type="text"
                   placeholder="Search users..."
@@ -113,7 +123,10 @@ export default function ChangeRoles() {
                 </thead>
                 <tbody>
                   {filteredUsers.map((user) => (
-                    <tr key={user.sys_user_id} className="transition-colors duration-200 hover:bg-gray-50">
+                    <tr
+                      key={user.sys_user_id}
+                      className="transition-colors duration-200 hover:bg-gray-50"
+                    >
                       <td className="py-2 px-3">{user.sys_user_email}</td>
                       <td className="py-2 px-3 text-center">
                         <label className="inline-flex relative items-center cursor-pointer">
@@ -130,7 +143,9 @@ export default function ChangeRoles() {
                         <select
                           className="px-2 py-1 text-sm text-gray-800 rounded-md border border-transparent focus:outline-none focus:ring-0 hover:cursor-pointer"
                           value={user.role_id || ""}
-                          onChange={(e) => handleChangeRole(user, e.target.value)}
+                          onChange={(e) =>
+                            handleChangeRole(user, e.target.value)
+                          }
                         >
                           {roles.map((role) => (
                             <option key={role.role_id} value={role.role_id}>
@@ -143,6 +158,17 @@ export default function ChangeRoles() {
                   ))}
                 </tbody>
               </table>
+
+              {loading && (
+                <p className="pt-15 text-center text-gray-600 py-4">
+                  Loading...
+                </p>
+              )}
+              {error && (
+                <p className="pt-15 text-center text-red-600 mb-2 font-semibold">
+                  {error}
+                </p>
+              )}
             </div>
           </div>
         </main>

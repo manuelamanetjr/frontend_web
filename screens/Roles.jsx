@@ -3,109 +3,31 @@ import { Edit3, Search, X } from "react-feather";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 import "../src/App.css";
-
-const initialRoles = [
-  {
-    name: "Admin",
-    active: true,
-    permissions: [
-      "Can view Queues",
-      "Can view Chats",
-      "Can view Macros",
-      "Can send Macros",
-      "Can view Department",
-      "Can Edit Department",
-      "Can Assign Department",
-      "Can Add Department",
-      "Can Manage Profile",
-      "Can View Auto-Replies",
-      "Can Edit Auto-Replies",
-      "Can Add Auto-Replies",
-      "Can view Admin",
-      "Can Edit Admin Accounts",
-      "Can Add Admin Accounts",
-      "Can view Roles",
-      "Can Edit Roles",
-      "Can Assign Roles",
-      "Can Add Roles",
-      "Can View Manage Agents",
-    ],
-  },
-  {
-    name: "Client",
-    active: true,
-    permissions: ["Can view Queues","Can End Chat", "Can Reply","Can view Chats", "Can View Auto-Replies"],
-  },
-  {
-    name: "Agent",
-    active: true,
-    permissions: [
-      "Can view Queues",
-      "Can Reply",
-      "Can view Chats",
-      "Can End Chat",
-      "Can Transfer Department",
-      "Can view Macros",
-      "Can send Macros",
-      "Can View Auto-Replies",
-      "Can Manage Profile",
-    ],
-  },
-  {
-    name: "Supervisor",
-    active: true,
-    permissions: [
-      "Can view Queues",
-      "Can view Chats",
-      "Can End Chat",
-      "Can Transfer Department",
-      "Can view Macros",
-      "Can send Macros",
-      "Can view Department",
-      "Can Edit Department",
-      "Can Assign Department",
-      "Can View Auto-Replies",
-      "Can Edit Auto-Replies",
-      "Can Manage Profile",
-      "Can View Manage Agents",
-    ],
-  },
-];
-
-const permissions = [
-  "Can view Queues",
-  "Can Reply",
-  "Can view Chats",
-  "Can End Chat",
-  "Can Transfer Department",
-  "Can view Macros",
-  "Can send Macros",
-  "Can view Department",
-  "Can Edit Department",
-  "Can Assign Department",
-  "Can Add Department",
-  "Can Manage Profile",
-  "Can View Auto-Replies",
-  "Can Edit Auto-Replies",
-  "Can Add Auto-Replies",
-  "Can view Admin",
-  "Can Edit Admin Accounts",
-  "Can Add Admin Accounts",
-  "Can view Roles",
-  "Can Edit Roles",
-  "Can Assign Roles",
-  "Can Add Roles",
-  "Can View Manage Agents",
-];
+import api from "../src/api";
 
 export default function ManageRoles() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [roles, setRoles] = useState(initialRoles);
+  const [roles, setRoles] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentEditIndex, setCurrentEditIndex] = useState(null);
   const [editForm, setEditForm] = useState({ name: "" });
+
+  const permissions = [
+    "Can view Chats",
+    "Can Reply",
+    "Can Manage Profile",
+    "Can send Macros",
+    "Can End Chat",
+    "Can Transfer Department",
+    "Can Edit Department",
+    "Can Assign Department",
+    "Can Edit Roles",
+    "Can Assign Roles",
+    "Can Add Admin Accounts",
+    "Can Edit Auto-Replies",
+  ];
 
   const filteredRoles = roles.filter((role) =>
     role.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -121,47 +43,87 @@ export default function ManageRoles() {
     setIsModalOpen(true);
   };
 
-  const handleSaveRole = () => {
-    if (currentEditIndex !== null) {
+  const handleSaveRole = async () => {
+    const payload = {
+      name: editForm.name,
+      permissions: editForm.permissions || [],
+      created_by: 1,
+      updated_by: 1,
+      active: true,
+    };
+
+    try {
+      if (currentEditIndex !== null) {
+        const roleId = roles[currentEditIndex].role_id;
+        await api.put(`/roles/${roleId}`, {
+          ...payload,
+          active: roles[currentEditIndex].active,
+        });
+      } else {
+        await api.post("/roles", payload);
+      }
+
+      setIsModalOpen(false);
+      const updated = await api.get("/roles");
+      setRoles(updated.data);
+    } catch (err) {
+      console.error("Error saving role:", err);
+    }
+  };
+
+  const handleToggleActive = async (index) => {
+    const updatedRole = {
+      ...roles[index],
+      active: !roles[index].active,
+      updated_by: 1,
+    };
+
+    try {
+      await api.put(`/roles/${roles[index].role_id}`, updatedRole);
       setRoles((prev) =>
         prev.map((role, i) =>
-          i === currentEditIndex ? { ...role, name: editForm.name } : role
+          i === index ? { ...role, active: !role.active } : role
         )
       );
-    } else {
-      setRoles((prev) => [
-        ...prev,
-        {
-          name: editForm.name,
-          active: true,
-          permissions: [],
-        },
-      ]);
+    } catch (err) {
+      console.error("Failed to update active status:", err);
     }
-    setIsModalOpen(false);
   };
 
-  const handleToggleActive = (index) => {
-    setRoles((prev) =>
-      prev.map((role, i) =>
-        i === index ? { ...role, active: !role.active } : role
-      )
-    );
+  const handleTogglePermission = async (roleIndex, permission) => {
+    const role = roles[roleIndex];
+    const updatedPermissions = role.permissions.includes(permission)
+      ? role.permissions.filter((p) => p !== permission)
+      : [...role.permissions, permission];
+
+    try {
+      await api.put(`/roles/${role.role_id}`, {
+        ...role,
+        permissions: updatedPermissions,
+        updated_by: 1,
+      });
+
+      setRoles((prev) =>
+        prev.map((r, i) =>
+          i === roleIndex ? { ...r, permissions: updatedPermissions } : r
+        )
+      );
+    } catch (err) {
+      console.error("Failed to update permission:", err);
+    }
   };
 
-  const handleTogglePermission = (roleIndex, permission) => {
-    setRoles((prev) =>
-      prev.map((role, i) => {
-        if (i !== roleIndex) return role;
-
-        const updatedPermissions = role.permissions.includes(permission)
-          ? role.permissions.filter((p) => p !== permission)
-          : [...role.permissions, permission];
-
-        return { ...role, permissions: updatedPermissions };
-      })
-    );
-  };
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const res = await api.get("/roles");
+        setRoles(res.data);
+      } catch (err) {
+        console.error("Failed to fetch roles:", err);
+      }
+    };
+    fetchRoles();
+  }, []);
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
@@ -203,7 +165,6 @@ export default function ManageRoles() {
                     <th className="sticky left-48 z-30 bg-white py-2 px-3 text-center w-24 border-b border-gray-500">
                       Active Status
                     </th>
-
                     {permissions.map((perm, i) => (
                       <th
                         key={i}
