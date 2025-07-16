@@ -35,13 +35,15 @@ export default function ManageRoles() {
 
   const toggleSidebar = () => setMobileSidebarOpen((prev) => !prev);
 
-  const handleOpenEditModal = (index = null) => {
-    setCurrentEditIndex(index);
-    setEditForm({
-      name: index !== null ? roles[index].name : "",
-    });
-    setIsModalOpen(true);
-  };
+const handleOpenEditModal = (index = null) => {
+  setCurrentEditIndex(index);
+  setEditForm({
+    name: index !== null ? roles[index].name : "",
+    permissions: index !== null ? roles[index].permissions : [],
+  });
+  setIsModalOpen(true);
+};
+
 
   const handleSaveRole = async () => {
     const payload = {
