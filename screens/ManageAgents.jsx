@@ -3,6 +3,7 @@ import { Edit3, Search, X, Eye, EyeOff, Filter } from "react-feather";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 import "../src/App.css";
+import api from "../src/api";
 
 const initialAgents = [
   { username: "alicego", password: "password123", active: true, departments: ["CSR", "Billing"] },
@@ -24,18 +25,40 @@ export default function ManageAgents() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [agents, setAgents] = useState(initialAgents);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [currentEditIndex, setCurrentEditIndex] = useState(null);
   const [editForm, setEditForm] = useState({ username: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
+  const [agents, setAgents] = useState([]);
+  const [allDepartments, setAllDepartments] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // New states for filter dropdown and selected filters
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
   const [selectedDepartmentsFilter, setSelectedDepartmentsFilter] = useState([]);
 
   const filterRef = useRef(null);
+
+  useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const [agentsRes, departmentsRes] = await Promise.all([
+        api.get(`/manage-agents/agents`),
+        api.get(`/manage-agents/departments`)
+      ]);
+
+      setAgents(agentsRes.data);
+      setAllDepartments(departmentsRes.data);
+    } catch (error) {
+      console.error("Error fetching agents or departments:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchData();
+}, []);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -85,42 +108,77 @@ const filteredAgents = agents.filter((agent) => {
     setIsModalOpen(false);
   };
 
-  const confirmSaveAgent = () => {
+const confirmSaveAgent = async () => {
+  try {
     if (currentEditIndex !== null) {
+      const agent = agents[currentEditIndex];
+      await api.put(`/manage-agents/agents/${agent.id}`, {
+        username: editForm.username,
+        password: editForm.password,
+        active: agent.active,
+        departments: agent.departments
+      });
+
       setAgents((prev) =>
-        prev.map((agent, i) =>
-          i === currentEditIndex ? { ...agent, username: editForm.username, password: editForm.password } : agent
+        prev.map((a, i) =>
+          i === currentEditIndex ? { ...a, username: editForm.username, password: editForm.password } : a
         )
       );
     } else {
-      setAgents((prev) => [
-        ...prev,
-        { username: editForm.username, password: editForm.password, active: true, departments: [] },
-      ]);
+      // ADD AGENT (optional)
     }
+  } catch (error) {
+    console.error("Error saving agent:", error);
+  } finally {
     setIsModalOpen(false);
     setIsConfirmModalOpen(false);
-  };
+  }
+};
 
-  const handleToggleActive = (index) => {
+
+const handleToggleActive = async (index) => {
+  const agent = agents[index];
+  const updatedAgent = { ...agent, active: !agent.active };
+
+  try {
+    await api.put(`/manage-agents/agents/${agent.id}`, {
+      username: agent.username,
+      password: agent.password,
+      active: updatedAgent.active,
+      departments: agent.departments
+    });
+
     setAgents((prev) =>
-      prev.map((agent, i) =>
-        i === index ? { ...agent, active: !agent.active } : agent
+      prev.map((a, i) => (i === index ? updatedAgent : a))
+    );
+  } catch (error) {
+    console.error("Error updating active status:", error);
+  }
+};
+
+const handleToggleDepartment = async (agentIndex, dept) => {
+  const agent = agents[agentIndex];
+  const updatedDepartments = agent.departments.includes(dept)
+    ? agent.departments.filter((d) => d !== dept)
+    : [...agent.departments, dept];
+
+  try {
+    await api.put(`/manage-agents/agents/${agent.id}`, {
+      username: agent.username,
+      password: agent.password,
+      active: agent.active,
+      departments: updatedDepartments
+    });
+
+    setAgents((prev) =>
+      prev.map((a, i) =>
+        i === agentIndex ? { ...a, departments: updatedDepartments } : a
       )
     );
-  };
-
-  const handleToggleDepartment = (agentIndex, dept) => {
-    setAgents((prev) =>
-      prev.map((agent, i) => {
-        if (i !== agentIndex) return agent;
-        const updatedDepartments = agent.departments.includes(dept)
-          ? agent.departments.filter((d) => d !== dept)
-          : [...agent.departments, dept];
-        return { ...agent, departments: updatedDepartments };
-      })
-    );
-  };
+  } catch (error) {
+    console.error("Error updating departments:", error);
+  }
+};
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
