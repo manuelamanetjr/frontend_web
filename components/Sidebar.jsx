@@ -124,8 +124,9 @@ const DropdownItem = ({ icon: Icon, items, id, isOpen, toggleDropdown }) => {
 const Sidebar = ({ isMobile, isOpen, toggleDropdown, openDropdown }) => {
   const location = useLocation();
 
-  const isActivePath = (to, extraPaths = []) =>
-    location.pathname === to || extraPaths.includes(location.pathname);
+const isActivePath = (to, extraPaths = []) =>
+  location.pathname.toLowerCase() === to.toLowerCase() ||
+  extraPaths.map((p) => p.toLowerCase()).includes(location.pathname.toLowerCase());
 
   if (isMobile && !isOpen) return null;
 

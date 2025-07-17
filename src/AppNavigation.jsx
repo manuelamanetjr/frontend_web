@@ -1,5 +1,11 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import api from "../src/api";
 
 import Login from "../screens/Login.jsx";
 import Queues from "../screens/Queues.jsx";
@@ -16,25 +22,192 @@ import Roles from "../screens/Roles.jsx";
 import MacrosAgents from "../screens/MacrosAgents.jsx";
 import MacrosClients from "../screens/MacrosClients.jsx";
 
+/**
+ * ProtectedRoute: Redirect to login if not authenticated
+ */
+function ProtectedRoute({ children }) {
+  const [state, setState] = React.useState({ loading: true, authed: false });
+
+  React.useEffect(() => {
+    let isMounted = true;
+    api
+      .get("/auth/me")
+      .then(() => {
+        if (isMounted) setState({ loading: false, authed: true });
+      })
+      .catch(() => {
+        if (isMounted) setState({ loading: false, authed: false });
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (state.loading) {
+    return <div style={{ padding: "2rem", textAlign: "center" }}>Loading…</div>;
+  }
+
+  if (!state.authed) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+}
+
+/**
+ * PublicRoute: Redirect authenticated users away from Login to /Queues
+ */
+function PublicRoute({ children }) {
+  const [state, setState] = React.useState({ loading: true, authed: false });
+
+  React.useEffect(() => {
+    let isMounted = true;
+    api
+      .get("/auth/me")
+      .then(() => {
+        if (isMounted) setState({ loading: false, authed: true });
+      })
+      .catch(() => {
+        if (isMounted) setState({ loading: false, authed: false });
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (state.loading) {
+    return <div style={{ padding: "2rem", textAlign: "center" }}>Loading…</div>;
+  }
+
+  if (state.authed) {
+    return <Navigate to="/Queues" replace />;
+  }
+
+  return children;
+}
+
 function AppNavigation() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/Queues" element={<Queues />} />
-        <Route path="/chats" element={<Chats />} />
-        <Route path="/department" element={<Department />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/manage-agents" element={<ManageAgents />} />
-        <Route path="/change-role" element={<ChangeRole />} />
-        <Route path="/auto-replies" element={<AutoReplies />} />
-        <Route path="/agents" element={<Agents />} />
-        <Route path="/clients" element={<Clients />} />
-        <Route path="/macros-agents" element={<MacrosAgents />} />
-        <Route path="/macros-clients" element={<MacrosClients />} />
-        <Route path="/manage-admin" element={<ManageAdmin />} />
-        <Route path="/roles" element={<Roles />} />
-        
+        {/* Public: Login, redirect if authed */}
+        <Route
+          path="/"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
+
+        {/* Protected */}
+        <Route
+          path="/Queues"
+          element={
+            <ProtectedRoute>
+              <Queues />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/chats"
+          element={
+            <ProtectedRoute>
+              <Chats />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/department"
+          element={
+            <ProtectedRoute>
+              <Department />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/manage-agents"
+          element={
+            <ProtectedRoute>
+              <ManageAgents />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/change-role"
+          element={
+            <ProtectedRoute>
+              <ChangeRole />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/auto-replies"
+          element={
+            <ProtectedRoute>
+              <AutoReplies />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/agents"
+          element={
+            <ProtectedRoute>
+              <Agents />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/clients"
+          element={
+            <ProtectedRoute>
+              <Clients />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/macros-agents"
+          element={
+            <ProtectedRoute>
+              <MacrosAgents />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/macros-clients"
+          element={
+            <ProtectedRoute>
+              <MacrosClients />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/manage-admin"
+          element={
+            <ProtectedRoute>
+              <ManageAdmin />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/roles"
+          element={
+            <ProtectedRoute>
+              <Roles />
+            </ProtectedRoute>
+          }
+        />
+
+       
+        <Route path="/queues" element={<Navigate to="/queues" replace />} />
       </Routes>
     </Router>
   );

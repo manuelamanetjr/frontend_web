@@ -1,39 +1,31 @@
+// screens/Login.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "react-feather";
-import api from "../src/api"; 
+import api from "../src/api";
 
 export default function Login() {
   const navigate = useNavigate();
 
-  const [showPassword, setShowPassword] = useState(false); // Correctly imported and used
-  const [password, setPassword] = useState(""); // Added state for password
+  const [showPassword, setShowPassword] = useState(false);
+  const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
-   const handleLogin = async() => {
-    try{
-      const response = await api.post("/profile/login", {
-        sys_user_email: email,
-        sys_user_password: password,
-      });
-
-      if (response.status === 200) {
-        console.log(response.data.message);
-        // Login successful, redirect to queues
-        navigate("/queues");
-      }
-    }
-    catch (error) {
-      console.error("Login error:", error);
-      setErrorMessage("Invalid email or password");
+  const handleLogin = async () => {
+    try {
+      await api.post(
+        "/auth/login",
+        { email, password },
+        { withCredentials: true }
+      );
+      navigate("/queues");
+    } catch {
+      setErrorMessage("Invalid credentials");
     }
   };
-
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#FFFfFf] p-4">
@@ -43,34 +35,36 @@ export default function Login() {
           <div className="w-full space-y-6 max-w-md">
             <div className="space-y-2">
               <h1 className="text-4xl font-bold text-black-100">
-                Welcome back
+                {" "}
+                Welcome back{" "}
               </h1>
               <p className="text-gray-500 text-sm text-black-50">
-                Please enter your details
+                {" "}
+                Please enter your details{" "}
               </p>
             </div>
-
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-black">
-                  email
+                  {" "}
+                  email{" "}
                 </label>
                 <input
                   id="email"
                   type="text"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)} //Capture email input
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
                   className="w-full border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
-
               <div className="space-y-2">
                 <label
                   htmlFor="password"
                   className="block font-medium text-sm text-black"
                 >
-                  Password
+                  {" "}
+                  Password{" "}
                 </label>
                 <div className="relative">
                   <input
@@ -98,13 +92,10 @@ export default function Login() {
                       />
                     ))}
                 </div>
-                <div className="text-right"></div>
               </div>
-
               {errorMessage && (
                 <p className="text-red-500 text-sm mt-2">{errorMessage}</p>
               )}
-
               <button
                 className="w-full bg-[#6237A0] hover:bg-[#5C2E90] text-white font-semibold py-2 px-4 rounded-md transition cursor-pointer"
                 onClick={handleLogin}
@@ -114,7 +105,6 @@ export default function Login() {
             </div>
           </div>
         </div>
-
         {/* Right side - Logo (appears on top on mobile) */}
         <div className="w-full md:w-3/5 bg-gray-50 flex items-center justify-center p-10 pt-28">
           <div className="flex flex-col items-center md:flex-row">
@@ -124,7 +114,8 @@ export default function Login() {
               className="w-24 h-24 md:w-32 md:h-32 mb-4 md:mb-0 md:mr-4"
             />
             <span className="text-5xl sm:text-6xl font-medium text-[#6237A0] font-baloo text-center md:text-left">
-              servana
+              {" "}
+              servana{" "}
             </span>
           </div>
         </div>

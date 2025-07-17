@@ -4,6 +4,7 @@ import Sidebar from "../components/Sidebar";
 import { FiLogOut } from "react-icons/fi";
 import { Upload } from "react-feather";
 import { useNavigate } from "react-router-dom";
+import api from "../src/api";
 
 export default function Profile() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -53,6 +54,17 @@ export default function Profile() {
   const handleSave = () => {
     console.log("Profile Data Saved:", profileData);
     setIsEditModalOpen(false);
+  };
+
+
+      // ✅ Backend Logout API
+  const handleLogout = async () => {
+    try {
+      await api.post("/auth/logout", {}, { withCredentials: true }); // ✅ Backend clears session
+      navigate("/"); // Redirect to login page
+    } catch (error) {
+      console.error("Logout failed:", error.response?.data || error.message);
+    }
   };
 
   return (
@@ -170,7 +182,7 @@ export default function Profile() {
 <div className="mt-10">
   {/* Desktop Logout - hidden on mobile */}
   <button
-    onClick={() => navigate("/")}
+    onClick={handleLogout}
     className="hidden sm:flex items-center text-purple-600 hover:underline text-sm"
   >
     <FiLogOut className="w-4 h-4 mr-1" />
@@ -181,7 +193,7 @@ export default function Profile() {
 {/* Mobile Logout FAB - hidden on desktop */}
 <div className="sm:hidden fixed bottom-4 right-4">
   <button
-    onClick={() => navigate("/")}
+     onClick={handleLogout}
     className="p-3 bg-purple-600 text-white rounded-full shadow-lg hover:bg-purple-700 transition"
   >
     <FiLogOut className="w-5 h-5" />
