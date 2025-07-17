@@ -140,19 +140,28 @@ export default function ChangeRoles() {
                         </label>
                       </td>
                       <td className="py-2 px-3 text-center">
-                        <select
-                          className="px-2 py-1 text-sm text-gray-800 rounded-md border border-transparent focus:outline-none focus:ring-0 hover:cursor-pointer"
-                          value={user.role_id || ""}
-                          onChange={(e) =>
-                            handleChangeRole(user, e.target.value)
-                          }
-                        >
-                          {roles.map((role) => (
-                            <option key={role.role_id} value={role.role_id}>
-                              {role.role_name}
-                            </option>
-                          ))}
-                        </select>
+<select
+  value={user.role_id ?? ""}
+  onChange={(e) =>
+    handleChangeRole(user, e.target.value ? parseInt(e.target.value) : null)
+  }
+  className="rounded-md px-2 py-1 text-sm text-gray-800 border-none text-center"
+>
+  {roles.map((role) => (
+    <option
+      key={role.role_id}
+      value={role.role_id}
+      disabled={
+        !role.role_is_active && role.role_id !== user.role_id
+      }
+      className={!role.role_is_active ? "text-red-400" : ""}
+    >
+      {role.role_name}
+      {!role.role_is_active && " (Inactive)"}
+    </option>
+  ))}
+</select>
+
                       </td>
                     </tr>
                   ))}

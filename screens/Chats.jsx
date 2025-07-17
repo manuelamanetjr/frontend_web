@@ -624,7 +624,8 @@ export default function Queues() {
                   >
                     <div className="flex items-center gap-2 flex-1">
                       <img
-                        src={customer.profile}
+                        src='profile_picture/DefaultProfile.jpg'
+                        // src={customer.profile}
                         alt="profile"
                         className="w-15 h-15 rounded-full object-cover"
                       />
@@ -705,7 +706,8 @@ export default function Queues() {
                       )}
                       <div className="flex items-center gap-4">
                         <img
-                          src={selectedCustomer.profile}
+                          src='profile_picture/DefaultProfile.jpg'
+                          // src={selectedCustomer.profile}
                           alt="profile"
                           className="w-10 h-10 rounded-full object-cover"
                         />
@@ -787,7 +789,7 @@ export default function Queues() {
                                 <img
                                   src={
                                     item.sender === "system"
-                                      ? "../src/assets/profile/av3.jpg"
+                                      ? "profile_picture/DefaultProfile.jpg"
                                       : selectedCustomer.profile
                                   }
                                   alt={

@@ -3,39 +3,47 @@ import { Edit3, Search, X, Eye, EyeOff, Filter } from "react-feather";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 import "../src/App.css";
-
-const initialAgents = [
-  { username: "alicego", password: "password123", active: true, departments: ["CSR", "Billing"] },
-  { username: "bobmarlie", password: "bobpass", active: true, departments: ["Sales"] },
-  { username: "charliechaplin", password: "charlie123", active: false, departments: ["Technical Support", "IT"] },
-  { username: "danabells", password: "dana456", active: true, departments: ["Customer Success", "Onboarding"] },
-  { username: "evanovich", password: "evan789", active: true, departments: ["Product", "Quality Assurance"] },
-  { username: "fionashrek", password: "fiona999", active: false, departments: ["Legal", "Finance"] },
-  { username: "georgewashington", password: "gkim321", active: true, departments: ["Retention", "Marketing"] },
-  { username: "hannahmontana", password: "hannahpass", active: true, departments: ["Human Resources", "Billing"] },
-];
-
-const allDepartments = [
-  "CSR", "Billing", "Sales", "Technical Support", "Customer Success", "Retention", "Onboarding",
-  "Product", "Quality Assurance", "IT", "Logistics", "Marketing", "Legal", "Finance", "Human Resources"
-];
+import api from "../src/api";
 
 export default function ManageAgents() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [agents, setAgents] = useState(initialAgents);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [currentEditIndex, setCurrentEditIndex] = useState(null);
-  const [editForm, setEditForm] = useState({ username: "", password: "" });
+  const [editForm, setEditForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
+  const [agents, setAgents] = useState([]);
+  const [allDepartments, setAllDepartments] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // New states for filter dropdown and selected filters
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
-  const [selectedDepartmentsFilter, setSelectedDepartmentsFilter] = useState([]);
+  const [selectedDepartmentsFilter, setSelectedDepartmentsFilter] = useState(
+    []
+  );
 
   const filterRef = useRef(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [agentsRes, departmentsRes] = await Promise.all([
+          api.get(`/manage-agents/agents`),
+          api.get(`/manage-agents/departments`),
+        ]);
+
+        setAgents(agentsRes.data);
+        setAllDepartments(departmentsRes.data);
+      } catch (error) {
+        console.error("Error fetching agents or departments:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -51,21 +59,21 @@ export default function ManageAgents() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [filterDropdownOpen]);
 
-const filteredAgents = agents.filter((agent) => {
-  const matchesSearch = agent.username.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredAgents = agents.filter((agent) => {
+    const matchesSearch = agent.email
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
 
-  // If no departments are selected, skip department filter
-  if (selectedDepartmentsFilter.length === 0) {
-    return matchesSearch;
-  }
+    if (selectedDepartmentsFilter.length === 0) {
+      return matchesSearch;
+    }
 
-  // Agent must be in all selected departments (AND logic)
-  const hasAllDepartments = selectedDepartmentsFilter.every((dept) =>
-    agent.departments.includes(dept)
-  );
+    const hasAllDepartments = selectedDepartmentsFilter.every((dept) =>
+      agent.departments.includes(dept)
+    );
 
-  return matchesSearch && hasAllDepartments;
-});
+    return matchesSearch && hasAllDepartments;
+  });
 
   const toggleSidebar = () => setMobileSidebarOpen((prev) => !prev);
 
@@ -73,8 +81,8 @@ const filteredAgents = agents.filter((agent) => {
     setCurrentEditIndex(index);
     setEditForm(
       index !== null
-        ? { username: agents[index].username, password: agents[index].password }
-        : { username: "", password: "" }
+        ? { email: agents[index].email, password: "" }
+        : { email: "", password: "" }
     );
     setShowPassword(false);
     setIsModalOpen(true);
@@ -85,41 +93,71 @@ const filteredAgents = agents.filter((agent) => {
     setIsModalOpen(false);
   };
 
-  const confirmSaveAgent = () => {
-    if (currentEditIndex !== null) {
+  const confirmSaveAgent = async () => {
+    try {
+      if (currentEditIndex !== null) {
+        const agent = agents[currentEditIndex];
+        await api.put(`/manage-agents/agents/${agent.id}`, {
+          email: editForm.email,
+          active: agent.active,
+          departments: agent.departments,
+          password: editForm.password || undefined,
+        });
+
+        setAgents((prev) =>
+          prev.map((a, i) =>
+            i === currentEditIndex ? { ...a, email: editForm.email } : a
+          )
+        );
+      } else {
+        // ADD AGENT (future)
+      }
+    } catch (error) {
+      console.error("Error saving agent:", error);
+    } finally {
+      setIsModalOpen(false);
+      setIsConfirmModalOpen(false);
+    }
+  };
+
+  const handleToggleActive = async (index) => {
+    const agent = agents[index];
+    const updatedAgent = { ...agent, active: !agent.active };
+
+    try {
+      await api.put(`/manage-agents/agents/${agent.id}`, {
+        email: agent.email,
+        active: updatedAgent.active,
+        departments: agent.departments,
+      });
+
+      setAgents((prev) => prev.map((a, i) => (i === index ? updatedAgent : a)));
+    } catch (error) {
+      console.error("Error updating active status:", error);
+    }
+  };
+
+  const handleToggleDepartment = async (agentIndex, dept) => {
+    const agent = agents[agentIndex];
+    const updatedDepartments = agent.departments.includes(dept)
+      ? agent.departments.filter((d) => d !== dept)
+      : [...agent.departments, dept];
+
+    try {
+      await api.put(`/manage-agents/agents/${agent.id}`, {
+        email: agent.email,
+        active: agent.active,
+        departments: updatedDepartments,
+      });
+
       setAgents((prev) =>
-        prev.map((agent, i) =>
-          i === currentEditIndex ? { ...agent, username: editForm.username, password: editForm.password } : agent
+        prev.map((a, i) =>
+          i === agentIndex ? { ...a, departments: updatedDepartments } : a
         )
       );
-    } else {
-      setAgents((prev) => [
-        ...prev,
-        { username: editForm.username, password: editForm.password, active: true, departments: [] },
-      ]);
+    } catch (error) {
+      console.error("Error updating departments:", error);
     }
-    setIsModalOpen(false);
-    setIsConfirmModalOpen(false);
-  };
-
-  const handleToggleActive = (index) => {
-    setAgents((prev) =>
-      prev.map((agent, i) =>
-        i === index ? { ...agent, active: !agent.active } : agent
-      )
-    );
-  };
-
-  const handleToggleDepartment = (agentIndex, dept) => {
-    setAgents((prev) =>
-      prev.map((agent, i) => {
-        if (i !== agentIndex) return agent;
-        const updatedDepartments = agent.departments.includes(dept)
-          ? agent.departments.filter((d) => d !== dept)
-          : [...agent.departments, dept];
-        return { ...agent, departments: updatedDepartments };
-      })
-    );
   };
 
   return (
@@ -156,7 +194,10 @@ const filteredAgents = agents.filter((agent) => {
                   >
                     <div className="p-2">
                       {allDepartments.map((dept) => (
-                        <label key={dept} className="flex items-center gap-2 mb-1 cursor-pointer">
+                        <label
+                          key={dept}
+                          className="flex items-center gap-2 mb-1 cursor-pointer"
+                        >
                           <input
                             type="checkbox"
                             checked={selectedDepartmentsFilter.includes(dept)}
@@ -199,11 +240,12 @@ const filteredAgents = agents.filter((agent) => {
                   <thead className="text-gray-500 sticky top-0 bg-white z-20 shadow-sm">
                     <tr>
                       <th className="sticky top-0 left-0 z-30 bg-white py-2 px-3 w-48 border-b border-gray-500">
-                        Username
+                        Email
                       </th>
-                      <th className="sticky left-48 z-30 bg-white py-2 px-3 text-center w-24 border-b border-gray-500">
+                      <th className="sticky left-[250px] z-30 bg-white py-2 px-3 text-center w-32 border-b border-gray-500">
                         Active Status
                       </th>
+
                       {allDepartments.map((dept, i) => (
                         <th
                           key={i}
@@ -217,32 +259,34 @@ const filteredAgents = agents.filter((agent) => {
                   <tbody className="divide-y divide-gray-200">
                     {filteredAgents.map((agent, idx) => (
                       <tr key={idx}>
-                        <td className="sticky left-0 bg-white py-3 px-3 z-10 w-[192px] min-w-[192px] max-w-[192px]">
-                          <div className="relative w-full">
-                            <span className="break-words whitespace-normal text-sm block">
-                              {agent.username}
+                        <td className="sticky left-0 bg-white py-3 px-3 z-10 w-[250px] min-w-[250px]">
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="text-sm break-words max-w-[200px]">
+                              {agent.email}
                             </span>
                             <Edit3
                               size={18}
                               strokeWidth={1}
-                              className="text-gray-500 cursor-pointer hover:text-purple-700 absolute top-1/2 right-1 -translate-y-1/2"
+                              className="text-gray-500 cursor-pointer hover:text-purple-700 flex-shrink-0 mt-1"
                               onClick={() => handleOpenEditModal(idx)}
                             />
                           </div>
                         </td>
-                        <td className="sticky left-[12rem] bg-white py-3 px-3 z-10 text-center">
+
+                        <td className="sticky left-[250px] bg-white py-3 px-3 z-20 text-center w-32">
                           <ToggleSwitch
                             checked={agent.active}
                             onChange={() => handleToggleActive(idx)}
                           />
                         </td>
+
                         {allDepartments.map((dept, i) => (
                           <td key={i} className="py-3 px-3 text-center">
                             <input
                               type="checkbox"
                               checked={agent.departments.includes(dept)}
                               onChange={() => handleToggleDepartment(idx, dept)}
-className="w-4 h-4 cursor-pointer"
+                              className="w-4 h-4 cursor-pointer"
                             />
                           </td>
                         ))}
@@ -259,23 +303,32 @@ className="w-4 h-4 cursor-pointer"
         {isModalOpen && (
           <div className="fixed inset-0 bg-gray-400/50 z-50 flex justify-center items-center">
             <div className="bg-white rounded-lg p-6 w-96 relative">
-<h2 className="text-xl font-semibold mb-4">
-  {currentEditIndex !== null ? "Edit Agent" : "Add Agent"}
-</h2>
-
-              <label className="block mb-2 text-sm font-medium text-gray-700">Username</label>
+              <h2 className="text-xl font-semibold mb-4">
+                {currentEditIndex !== null ? "Edit Agent" : "Add Agent"}
+              </h2>
+              <label className="block mb-2 text-sm font-medium text-gray-700">
+                Email
+              </label>
               <input
-                type="text"
-                value={editForm.username}
-                onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
+                type="email"
+                value={editForm.email}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, email: e.target.value })
+                }
                 className="w-full mb-4 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600"
               />
-              <label className="block mb-2 text-sm font-medium text-gray-700">Password</label>
+
+              {/* Password remains if you still want to keep it */}
+              <label className="block mb-2 text-sm font-medium text-gray-700">
+                Password
+              </label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   value={editForm.password}
-                  onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, password: e.target.value })
+                  }
                   className="w-full mb-4 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600"
                 />
                 {showPassword ? (
@@ -313,14 +366,18 @@ className="w-4 h-4 cursor-pointer"
 
         {/* Confirm Save Modal */}
         {isConfirmModalOpen && (
-<div className="fixed inset-0 bg-gray-200/40 z-60 flex justify-center items-center">
-
+          <div className="fixed inset-0 bg-gray-200/40 z-60 flex justify-center items-center">
             <div className="bg-white rounded-lg p-6 w-80">
               <h3 className="text-lg font-semibold mb-4">Confirm Save</h3>
-              <p className="mb-6">Are you sure you want to save these changes?</p>
+              <p className="mb-6">
+                Are you sure you want to save these changes?
+              </p>
               <div className="flex justify-end gap-3">
                 <button
-                  onClick={() => {setIsConfirmModalOpen(false); setIsModalOpen(true)}}
+                  onClick={() => {
+                    setIsConfirmModalOpen(false);
+                    setIsModalOpen(true);
+                  }}
                   className="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300"
                 >
                   Cancel
@@ -340,7 +397,7 @@ className="w-4 h-4 cursor-pointer"
   );
 }
 
-// ToggleSwitch component for active status
+// ToggleSwitch component
 function ToggleSwitch({ checked, onChange }) {
   return (
     <label className="inline-flex relative items-center cursor-pointer">
@@ -355,9 +412,14 @@ function ToggleSwitch({ checked, onChange }) {
   );
 }
 
-
-// SearchInput component with filter icon and badge count
-function SearchInput({ value, onChange, placeholder, onFilterClick, filterDropdownOpen, selectedFilters }) {
+function SearchInput({
+  value,
+  onChange,
+  placeholder,
+  onFilterClick,
+  filterDropdownOpen,
+  selectedFilters,
+}) {
   return (
     <div className="flex items-center bg-gray-100 px-3 py-2 rounded-md w-full relative">
       <Search size={18} strokeWidth={1} className="text-gray-500 mr-2" />
@@ -379,7 +441,9 @@ function SearchInput({ value, onChange, placeholder, onFilterClick, filterDropdo
       <Filter
         size={16}
         strokeWidth={1}
-        className={`text-gray-500 cursor-pointer absolute right-3 ${filterDropdownOpen ? "text-purple-700" : ""}`}
+        className={`text-gray-500 cursor-pointer absolute right-3 ${
+          filterDropdownOpen ? "text-purple-700" : ""
+        }`}
         onClick={onFilterClick}
       />
       {selectedFilters.length > 0 && (

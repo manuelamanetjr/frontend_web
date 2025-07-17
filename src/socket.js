@@ -1,3 +1,3 @@
 import { io } from 'socket.io-client';
-const socket = io('http://localhost:5000'); // Adjust if using proxy
+const socket = io(import.meta.env.VITE_BACKEND_URL); // Adjust if using proxy
 export default socket;
