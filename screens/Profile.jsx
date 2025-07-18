@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 import { FiLogOut } from "react-icons/fi";
@@ -10,21 +10,73 @@ export default function Profile() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [fileName, setFileName] = useState("Upload Image");
-  const [profilePicture, setProfilePicture] = useState(
-    "../src/assets/profile/av3.jpg"
-  );
-
+  const defaultAvatar = "../src/assets/profile/av3.jpg";
+  const [profilePicture, setProfilePicture] = useState(defaultAvatar);
   const [imageUploaded, setImageUploaded] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [profileData, setProfileData] = useState({
-    firstName: "Maria",
+    firstName: "",
     middleName: "",
-    lastName: "Dela Cruz",
+    lastName: "",
     email: "",
     address: "",
     dateOfBirth: "",
   });
-  const navigate = useNavigate(); // ✅ Hook to handle navigation
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
+  const navigate = useNavigate(); //
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setLoading(true);
+        const resp = await api.get("/auth/me", { withCredentials: true });
+        const { authed, user, inactive } = resp.data || {};
+        if (!authed) {
+          // Not logged in -> bounce to login
+          if (mounted) navigate("/");
+          return;
+        }
+
+        // If inactive or no linked user, keep placeholders but don't crash UI
+        if (!user || inactive) {
+          if (mounted) {
+            setLoadError(inactive ? "Account inactive" : null);
+            setLoading(false);
+          }
+          return;
+        }
+
+        // Map backend to frontend state
+        const mapped = {
+          firstName: user.firstName ?? "",
+          middleName: user.middleName ?? "",
+          lastName: user.lastName ?? "",
+          email: user.email ?? "",
+          address: user.address ?? "",
+          dateOfBirth: user.dateOfBirth ?? "",
+        };
+        if (mounted) {
+          setProfileData(mapped);
+          setProfilePicture(user.profileImage || defaultAvatar);
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error(
+          "Failed to load /auth/me:",
+          err?.response?.data || err.message
+        );
+        if (mounted) {
+          setLoadError("Failed to load profile");
+          setLoading(false);
+        }
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [navigate]);
 
   const toggleDropdown = (name) => {
     setOpenDropdown((prev) => (prev === name ? null : name));
@@ -56,8 +108,7 @@ export default function Profile() {
     setIsEditModalOpen(false);
   };
 
-
-      // ✅ Backend Logout API
+  // ✅ Backend Logout API
   const handleLogout = async () => {
     try {
       await api.post("/auth/logout", {}, { withCredentials: true }); // ✅ Backend clears session
@@ -130,6 +181,8 @@ export default function Profile() {
                 <div>
                   <p className="font-medium text-gray-500">Name</p>
                   <p className="text-base font-regular text-gray-800">
+                    {loading && <p>Loading profile…</p>}
+                    {!loading && loadError && <p>{loadError}</p>}
                     {profileData.firstName} {profileData.middleName}{" "}
                     {profileData.lastName}
                   </p>
@@ -137,18 +190,24 @@ export default function Profile() {
                 <div>
                   <p className="font-medium text-gray-500">Date of Birth</p>
                   <p className="text-base text-gray-800">
+                    {loading && <p>Loading profile…</p>}
+                    {!loading && loadError && <p>{loadError}</p>}
                     {profileData.dateOfBirth || "-"}
                   </p>
                 </div>
                 <div>
                   <p className="font-medium text-gray-500">Email</p>
                   <p className="text-base text-gray-800">
+                    {loading && <p>Loading profile…</p>}
+                    {!loading && loadError && <p>{loadError}</p>}
                     {profileData.email || "-"}
                   </p>
                 </div>
                 <div>
                   <p className="font-medium text-gray-500">Address</p>
                   <p className="text-base text-gray-800">
+                    {loading && <p>Loading profile…</p>}
+                    {!loading && loadError && <p>{loadError}</p>}
                     {profileData.address || "-"}
                   </p>
                 </div>
@@ -178,27 +237,27 @@ export default function Profile() {
             </div>
           </div>
 
-{/* Keep both buttons but control their visibility with responsive classes */}
-<div className="mt-10">
-  {/* Desktop Logout - hidden on mobile */}
-  <button
-    onClick={handleLogout}
-    className="hidden sm:flex items-center text-purple-600 hover:underline text-sm"
-  >
-    <FiLogOut className="w-4 h-4 mr-1" />
-    Logout
-  </button>
-</div>
+          {/* Keep both buttons but control their visibility with responsive classes */}
+          <div className="mt-10">
+            {/* Desktop Logout - hidden on mobile */}
+            <button
+              onClick={handleLogout}
+              className="hidden sm:flex items-center text-purple-600 hover:underline text-sm"
+            >
+              <FiLogOut className="w-4 h-4 mr-1" />
+              Logout
+            </button>
+          </div>
 
-{/* Mobile Logout FAB - hidden on desktop */}
-<div className="sm:hidden fixed bottom-4 right-4">
-  <button
-     onClick={handleLogout}
-    className="p-3 bg-purple-600 text-white rounded-full shadow-lg hover:bg-purple-700 transition"
-  >
-    <FiLogOut className="w-5 h-5" />
-  </button>
-</div>
+          {/* Mobile Logout FAB - hidden on desktop */}
+          <div className="sm:hidden fixed bottom-4 right-4">
+            <button
+              onClick={handleLogout}
+              className="p-3 bg-purple-600 text-white rounded-full shadow-lg hover:bg-purple-700 transition"
+            >
+              <FiLogOut className="w-5 h-5" />
+            </button>
+          </div>
         </main>
       </div>
 
