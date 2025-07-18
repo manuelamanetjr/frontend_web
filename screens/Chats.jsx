@@ -91,13 +91,16 @@ export default function Queues() {
   }, [earliestMessageTime, hasMoreMessages, selectedCustomer]);
 
   useEffect(() => {
-    if (selectedCustomer) {
-      socket.emit("joinChatGroup", selectedCustomer.chat_group_id);
+    if (!selectedCustomer) return;
 
-      socket.on("receiveMessage", (msg) => {
-        console.log("Received real-time message:", msg); // ✅
-        // This should trigger when a message is received
-        setMessages((prev) => [
+    socket.emit("joinChatGroup", selectedCustomer.chat_group_id);
+
+    const handleReceiveMessage = (msg) => {
+      setMessages((prev) => {
+        const exists = prev.some((m) => m.id === msg.chat_id); // ✅ Deduplicate
+        if (exists) return prev;
+
+        return [
           ...prev,
           {
             id: msg.chat_id,
@@ -109,13 +112,15 @@ export default function Queues() {
               minute: "2-digit",
             }),
           },
-        ]);
+        ];
       });
+    };
 
-      return () => {
-        socket.off("receiveMessage"); // cleanup
-      };
-    }
+    socket.on("receiveMessage", handleReceiveMessage);
+
+    return () => {
+      socket.off("receiveMessage", handleReceiveMessage); // ✅ Clean up correctly
+    };
   }, [selectedCustomer]);
 
   const departmentOptions = departments.map((dept) => ({
@@ -293,7 +298,7 @@ export default function Queues() {
   }, []);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    bottomRef.current?.scrollIntoView({ behavior: "auto" });
   }, [messages]);
 
   useEffect(() => {
@@ -372,16 +377,26 @@ export default function Queues() {
         }),
       }));
 
-      if (append) {
-        setMessages((prev) => [...newMessages, ...prev]);
-      } else {
-        setMessages(newMessages);
-      }
+      setMessages((prev) => {
+        const combined = append ? [...newMessages, ...prev] : [...newMessages];
+
+        // ✅ Deduplicate based on message ID
+        const uniqueMessages = [];
+        const seenIds = new Set();
+
+        for (const m of combined) {
+          if (!seenIds.has(m.id)) {
+            seenIds.add(m.id);
+            uniqueMessages.push(m);
+          }
+        }
+
+        return uniqueMessages;
+      });
 
       if (newMessages.length > 0) {
         setEarliestMessageTime(newMessages[0].timestamp);
       }
-
       if (newMessages.length < 10) {
         setHasMoreMessages(false); // no more to load
       }
@@ -624,7 +639,7 @@ export default function Queues() {
                   >
                     <div className="flex items-center gap-2 flex-1">
                       <img
-                        src='profile_picture/DefaultProfile.jpg'
+                        src="profile_picture/DefaultProfile.jpg"
                         // src={customer.profile}
                         alt="profile"
                         className="w-15 h-15 rounded-full object-cover"
@@ -706,7 +721,7 @@ export default function Queues() {
                       )}
                       <div className="flex items-center gap-4">
                         <img
-                          src='profile_picture/DefaultProfile.jpg'
+                          src="profile_picture/DefaultProfile.jpg"
                           // src={selectedCustomer.profile}
                           alt="profile"
                           className="w-10 h-10 rounded-full object-cover"
