@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 import { FiLogOut } from "react-icons/fi";
@@ -10,74 +10,21 @@ export default function Profile() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [fileName, setFileName] = useState("Upload Image");
-  const defaultAvatar = "../src/assets/profile/av3.jpg";
-  const [profilePicture, setProfilePicture] = useState(defaultAvatar);
+  const [profilePicture, setProfilePicture] = useState(
+    "../src/assets/profile/av3.jpg"
+  );
+
   const [imageUploaded, setImageUploaded] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [profileData, setProfileData] = useState({
-    firstName: "",
+    firstName: "Maria",
     middleName: "",
-    lastName: "",
+    lastName: "Dela Cruz",
     email: "",
     address: "",
     dateOfBirth: "",
   });
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(null);
-  const navigate = useNavigate(); //
-
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        setLoading(true);
-        const resp = await api.get("/auth/me", { withCredentials: true });
-        const { authed, user, inactive } = resp.data || {};
-        if (!authed) {
-          // Not logged in -> bounce to login
-          if (mounted) navigate("/");
-          return;
-        }
-
-        // If inactive or no linked user, keep placeholders but don't crash UI
-        if (!user || inactive) {
-          if (mounted) {
-            setLoadError(inactive ? "Account inactive" : null);
-            setLoading(false);
-          }
-          return;
-        }
-
-        // Map backend to frontend state
-        const mapped = {
-          firstName: user.firstName ?? "",
-          middleName: user.middleName ?? "",
-          lastName: user.lastName ?? "",
-          email: user.email ?? "",
-          address: user.address ?? "",
-          dateOfBirth: user.dateOfBirth ?? "",
-        };
-        if (mounted) {
-          setProfileData(mapped);
-          setProfilePicture(user.profileImage || defaultAvatar);
-          setLoading(false);
-        }
-      } catch (err) {
-        console.error(
-          "Failed to load /auth/me:",
-          err?.response?.data || err.message
-        );
-        if (mounted) {
-          setLoadError("Failed to load profile");
-          setLoading(false);
-        }
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [navigate]);
-
+  const navigate = useNavigate(); // ✅ Hook to handle navigation
   const toggleDropdown = (name) => {
     setOpenDropdown((prev) => (prev === name ? null : name));
   };
@@ -181,8 +128,6 @@ export default function Profile() {
                 <div>
                   <p className="font-medium text-gray-500">Name</p>
                   <p className="text-base font-regular text-gray-800">
-                    {loading && <p>Loading profile…</p>}
-                    {!loading && loadError && <p>{loadError}</p>}
                     {profileData.firstName} {profileData.middleName}{" "}
                     {profileData.lastName}
                   </p>
@@ -190,24 +135,18 @@ export default function Profile() {
                 <div>
                   <p className="font-medium text-gray-500">Date of Birth</p>
                   <p className="text-base text-gray-800">
-                    {loading && <p>Loading profile…</p>}
-                    {!loading && loadError && <p>{loadError}</p>}
                     {profileData.dateOfBirth || "-"}
                   </p>
                 </div>
                 <div>
                   <p className="font-medium text-gray-500">Email</p>
                   <p className="text-base text-gray-800">
-                    {loading && <p>Loading profile…</p>}
-                    {!loading && loadError && <p>{loadError}</p>}
                     {profileData.email || "-"}
                   </p>
                 </div>
                 <div>
                   <p className="font-medium text-gray-500">Address</p>
                   <p className="text-base text-gray-800">
-                    {loading && <p>Loading profile…</p>}
-                    {!loading && loadError && <p>{loadError}</p>}
                     {profileData.address || "-"}
                   </p>
                 </div>
