@@ -2,10 +2,13 @@
 import React from 'react';
 import './App.css';
 import AppNavigation from './AppNavigation.jsx'; // ✅ import the navigation component
+import { UserProvider } from "../context/UserContext";
 
 function App() {
     return (
-        <AppNavigation />
+    <UserProvider>
+      <AppNavigation /> {/* Your routes/screens */}
+    </UserProvider>
     );
 }
 
