@@ -1,7 +1,20 @@
 import { Menu } from "react-feather";
 import { Link } from "react-router-dom";
+import { useUser } from "../context/UserContext";
 
 export default function TopNavbar({ toggleSidebar }) {
+  const { userData, loading } = useUser();
+
+  // Build full name
+  const fullName = userData
+    ? [userData.profile?.prof_firstname, userData.profile?.prof_middlename, userData.profile?.prof_lastname]
+        .filter(Boolean)
+        .join(" ")
+    : "";
+
+  // Get avatar or fallback
+  const avatarUrl = userData?.image?.img_location || "../src/assets/profile/av3.jpg";
+
   return (
     <header className="h-16 bg-white shadow flex items-center z-50 pl-16 relative justify-between pr-6">
       <button
@@ -23,11 +36,13 @@ export default function TopNavbar({ toggleSidebar }) {
 
       <Link to="/profile" className="flex items-center gap-3 hover:opacity-80">
         <img
-          src="../src/assets/profile/av3.jpg"
-          alt="Maria Dela Cruz"
+          src={avatarUrl}
+          alt={fullName || "Profile"}
           className="h-8 w-8 rounded-full object-cover"
         />
-        <span className="text-sm font-medium text-gray-700">Maria Dela Cruz</span>
+        <span className="text-sm font-medium text-gray-700">
+          {loading ? "Loading..." : fullName || "Unnamed User"}
+        </span>
       </Link>
     </header>
   );
