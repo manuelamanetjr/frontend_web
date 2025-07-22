@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
 import { FiLogOut } from "react-icons/fi";
@@ -6,14 +6,22 @@ import { Upload } from "react-feather";
 import { useNavigate } from "react-router-dom";
 import api from "../src/api";
 
+/**
+ * NOTE:
+ * - Endpoints now rely on auth cookie; no userId needed in URL.
+ * - All requests include { withCredentials: true } so cookies are sent.
+ * - After save/update/image upload we refetch to keep UI in sync.
+ */
+
 export default function Profile() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [fileName, setFileName] = useState("Upload Image");
-  const defaultAvatar = "../src/assets/profile/av3.jpg";
-  const [profilePicture, setProfilePicture] = useState(defaultAvatar);
+  const [profilePicture, setProfilePicture] = useState("profile_picture/DefaultProfile.jpg");
+  const [selectedFile, setSelectedFile] = useState(null);
   const [imageUploaded, setImageUploaded] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // optional; no design change
   const [profileData, setProfileData] = useState({
     firstName: "",
     middleName: "",
@@ -22,61 +30,112 @@ export default function Profile() {
     address: "",
     dateOfBirth: "",
   });
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(null);
-  const navigate = useNavigate(); //
+
+  const navigate = useNavigate();
+
+  // ---------------- FETCH PROFILE ----------------
+  const fetchProfile = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const res = await api.get("/profile", { withCredentials: true });
+      const { sys_user_email, profile, image } = res.data;
+
+      if (profile) {
+        setProfileData({
+          firstName: profile.prof_firstname || "",
+          middleName: profile.prof_middlename || "",
+          lastName: profile.prof_lastname || "",
+          email: sys_user_email || "",
+          address: profile.prof_address || "",
+          dateOfBirth: profile.prof_date_of_birth
+            ? profile.prof_date_of_birth.split("T")[0]
+            : "",
+        });
+      }
+
+      if (image?.img_location) {
+        setProfilePicture(image.img_location);
+      }
+    } catch (error) {
+      const status = error?.response?.status;
+      if (status === 401) {
+        // not authenticated -> go login
+        navigate("/");
+      } else {
+        console.error("Failed to fetch profile:", error?.response?.data || error);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [navigate]);
 
   useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        setLoading(true);
-        const resp = await api.get("/auth/me", { withCredentials: true });
-        const { authed, user, inactive } = resp.data || {};
-        if (!authed) {
-          // Not logged in -> bounce to login
-          if (mounted) navigate("/");
-          return;
-        }
+    fetchProfile();
+  }, [fetchProfile]);
 
-        // If inactive or no linked user, keep placeholders but don't crash UI
-        if (!user || inactive) {
-          if (mounted) {
-            setLoadError(inactive ? "Account inactive" : null);
-            setLoading(false);
-          }
-          return;
-        }
+  // ---------------- HANDLE IMAGE SELECTION ----------------
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFileName(file.name);
+      setSelectedFile(file);
 
-        // Map backend to frontend state
-        const mapped = {
-          firstName: user.firstName ?? "",
-          middleName: user.middleName ?? "",
-          lastName: user.lastName ?? "",
-          email: user.email ?? "",
-          address: user.address ?? "",
-          dateOfBirth: user.dateOfBirth ?? "",
-        };
-        if (mounted) {
-          setProfileData(mapped);
-          setProfilePicture(user.profileImage || defaultAvatar);
-          setLoading(false);
-        }
-      } catch (err) {
-        console.error(
-          "Failed to load /auth/me:",
-          err?.response?.data || err.message
-        );
-        if (mounted) {
-          setLoadError("Failed to load profile");
-          setLoading(false);
-        }
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [navigate]);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        // show preview immediately
+        setProfilePicture(reader.result);
+        setImageUploaded(true);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setFileName("Upload Image");
+      setSelectedFile(null);
+      setProfilePicture("profile_picture/DefaultProfile.jpg");
+      setImageUploaded(false);
+    }
+  };
+
+  // ---------------- UPLOAD IMAGE ----------------
+  const handleSaveImage = async () => {
+    if (!selectedFile) return;
+
+    const formData = new FormData();
+    formData.append("image", selectedFile);
+
+    try {
+      await api.post("/profile/image", formData, {
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setImageUploaded(false);
+      setFileName("Upload Image");
+      // refetch to get canonical URL from server
+      await fetchProfile();
+    } catch (error) {
+      console.error("Image upload failed:", error?.response?.data || error);
+    }
+  };
+
+  // ---------------- UPDATE PROFILE ----------------
+  const handleSave = async () => {
+    try {
+      await api.put("/profile", profileData, { withCredentials: true });
+      setIsEditModalOpen(false);
+      await fetchProfile(); // refresh displayed data
+    } catch (error) {
+      console.error("Profile update failed:", error?.response?.data || error);
+    }
+  };
+
+  // ---------------- LOGOUT ----------------
+  const handleLogout = async () => {
+    try {
+      await api.post("/auth/logout", {}, { withCredentials: true });
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed:", error?.response?.data || error?.message);
+    }
+  };
 
   const toggleDropdown = (name) => {
     setOpenDropdown((prev) => (prev === name ? null : name));
@@ -84,38 +143,6 @@ export default function Profile() {
 
   const toggleSidebar = () => {
     setMobileSidebarOpen((prev) => !prev);
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFileName(file.name);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfilePicture(reader.result);
-        setImageUploaded(true);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setFileName("Upload Image");
-      setProfilePicture("../src/assets/profile/av3.jpg");
-      setImageUploaded(false);
-    }
-  };
-
-  const handleSave = () => {
-    console.log("Profile Data Saved:", profileData);
-    setIsEditModalOpen(false);
-  };
-
-  // ✅ Backend Logout API
-  const handleLogout = async () => {
-    try {
-      await api.post("/auth/logout", {}, { withCredentials: true }); // ✅ Backend clears session
-      navigate("/"); // Redirect to login page
-    } catch (error) {
-      console.error("Logout failed:", error.response?.data || error.message);
-    }
   };
 
   return (
@@ -138,108 +165,103 @@ export default function Profile() {
         <main className="flex-1 bg-[#f6f7fb] p-6 min-h-[calc(100vh-64px)] flex flex-col justify-center items-center">
           <h1 className="text-2xl font-semibold mb-6">Profile</h1>
 
-          <div className="bg-white rounded-2xl shadow-md p-10 w-full max-w-4xl flex flex-col items-center sm:flex-row sm:items-center sm:space-x-10">
-            <div className="flex flex-col items-center">
-              <img
-                src={profilePicture}
-                alt="Profile Avatar"
-                className="w-64 h-64 rounded-full object-cover mb-4"
-              />
-
-              <div className="relative w-full max-w-xs">
-                <input
-                  id="file-upload"
-                  type="file"
-                  className="hidden"
-                  onChange={handleFileChange}
+          {/* (Optional) inline loading text; no layout change */}
+          {isLoading ? (
+            <div className="text-sm text-gray-500">Loading profile...</div>
+          ) : (
+            <div className="bg-white rounded-2xl shadow-md p-10 w-full max-w-4xl flex flex-col items-center sm:flex-row sm:items-center sm:space-x-10">
+              <div className="flex flex-col items-center">
+                <img
+                  src={profilePicture}
+                  alt="Profile Avatar"
+                  className="w-64 h-64 rounded-full object-cover mb-4"
                 />
-                <label
-                  htmlFor="file-upload"
-                  className="w-full p-2 bg-transparent border border-gray-300 rounded-md cursor-pointer flex items-center justify-center"
-                >
-                  <span className="text-gray-700 text-xs flex-1 text-center">
-                    {fileName}
-                  </span>
-                  <Upload className="w-3 h-3 ml-2" strokeWidth={1} />
-                </label>
+
+                <div className="relative w-full max-w-xs">
+                  <input
+                    id="file-upload"
+                    type="file"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+                  <label
+                    htmlFor="file-upload"
+                    className="w-full p-2 bg-transparent border border-gray-300 rounded-md cursor-pointer flex items-center justify-center"
+                  >
+                    <span className="text-gray-700 text-xs flex-1 text-center">
+                      {fileName}
+                    </span>
+                    <Upload className="w-3 h-3 ml-2" strokeWidth={1} />
+                  </label>
+                </div>
+
+                {imageUploaded && (
+                  <div className="mt-4">
+                    <button
+                      onClick={handleSaveImage}
+                      className="text-purple-600 hover:underline"
+                    >
+                      Save
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {imageUploaded && (
-                <div className="mt-4">
+              <div className="flex-1 mt-8 sm:mt-0 flex flex-col items-center">
+                <div className="grid grid-cols-1 gap-y-4 text-sm text-gray-700">
+                  <div>
+                    <p className="font-medium text-gray-500">Name</p>
+                    <p className="text-base font-regular text-gray-800">
+                      {profileData.firstName} {profileData.middleName}{" "}
+                      {profileData.lastName}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-500">Date of Birth</p>
+                    <p className="text-base text-gray-800">
+                      {profileData.dateOfBirth || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-500">Email</p>
+                    <p className="text-base text-gray-800">
+                      {profileData.email || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-500">Address</p>
+                    <p className="text-base text-gray-800">
+                      {profileData.address || "-"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-6">
                   <button
-                    onClick={handleSave}
-                    className="text-purple-600 hover:underline"
+                    onClick={() => setIsEditModalOpen(true)}
+                    className="flex items-center px-4 py-2 border border-purple-500 text-purple-600 rounded-md hover:bg-purple-50 transition"
                   >
-                    Save
+                    <svg
+                      className="w-4 h-4 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"
+                      />
+                    </svg>
+                    Edit Profile
                   </button>
                 </div>
-              )}
-            </div>
-
-            <div className="flex-1 mt-8 sm:mt-0 flex flex-col items-center">
-              <div className="grid grid-cols-1 gap-y-4 text-sm text-gray-700">
-                <div>
-                  <p className="font-medium text-gray-500">Name</p>
-                  <p className="text-base font-regular text-gray-800">
-                    {loading && <p>Loading profile…</p>}
-                    {!loading && loadError && <p>{loadError}</p>}
-                    {profileData.firstName} {profileData.middleName}{" "}
-                    {profileData.lastName}
-                  </p>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-500">Date of Birth</p>
-                  <p className="text-base text-gray-800">
-                    {loading && <p>Loading profile…</p>}
-                    {!loading && loadError && <p>{loadError}</p>}
-                    {profileData.dateOfBirth || "-"}
-                  </p>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-500">Email</p>
-                  <p className="text-base text-gray-800">
-                    {loading && <p>Loading profile…</p>}
-                    {!loading && loadError && <p>{loadError}</p>}
-                    {profileData.email || "-"}
-                  </p>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-500">Address</p>
-                  <p className="text-base text-gray-800">
-                    {loading && <p>Loading profile…</p>}
-                    {!loading && loadError && <p>{loadError}</p>}
-                    {profileData.address || "-"}
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <button
-                  onClick={() => setIsEditModalOpen(true)}
-                  className="flex items-center px-4 py-2 border border-purple-500 text-purple-600 rounded-md hover:bg-purple-50 transition"
-                >
-                  <svg
-                    className="w-4 h-4 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"
-                    />
-                  </svg>
-                  Edit Profile
-                </button>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Keep both buttons but control their visibility with responsive classes */}
           <div className="mt-10">
-            {/* Desktop Logout - hidden on mobile */}
             <button
               onClick={handleLogout}
               className="hidden sm:flex items-center text-purple-600 hover:underline text-sm"
@@ -249,7 +271,6 @@ export default function Profile() {
             </button>
           </div>
 
-          {/* Mobile Logout FAB - hidden on desktop */}
           <div className="sm:hidden fixed bottom-4 right-4">
             <button
               onClick={handleLogout}
@@ -261,7 +282,6 @@ export default function Profile() {
         </main>
       </div>
 
-      {/* Edit Profile Modal */}
       {isEditModalOpen && (
         <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
@@ -308,7 +328,10 @@ export default function Profile() {
                   className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
                   value={profileData.lastName}
                   onChange={(e) =>
-                    setProfileData({ ...profileData, lastName: e.target.value })
+                    setProfileData({
+                      ...profileData,
+                      lastName: e.target.value,
+                    })
                   }
                 />
               </div>
@@ -321,7 +344,10 @@ export default function Profile() {
                   className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
                   value={profileData.email}
                   onChange={(e) =>
-                    setProfileData({ ...profileData, email: e.target.value })
+                    setProfileData({
+                      ...profileData,
+                      email: e.target.value,
+                    })
                   }
                 />
               </div>
@@ -334,7 +360,10 @@ export default function Profile() {
                   className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
                   value={profileData.address}
                   onChange={(e) =>
-                    setProfileData({ ...profileData, address: e.target.value })
+                    setProfileData({
+                      ...profileData,
+                      address: e.target.value,
+                    })
                   }
                 />
               </div>
