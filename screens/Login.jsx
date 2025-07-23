@@ -3,10 +3,11 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "react-feather";
 import api from "../src/api";
+import { useUser } from "../context/UserContext";
 
 export default function Login() {
   const navigate = useNavigate();
-
+  const { fetchUser } = useUser();
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
@@ -21,7 +22,9 @@ export default function Login() {
         { email, password },
         { withCredentials: true }
       );
+     await fetchUser();
       navigate("/queues");
+      
     } catch {
       setErrorMessage("Invalid credentials");
     }

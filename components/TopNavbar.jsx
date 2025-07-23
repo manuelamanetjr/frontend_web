@@ -13,7 +13,7 @@ export default function TopNavbar({ toggleSidebar }) {
     : "";
 
   // Get avatar or fallback
-  const avatarUrl = userData?.image?.img_location || "../src/assets/profile/av3.jpg";
+  const avatarUrl = userData?.image?.img_location;
 
   return (
     <header className="h-16 bg-white shadow flex items-center z-50 pl-16 relative justify-between pr-6">
@@ -36,12 +36,12 @@ export default function TopNavbar({ toggleSidebar }) {
 
       <Link to="/profile" className="flex items-center gap-3 hover:opacity-80">
         <img
-          src={avatarUrl}
+          src={avatarUrl|| "profile_picture/DefaultProfile.jpg"}
           alt={fullName || "Profile"}
           className="h-8 w-8 rounded-full object-cover"
         />
         <span className="text-sm font-medium text-gray-700">
-          {loading ? "Loading..." : fullName || "Unnamed User"}
+          {loading ? "" : fullName || ""}
         </span>
       </Link>
     </header>
