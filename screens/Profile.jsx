@@ -5,6 +5,8 @@ import { FiLogOut } from "react-icons/fi";
 import { Upload } from "react-feather";
 import { useNavigate } from "react-router-dom";
 import api from "../src/api";
+import { useUser } from "../context/UserContext";
+
 
 /**
  * NOTE:
@@ -14,6 +16,7 @@ import api from "../src/api";
  */
 
 export default function Profile() {
+  
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [fileName, setFileName] = useState("Upload Image");
@@ -30,7 +33,7 @@ export default function Profile() {
     address: "",
     dateOfBirth: "",
   });
-
+  const { setUserData } = useUser();
   const navigate = useNavigate();
 
   // ---------------- FETCH PROFILE ----------------
@@ -131,6 +134,7 @@ export default function Profile() {
   const handleLogout = async () => {
     try {
       await api.post("/auth/logout", {}, { withCredentials: true });
+      setUserData(null);  // Reset context
       navigate("/");
     } catch (error) {
       console.error("Logout failed:", error?.response?.data || error?.message);
@@ -165,7 +169,7 @@ export default function Profile() {
         <main className="flex-1 bg-[#f6f7fb] p-6 min-h-[calc(100vh-64px)] flex flex-col justify-center items-center">
           <h1 className="text-2xl font-semibold mb-6">Profile</h1>
 
-          {/* (Optional) inline loading text; no layout change */}
+
           {isLoading ? (
             <div className="text-sm text-gray-500">Loading profile...</div>
           ) : (

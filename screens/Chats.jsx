@@ -35,6 +35,16 @@ export default function Queues() {
   const [earliestMessageTime, setEarliestMessageTime] = useState(null);
 
   useEffect(() => {
+    socket.connect();
+    console.log("Socket connected");
+
+    return () => {
+      socket.disconnect();
+      console.log("Socket disconnected");
+    };
+  }, []);
+
+  useEffect(() => {
     const fetchChatGroups = async () => {
       try {
         const response = await api.get("/chat/chatgroups");
@@ -261,7 +271,7 @@ export default function Queues() {
 
     // Emit via socket
     if (selectedCustomer) {
-      console.log("Sending to group:", selectedCustomer.chat_group_id); // 👈 log this
+      console.log("Sending to group:", selectedCustomer.chat_group_id);
       socket.emit("sendMessage", {
         chat_body: trimmedMessage,
         chat_group_id: selectedCustomer.chat_group_id,
@@ -639,8 +649,10 @@ export default function Queues() {
                   >
                     <div className="flex items-center gap-2 flex-1">
                       <img
-                        src="profile_picture/DefaultProfile.jpg"
-                        // src={customer.profile}
+                        src={
+                          customer.profile ||
+                          "profile_picture/DefaultProfile.jpg"
+                        }
                         alt="profile"
                         className="w-15 h-15 rounded-full object-cover"
                       />
@@ -721,11 +733,14 @@ export default function Queues() {
                       )}
                       <div className="flex items-center gap-4">
                         <img
-                          src="profile_picture/DefaultProfile.jpg"
-                          // src={selectedCustomer.profile}
+                          src={
+                            selectedCustomer?.profile ||
+                            "profile_picture/DefaultProfile.jpg"
+                          }
                           alt="profile"
                           className="w-10 h-10 rounded-full object-cover"
                         />
+
                         <div>
                           <h3 className="text-lg font-medium text-gray-800">
                             {selectedCustomer.name}
@@ -804,8 +819,9 @@ export default function Queues() {
                                 <img
                                   src={
                                     item.sender === "system"
-                                      ? "profile_picture/DefaultProfile.jpg"
-                                      : selectedCustomer.profile
+                                      ? selectedCustomer.profile ||
+                                        "profile_picture/DefaultProfile.jpg"
+                                      : "profile_picture/DefaultProfile.jpg"
                                   }
                                   alt={
                                     item.sender === "system"
