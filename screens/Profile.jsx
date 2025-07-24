@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../src/api";
 import { useUser } from "../context/UserContext";
 
+
 /**
  * NOTE:
  * - Endpoints now rely on auth cookie; no userId needed in URL.

@@ -3,6 +3,7 @@ import { Filter, Send, Menu, MoreVertical } from "react-feather";
 import Select from "react-select";
 import TopNavbar from "../components/TopNavbar";
 import Sidebar from "../components/Sidebar";
+import socket from "../src/socket";
 
 export default function Queues() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -25,6 +26,16 @@ export default function Queues() {
   const [showDeptDropdown, setShowDeptDropdown] = useState(false);
   const [transferDepartment, setTransferDepartment] = useState(null);
   const [isTransferred, setIsTransferred] = useState(false);
+
+    useEffect(() => {
+      socket.connect();
+      console.log("Socket connected");
+  
+      return () => {
+        socket.disconnect();
+        console.log("Socket disconnected");
+      };
+    }, []);
 
   const departmentCustomers = {
     Billing: [

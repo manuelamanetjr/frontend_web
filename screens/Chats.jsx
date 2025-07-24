@@ -35,6 +35,16 @@ export default function Queues() {
   const [earliestMessageTime, setEarliestMessageTime] = useState(null);
 
   useEffect(() => {
+    socket.connect();
+    console.log("Socket connected");
+
+    return () => {
+      socket.disconnect();
+      console.log("Socket disconnected");
+    };
+  }, []);
+
+  useEffect(() => {
     const fetchChatGroups = async () => {
       try {
         const response = await api.get("/chat/chatgroups");
@@ -261,7 +271,7 @@ export default function Queues() {
 
     // Emit via socket
     if (selectedCustomer) {
-      console.log("Sending to group:", selectedCustomer.chat_group_id); // 👈 log this
+      console.log("Sending to group:", selectedCustomer.chat_group_id);
       socket.emit("sendMessage", {
         chat_body: trimmedMessage,
         chat_group_id: selectedCustomer.chat_group_id,
@@ -809,7 +819,8 @@ export default function Queues() {
                                 <img
                                   src={
                                     item.sender === "system"
-                                      ? selectedCustomer.profile 
+                                      ? selectedCustomer.profile ||
+                                        "profile_picture/DefaultProfile.jpg"
                                       : "profile_picture/DefaultProfile.jpg"
                                   }
                                   alt={
