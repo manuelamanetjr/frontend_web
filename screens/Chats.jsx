@@ -809,8 +809,8 @@ export default function Queues() {
                                 <img
                                   src={
                                     item.sender === "system"
-                                      ? "profile_picture/DefaultProfile.jpg"
-                                      : selectedCustomer.profile
+                                      ? selectedCustomer.profile 
+                                      : "profile_picture/DefaultProfile.jpg"
                                   }
                                   alt={
                                     item.sender === "system"
