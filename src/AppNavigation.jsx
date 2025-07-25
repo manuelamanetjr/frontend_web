@@ -30,16 +30,30 @@ function ProtectedRoute({ children }) {
 
   React.useEffect(() => {
     let isMounted = true;
-    api
-      .get("/auth/me")
-      .then(() => {
-        if (isMounted) setState({ loading: false, authed: true });
-      })
-      .catch(() => {
-        if (isMounted) setState({ loading: false, authed: false });
-      });
+
+    const checkAuth = () => {
+      api
+        .get("/auth/me")
+        .then(() => {
+          if (isMounted) setState({ loading: false, authed: true });
+        })
+        .catch(() => {
+          if (isMounted) setState({ loading: false, authed: false });
+        });
+    };
+
+    checkAuth();
+
+    const handleStorage = (event) => {
+      if (event.key === "logout") {
+        setState({ loading: false, authed: false });
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
     return () => {
       isMounted = false;
+      window.removeEventListener("storage", handleStorage);
     };
   }, []);
 
@@ -62,16 +76,30 @@ function PublicRoute({ children }) {
 
   React.useEffect(() => {
     let isMounted = true;
-    api
-      .get("/auth/me")
-      .then(() => {
-        if (isMounted) setState({ loading: false, authed: true });
-      })
-      .catch(() => {
-        if (isMounted) setState({ loading: false, authed: false });
-      });
+
+    const checkAuth = () => {
+      api
+        .get("/auth/me")
+        .then(() => {
+          if (isMounted) setState({ loading: false, authed: true });
+        })
+        .catch(() => {
+          if (isMounted) setState({ loading: false, authed: false });
+        });
+    };
+
+    checkAuth();
+
+    const handleStorage = (event) => {
+      if (event.key === "logout") {
+        checkAuth(); // recheck auth on logout event
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
     return () => {
       isMounted = false;
+      window.removeEventListener("storage", handleStorage);
     };
   }, []);
 
@@ -85,6 +113,7 @@ function PublicRoute({ children }) {
 
   return children;
 }
+
 
 function AppNavigation() {
   return (
