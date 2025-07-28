@@ -31,7 +31,7 @@ export default function ManageAgents() {
   const [editPassword, setEditPassword] = useState("");
   const [editActive, setEditActive] = useState(true);
   const [modalError, setModalError] = useState(null);
-
+  const [currentUserId, setCurrentUserId] = useState(null);
   const toggleSidebar = () => setMobileSidebarOpen((prev) => !prev);
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // lightweight syntax check; adjust if you need stricter rules
@@ -42,14 +42,17 @@ export default function ManageAgents() {
     setError(null);
     try {
       const { data } = await api.get("/admins");
+      const { admins, currentUserId } = data;
+
       setAgents(
-        data.map((a) => ({
+        admins.map((a) => ({
           sys_user_id: a.sys_user_id,
-          email: a.sys_user_email, // renamed
+          email: a.sys_user_email,
           password: a.sys_user_password,
           active: a.sys_user_is_active,
         }))
       );
+      setCurrentUserId(currentUserId); // ✅
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch admins");
     } finally {
@@ -82,7 +85,7 @@ export default function ManageAgents() {
   const openEditModal = (agent) => {
     setCurrentEditId(agent.sys_user_id);
     setEditEmail(agent.email);
-    setEditPassword(agent.password);
+    setEditPassword("");
     setEditActive(agent.active);
     setShowPassword(false);
     setModalError(null);
@@ -92,7 +95,8 @@ export default function ManageAgents() {
   const emailAlreadyExists = (email, ignoreId = null) => {
     const lower = email.trim().toLowerCase();
     return agents.some(
-      (a) => a.email.trim().toLowerCase() === lower && a.sys_user_id !== ignoreId
+      (a) =>
+        a.email.trim().toLowerCase() === lower && a.sys_user_id !== ignoreId
     );
   };
 
@@ -123,7 +127,7 @@ export default function ManageAgents() {
       if (currentEditId !== null) {
         await api.put(`admins/${currentEditId}`, {
           sys_user_email: editEmail,
-          sys_user_password: editPassword,
+          ...(editPassword !== "" && { sys_user_password: editPassword }),
           sys_user_is_active: editActive,
           sys_user_updated_by: updatedBy,
         });
@@ -253,38 +257,65 @@ export default function ManageAgents() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredAgents.map((agent) => (
-                    <tr
-                      key={agent.sys_user_id}
-                      className="transition-colors duration-200 hover:bg-gray-100"
-                    >
-                      <td className="py-2 px-3 flex items-center gap-2">
-                        <p className="text-sm break-words max-w-[200px] whitespace-pre-wrap">
-                          {agent.email}
-                        </p>
-                        <Edit3
-                          size={18}
-                          strokeWidth={1}
-                          className="text-gray-500 cursor-pointer w-[18px] h-[18px] flex-shrink-0 transition-colors duration-200 hover:text-purple-700"
-                          onClick={() => {
-                            openEditModal(agent);
-                            setError(null);
-                          }}
-                        />
-                      </td>
-                      <td className="py-2 px-3 text-center">
-                        <label className="inline-flex relative items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            className="sr-only peer"
-                            checked={agent.active}
-                            onChange={() => toggleActiveStatus(agent.sys_user_id)}
+                  {filteredAgents.map((agent) => {
+                    const isSelf = agent.sys_user_id === currentUserId;
+
+                    return (
+                      <tr
+                        key={agent.sys_user_id}
+                        className="transition-colors duration-200 hover:bg-gray-100"
+                      >
+                        <td className="py-2 px-3 flex items-center gap-2">
+                          <p className="text-sm break-words max-w-[200px] whitespace-pre-wrap">
+                            {agent.email}
+                          </p>
+                          <Edit3
+                            size={18}
+                            strokeWidth={1}
+                            className={`text-gray-500 w-[18px] h-[18px] flex-shrink-0 transition-colors duration-200 ${
+                              isSelf
+                                ? "cursor-not-allowed"
+                                : "cursor-pointer hover:text-purple-700"
+                            }`}
+                            onClick={() => {
+                              if (!isSelf) {
+                                openEditModal(agent);
+                                setError(null);
+                              }
+                            }}
                           />
-                          <div className="w-7 h-4 bg-gray-200 rounded-full peer peer-checked:bg-[#6237A0] transition-colors duration-300 relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-transform after:duration-300 peer-checked:after:translate-x-3" />
-                        </label>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="py-2 px-3 text-center">
+                          <label
+                            title={
+                              isSelf
+                                ? "You cannot deactivate your own account"
+                                : ""
+                            }
+                            className={`inline-flex relative items-center ${
+                              isSelf ? "cursor-not-allowed" : "cursor-pointer"
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              className="sr-only peer"
+                              checked={agent.active}
+                              disabled={isSelf}
+                              onChange={() =>
+                                toggleActiveStatus(agent.sys_user_id)
+                              }
+                            />
+                            <div
+                              className={`w-7 h-4 bg-gray-200 rounded-full peer peer-checked:bg-[#6237A0] transition-colors duration-300 relative
+              after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-transform after:duration-300 peer-checked:after:translate-x-3 ${
+                isSelf ? "cursor-not-allowed" : "cursor-pointer"
+              }`}
+                            />
+                          </label>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
               {loading && (
@@ -315,11 +346,15 @@ export default function ManageAgents() {
                 </div>
 
                 {modalError && (
-                  <p className="text-red-600 mb-3 font-semibold">{modalError}</p>
+                  <p className="text-red-600 mb-3 font-semibold">
+                    {modalError}
+                  </p>
                 )}
 
                 <label className="block mb-3">
-                  <span className="block text-sm font-medium text-gray-700">Email</span>
+                  <span className="block text-sm font-medium text-gray-700">
+                    Email
+                  </span>
                   <input
                     type="email"
                     className="mt-1 w-full rounded-md border border-gray-300 p-2 focus:border-purple-700 focus:outline-none focus:ring-1 focus:ring-purple-700"
@@ -333,7 +368,9 @@ export default function ManageAgents() {
                 </label>
 
                 <label className="block mb-3 relative">
-                  <span className="block text-sm font-medium text-gray-700">Password</span>
+                  <span className="block text-sm font-medium text-gray-700">
+                    Password
+                  </span>
                   <input
                     type={showPassword ? "text" : "password"}
                     className="mt-1 w-full rounded-md border border-gray-300 p-2 pr-10 focus:border-purple-700 focus:outline-none focus:ring-1 focus:ring-purple-700"
