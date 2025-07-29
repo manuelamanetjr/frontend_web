@@ -346,9 +346,9 @@ export default function ManageAgents() {
                 </div>
 
                 {modalError && (
-                  <p className="text-red-600 mb-3 font-semibold">
+                  <div className="bg-red-100 text-red-700 px-4 py-2 rounded-md mb-3 text-sm font-medium border border-red-300">
                     {modalError}
-                  </p>
+                  </div>
                 )}
 
                 <label className="block mb-3">
