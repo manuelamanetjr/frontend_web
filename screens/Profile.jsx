@@ -134,7 +134,7 @@ export default function Profile() {
   const handleLogout = async () => {
     try {
       await api.post("/auth/logout", {}, { withCredentials: true });
-      localStorage.setItem("logout", Date.now()); 
+      localStorage.setItem("logout", Date.now()); // TRIGGERS logout in other tabs
       setUserData(null);  // Reset context
       navigate("/");
     } catch (error) {

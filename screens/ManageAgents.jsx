@@ -16,14 +16,16 @@ export default function ManageAgents() {
   const [showPassword, setShowPassword] = useState(false);
   const [agents, setAgents] = useState([]);
   const [allDepartments, setAllDepartments] = useState([]);
-  const [loading, setLoading] = useState(true);
-
+  const [modalError, setModalError] = useState(null);
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
   const [selectedDepartmentsFilter, setSelectedDepartmentsFilter] = useState(
     []
   );
-
+  const [loading, setLoading] = useState(false);
   const filterRef = useRef(null);
+
+  // Define default role ID for new agents
+  const DEFAULT_ROLE_ID = 2;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -60,16 +62,15 @@ export default function ManageAgents() {
   }, [filterDropdownOpen]);
 
   const filteredAgents = agents.filter((agent) => {
-    const matchesSearch = agent.email
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+    const email = agent.email?.toLowerCase() || "";
+    const matchesSearch = email.includes(searchQuery.toLowerCase());
 
     if (selectedDepartmentsFilter.length === 0) {
       return matchesSearch;
     }
 
     const hasAllDepartments = selectedDepartmentsFilter.every((dept) =>
-      agent.departments.includes(dept)
+      (agent.departments || []).includes(dept)
     );
 
     return matchesSearch && hasAllDepartments;
@@ -86,36 +87,87 @@ export default function ManageAgents() {
     );
     setShowPassword(false);
     setIsModalOpen(true);
+    setModalError("");
   };
 
-  const handleSaveAgent = () => {
-    setIsConfirmModalOpen(true);
+  const handleSaveAgent = async () => {
+    const editEmail = editForm.email.trim();
+    const editPassword = editForm.password.trim();
+
+    if (!editEmail || !editPassword) {
+      setModalError("Email and password are required.");
+      return;
+    }
+
+    const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!isValidEmail(editEmail)) {
+      setModalError("Please enter a valid email address.");
+      return;
+    }
+
+    const emailAlreadyExists = (email, currentId) => {
+      return agents.some(
+        (agent) =>
+          agent.email.toLowerCase() === email.toLowerCase() &&
+          agent.id !== currentId
+      );
+    };
+
+    if (emailAlreadyExists(editEmail, agents[currentEditIndex]?.id)) {
+      setModalError("Email is already taken.");
+      return;
+    }
+
     setIsModalOpen(false);
+    setIsConfirmModalOpen(true);
   };
 
   const confirmSaveAgent = async () => {
     try {
-      if (currentEditIndex !== null) {
-        const agent = agents[currentEditIndex];
-        await api.put(`/manage-agents/agents/${agent.id}`, {
-          email: editForm.email,
-          active: agent.active,
-          departments: agent.departments,
-          password: editForm.password || undefined,
-        });
+      const isEdit = currentEditIndex !== null;
+      const endpoint = isEdit
+        ? `/manage-agents/agents/${agents[currentEditIndex].id}`
+        : `/manage-agents/agents`;
+      const method = isEdit ? "put" : "post";
 
+      const payload = {
+        email: editForm.email,
+        password: editForm.password,
+        active: true,
+        departments: agents[currentEditIndex]?.departments || [], 
+        roleId: DEFAULT_ROLE_ID,
+      };
+
+      const res = await api[method](endpoint, payload);
+
+      if (isEdit) {
         setAgents((prev) =>
           prev.map((a, i) =>
             i === currentEditIndex ? { ...a, email: editForm.email } : a
           )
         );
       } else {
-        // ADD AGENT (future)
+        const newAgent = {
+          id: res.data.id,
+          email: res.data.email || editForm.email,
+          password: editForm.password,
+          departments: [],
+          active: true,
+        };
+        setAgents((prev) => [...prev, newAgent]);
       }
+
+      setIsModalOpen(false);
+      setIsConfirmModalOpen(false);
+      setEditForm({ email: "", password: "" });
+      setModalError(null);
     } catch (error) {
       console.error("Error saving agent:", error);
-    } finally {
-      setIsModalOpen(false);
+
+      const errMsg =
+        error.response?.data?.error || "Failed to save agent (server error)";
+      setModalError(errMsg);
+      setIsModalOpen(true);
       setIsConfirmModalOpen(false);
     }
   };
@@ -139,9 +191,9 @@ export default function ManageAgents() {
 
   const handleToggleDepartment = async (agentIndex, dept) => {
     const agent = agents[agentIndex];
-    const updatedDepartments = agent.departments.includes(dept)
+    const updatedDepartments = (agent.departments || []).includes(dept)
       ? agent.departments.filter((d) => d !== dept)
-      : [...agent.departments, dept];
+      : [...(agent.departments || []), dept];
 
     try {
       await api.put(`/manage-agents/agents/${agent.id}`, {
@@ -306,19 +358,24 @@ export default function ManageAgents() {
               <h2 className="text-xl font-semibold mb-4">
                 {currentEditIndex !== null ? "Edit Agent" : "Add Agent"}
               </h2>
+              {modalError && (
+                <div className="bg-red-100 text-red-700 px-4 py-2 rounded-md mb-3 text-sm font-medium border border-red-300">
+                  {modalError}
+                </div>
+              )}
               <label className="block mb-2 text-sm font-medium text-gray-700">
                 Email
               </label>
               <input
                 type="email"
                 value={editForm.email}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, email: e.target.value })
-                }
+                onChange={(e) => {
+                  setEditForm({ ...editForm, email: e.target.value });
+                  if (modalError) setModalError(null); // Clear error on typing
+                }}
                 className="w-full mb-4 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600"
               />
 
-              {/* Password remains if you still want to keep it */}
               <label className="block mb-2 text-sm font-medium text-gray-700">
                 Password
               </label>
@@ -326,9 +383,10 @@ export default function ManageAgents() {
                 <input
                   type={showPassword ? "text" : "password"}
                   value={editForm.password}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, password: e.target.value })
-                  }
+                  onChange={(e) => {
+                    setEditForm({ ...editForm, password: e.target.value });
+                    if (modalError) setModalError(null); // Clear error on typing
+                  }}
                   className="w-full mb-4 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600"
                 />
                 {showPassword ? (
@@ -348,7 +406,10 @@ export default function ManageAgents() {
 
               <div className="flex justify-end gap-3">
                 <button
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setModalError(null); // Clear error on cancel
+                  }}
                   className="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300"
                 >
                   Cancel
