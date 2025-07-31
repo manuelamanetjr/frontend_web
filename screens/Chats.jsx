@@ -6,7 +6,7 @@ import Sidebar from "../components/Sidebar";
 import api from "../src/api";
 import socket from "../src/socket";
 
-export default function Queues() {
+export default function Chats() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [view, setView] = useState("chatList");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -22,8 +22,7 @@ export default function Queues() {
   const [inputMessage, setInputMessage] = useState("");
   const [endedChats, setEndedChats] = useState([]);
   const [showTransferModal, setShowTransferModal] = useState(false);
-  const [showTransferConfirmModal, setShowTransferConfirmModal] =
-    useState(false);
+  const [showTransferConfirmModal, setShowTransferConfirmModal] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState("All");
   const [showDeptDropdown, setShowDeptDropdown] = useState(false);
   const [transferDepartment, setTransferDepartment] = useState(null);
