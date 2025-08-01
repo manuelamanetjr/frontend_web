@@ -137,13 +137,23 @@ export default function Chats() {
     label: dept,
   }));
 
-  const cannedMessages = [
-    "Can you describe the issue in detail?",
-    "Please provide your account number.",
-    "Let me check that for you.",
-    "Thank you for your patience.",
-    "I will escalate this issue to our support team.",
-  ];
+  const [cannedMessages, setCannedMessages] = useState([]);
+
+  useEffect(() => {
+    const fetchCannedMessages = async () => {
+      try {
+        const res = await api.get("/chat/canned-messages");
+        if (Array.isArray(res.data)) {
+          setCannedMessages(res.data.map((msg) => msg.canned_message));
+        }
+      } catch (err) {
+        console.error("Failed to load canned messages:", err);
+      }
+    };
+
+    fetchCannedMessages();
+  }, []);
+
 
   const handleTransferClick = () => {
     setOpenDropdown(null);
@@ -489,8 +499,8 @@ export default function Chats() {
                     backgroundColor: state.isSelected
                       ? "#6237A0"
                       : state.isFocused
-                      ? "#E6DCF7"
-                      : "white",
+                        ? "#E6DCF7"
+                        : "white",
                     color: state.isSelected ? "white" : "#000000",
                   }),
                   control: (provided) => ({
@@ -531,12 +541,11 @@ export default function Chats() {
                   !transferDepartment ||
                   transferDepartment === selectedDepartment
                 }
-                className={`px-5 py-2 text-white rounded-lg transition-colors ${
-                  transferDepartment &&
-                  transferDepartment !== selectedDepartment
+                className={`px-5 py-2 text-white rounded-lg transition-colors ${transferDepartment &&
+                    transferDepartment !== selectedDepartment
                     ? "bg-[#6237A0] hover:bg-[#4c2b7d]"
                     : "bg-[#6237A0]/50 cursor-not-allowed"
-                }`}
+                  }`}
               >
                 Select
               </button>
@@ -592,9 +601,8 @@ export default function Chats() {
           <div className="flex flex-col md:flex-row h-full">
             {/* Queues list */}
             <div
-              className={`${
-                view === "chatList" ? "block" : "hidden md:block"
-              } w-full md:w-[320px] bg-[#F5F5F5] overflow-y-auto`}
+              className={`${view === "chatList" ? "block" : "hidden md:block"
+                } w-full md:w-[320px] bg-[#F5F5F5] overflow-y-auto`}
             >
               <div className="relative p-4 flex text-center justify-between rounded-xl py-2 px-4 items-center m-4 shadow-sm bg-[#E6DCF7]">
                 <button
@@ -614,11 +622,10 @@ export default function Chats() {
                     {departments.map((dept) => (
                       <div
                         key={dept}
-                        className={`px-4 py-2 cursor-pointer hover:bg-[#E6DCF7] ${
-                          dept === selectedDepartment
+                        className={`px-4 py-2 cursor-pointer hover:bg-[#E6DCF7] ${dept === selectedDepartment
                             ? "font-bold text-[#6237A0]"
                             : ""
-                        }`}
+                          }`}
                         onClick={() => {
                           setSelectedDepartment(dept);
                           setShowDeptDropdown(false);
@@ -638,13 +645,12 @@ export default function Chats() {
                   <div
                     key={customer.id}
                     onClick={() => handleChatClick(customer)}
-                    className={`flex items-center justify-between px-4 py-3 border-2 ${
-                      selectedCustomer?.id === customer.id
+                    className={`flex items-center justify-between px-4 py-3 border-2 ${selectedCustomer?.id === customer.id
                         ? "bg-[#E6DCF7]"
                         : endedChats.some((chat) => chat.id === customer.id)
-                        ? "bg-gray-100 opacity-70"
-                        : "bg-[#f5f5f5]"
-                    } border-[#E6DCF7] rounded-xl hover:bg-[#E6DCF7] cursor-pointer transition m-2 min-h-[100px]`}
+                          ? "bg-gray-100 opacity-70"
+                          : "bg-[#f5f5f5]"
+                      } border-[#E6DCF7] rounded-xl hover:bg-[#E6DCF7] cursor-pointer transition m-2 min-h-[100px]`}
                   >
                     <div className="flex items-center gap-2 flex-1">
                       <img
@@ -663,29 +669,27 @@ export default function Chats() {
                           </span>
                         </div>
                         <p
-                          className={`text-sm font-medium truncate ${
-                            selectedCustomer?.id === customer.id
+                          className={`text-sm font-medium truncate ${selectedCustomer?.id === customer.id
                               ? "text-[#6237A0]"
                               : endedChats.some(
-                                  (chat) => chat.id === customer.id
-                                )
-                              ? "text-gray-500"
-                              : "text-gray-800"
-                          }`}
+                                (chat) => chat.id === customer.id
+                              )
+                                ? "text-gray-500"
+                                : "text-gray-800"
+                            }`}
                         >
                           {customer.name}
                         </p>
                         <div className="flex justify-between items-center">
                           <p
-                            className={`text-xs truncate ${
-                              selectedCustomer?.id === customer.id
+                            className={`text-xs truncate ${selectedCustomer?.id === customer.id
                                 ? "text-[#6237A0]"
                                 : endedChats.some(
-                                    (chat) => chat.id === customer.id
-                                  )
-                                ? "text-gray-400"
-                                : "text-gray-500"
-                            }`}
+                                  (chat) => chat.id === customer.id
+                                )
+                                  ? "text-gray-400"
+                                  : "text-gray-500"
+                              }`}
                           >
                             {customer.number}
                           </p>
@@ -702,9 +706,8 @@ export default function Chats() {
 
             {/* Chat area */}
             <div
-              className={`${
-                view === "conversation" ? "block" : "hidden md:flex"
-              } flex-1 flex flex-col`}
+              className={`${view === "conversation" ? "block" : "hidden md:flex"
+                } flex-1 flex flex-col`}
             >
               {selectedCustomer ? (
                 <>
@@ -808,18 +811,17 @@ export default function Chats() {
                           return (
                             <div
                               key={`msg-${index}`}
-                              className={`flex items-end gap-2 ${
-                                item.sender === "user"
+                              className={`flex items-end gap-2 ${item.sender === "user"
                                   ? "justify-end"
                                   : "justify-start"
-                              }`}
+                                }`}
                             >
                               {item.sender !== "user" && (
                                 <img
                                   src={
                                     item.sender === "system"
                                       ? selectedCustomer.profile ||
-                                        "profile_picture/DefaultProfile.jpg"
+                                      "profile_picture/DefaultProfile.jpg"
                                       : "profile_picture/DefaultProfile.jpg"
                                   }
                                   alt={
@@ -831,21 +833,19 @@ export default function Chats() {
                                 />
                               )}
                               <div
-                                className={`${
-                                  item.sender === "user"
+                                className={`${item.sender === "user"
                                     ? "bg-[#f5f5f5] text-gray-800"
                                     : item.sender === "system"
-                                    ? "bg-[#6237A0] text-white"
-                                    : "bg-[#f5f5f5] text-gray-800"
-                                } px-4 py-2 rounded-xl max-w-[320px] text-sm break-words whitespace-pre-wrap`}
+                                      ? "bg-[#6237A0] text-white"
+                                      : "bg-[#f5f5f5] text-gray-800"
+                                  } px-4 py-2 rounded-xl max-w-[320px] text-sm break-words whitespace-pre-wrap`}
                               >
                                 {item.content}
                                 <div
-                                  className={`text-[10px] text-right mt-1 ${
-                                    item.sender === "system"
+                                  className={`text-[10px] text-right mt-1 ${item.sender === "system"
                                       ? "text-gray-300"
                                       : "text-gray-400"
-                                  }`}
+                                    }`}
                                 >
                                   {item.displayTime}
                                 </div>
@@ -923,11 +923,10 @@ export default function Chats() {
                     <div className="mt-4 flex items-center gap-2 border-t border-gray-200 pt-4 px-4">
                       <button
                         className={`p-2 mb-4 text-[#5C2E90] hover:bg-gray-100 rounded-full
-                           ${
-                             chatEnded
-                               ? "text-gray-400 cursor-not-allowed"
-                               : "text-[#5C2E90] hover:bg-gray-100"
-                           }`}
+                           ${chatEnded
+                            ? "text-gray-400 cursor-not-allowed"
+                            : "text-[#5C2E90] hover:bg-gray-100"
+                          }`}
                         onClick={() => setShowCannedMessages(true)}
                         disabled={chatEnded}
                       >
@@ -946,20 +945,18 @@ export default function Chats() {
                           }
                         }}
                         className={`flex-1 bg-[#F2F0F0] rounded-xl px-4 py-2 mb-4 leading-tight focus:outline-none text-gray-800 resize-none overflow-y-auto
-                        ${
-                          chatEnded
+                        ${chatEnded
                             ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                             : "bg-[#F2F0F0] text-gray-800"
-                        }`}
+                          }`}
                         style={{ maxHeight: "100px" }}
                         disabled={chatEnded}
                       />
                       <button
                         className={`p-2 mb-4 text-[#5C2E90] hover:bg-gray-100 rounded-full
-                          ${
-                            chatEnded
-                              ? "text-gray-400 cursor-not-allowed"
-                              : "text-[#5C2E90] hover:bg-gray-100"
+                          ${chatEnded
+                            ? "text-gray-400 cursor-not-allowed"
+                            : "text-[#5C2E90] hover:bg-gray-100"
                           }`}
                         onClick={sendMessage}
                         disabled={chatEnded}
