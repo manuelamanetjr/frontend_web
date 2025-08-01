@@ -22,7 +22,8 @@ export default function Queues() {
   const [inputMessage, setInputMessage] = useState("");
   const [endedChats, setEndedChats] = useState([]);
   const [showTransferModal, setShowTransferModal] = useState(false);
-  const [showTransferConfirmModal, setShowTransferConfirmModal] = useState(false);
+  const [showTransferConfirmModal, setShowTransferConfirmModal] =
+    useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState("All");
   const [showDeptDropdown, setShowDeptDropdown] = useState(false);
   const [transferDepartment, setTransferDepartment] = useState(null);
@@ -32,7 +33,6 @@ export default function Queues() {
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const scrollContainerRef = useRef(null);
   const [earliestMessageTime, setEarliestMessageTime] = useState(null);
-  
 
   useEffect(() => {
     socket.connect();
@@ -138,13 +138,22 @@ export default function Queues() {
     label: dept,
   }));
 
-  const cannedMessages = [
-    "Can you describe the issue in detail?",
-    "Please provide your account number.",
-    "Let me check that for you.",
-    "Thank you for your patience.",
-    "I will escalate this issue to our support team.",
-  ];
+  const [cannedMessages, setCannedMessages] = useState([]);
+
+  useEffect(() => {
+    const fetchCannedMessages = async () => {
+      try {
+        const res = await api.get("/chat/canned-messages");
+        if (Array.isArray(res.data)) {
+          setCannedMessages(res.data.map((msg) => msg.canned_message));
+        }
+      } catch (err) {
+        console.error("Failed to load canned messages:", err);
+      }
+    };
+
+    fetchCannedMessages();
+  }, []);
 
   const handleTransferClick = () => {
     setOpenDropdown(null);
